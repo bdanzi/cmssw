@@ -310,20 +310,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
           }
         }
 //      #endif
-#ifdef GPU_DEBUG
-        if (tooMany > 0 or tot > 0)
-          printf("OuterHitOfCell for %d in layer %d/%d, %d,%d %d, %d %.3f %.3f %s\n",
-                 i,
-                 inner,
-                 outer,
-                 nmin,
-                 tot,
-                 tooMany,
-                 iphicut,
-                 TrackerTraits::minz[pairLayerId],
-                 TrackerTraits::maxz[pairLayerId],
-                 tooMany > 0 ? "FULL!!" : "not full.");
-#endif
+//#ifdef GPU_DEBUG
+//        if (tooMany > 0 or tot > 0)
+//          printf("OuterHitOfCell for %d in layer %d/%d, %d,%d %d, %d %.3f %.3f %s\n",
+//                 i,
+//                 inner,
+//                 outer,
+//                 nmin,
+//                 tot,
+//                 tooMany,
+//                 iphicut,
+//                 TrackerTraits::minz[pairLayerId],
+//                 TrackerTraits::maxz[pairLayerId],
+//                 tooMany > 0 ? "FULL!!" : "not full.");
+//#endif 
       }  // loop in block...
     }    // namespace caPixelDoublets
   }      // namespace caPixelDoublets

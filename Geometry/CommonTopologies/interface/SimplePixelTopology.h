@@ -326,7 +326,7 @@ namespace phase1PixelStripTopology {
   using pixelTopology::phi0p07;
 
   constexpr uint32_t numberOfLayers = 12;
-  constexpr int nPairs = 21 + 4 + 10 ; // without jump + jumping barrel + jumping forward
+  constexpr int nPairs = 21 + 4 + 10 +1 ; // without jump + jumping barrel + jumping forward + double jump
   constexpr uint16_t numberOfModules = 3392;
 
   HOST_DEVICE_CONSTANT uint8_t layerPairs[2 * nPairs] = {
@@ -343,54 +343,39 @@ namespace phase1PixelStripTopology {
       10, 11,                         // TIB1 (27) 
       2, 10, 3, 11,                   // Jumping from Pixel Barrel (29)
       4, 11, 5, 11, 6, 11,            // Jumping from Pixel Positive Endcap (32)
-      7, 11, 8, 11, 9, 11             // Jumping from Pixel Negative Endcap (35)
+      7, 11, 8, 11, 9, 11,             // Jumping from Pixel Negative Endcap (35)
+      1, 10                           // Jumping from BPIX2 to TIB1 (36)
   };
 
-  HOST_DEVICE_CONSTANT int16_t phicuts[nPairs]{phi0p05,
-                                               phi0p07,
-                                               phi0p07,
-                                               phi0p05,
-                                               phi0p06,
-                                               phi0p06,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p06,
-                                               phi0p06,
-                                               phi0p06,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi0p05,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg,
-                                               phi5deg};
+  HOST_DEVICE_CONSTANT int16_t phicuts[nPairs]{
+    phi0p05,phi0p07,phi0p07,
+    phi0p05,phi0p06,phi0p06,
+    phi0p05,phi0p05,phi0p06,
+    phi0p06,phi0p06,phi0p05,
+    phi0p05,phi0p05,phi0p05,
+    phi0p05,phi0p05,phi0p05,
+    phi0p05,phi5deg,phi5deg,
+    phi5deg,phi5deg,phi5deg,
+    phi5deg,phi5deg,phi5deg,
+    phi5deg,phi5deg,phi5deg,
+    phi5deg,phi5deg,phi5deg,
+    phi5deg,phi5deg,phi5deg};
 
   HOST_DEVICE_CONSTANT float minz[nPairs] = {
-      -20., 0., -30., -22., 10., -30., -70., -70., -22., 15., -30, -70., -70., -20., -22., 0, -30., -70., -70.,
-      -22.,-70.,-70.,-70.,-70.,-70.,-70.,-80.,-22.,-22.,-70.,-70.,-70.,-70.,-70.,-70.};
+      -20., 0., -30., -22., 10., 
+      -30., -70., -70., -22., 15., 
+      -30, -70., -70., -20., -22.,
+       0, -30., -70., -70.,-22.,
+       -70.,-70.,-70.,-70.,-70.,
+       -70.,-80.,-22.,-22.,-70.
+       -70.,-70.,-70.,-70.,-70.,
+       -70.};
   HOST_DEVICE_CONSTANT float maxz[nPairs] = {
       20., 30., 0., 22., 30., -10., 70., 70., 22., 30., -15., 70., 70., 20., 22., 30., 0., 70., 70.,
-      22.,70.,70.,70.,70.,70.,70.,80.,22.,22.,70.,70.,70.,70.,70.,70.};
+      22.,70.,70.,70.,70.,70.,70.,80.,22.,22.,70.,70.,70.,70.,70.,70.,70.};
   HOST_DEVICE_CONSTANT float maxr[nPairs] = {
       20., 9., 9., 20., 7., 7., 5., 5., 20., 6., 6., 5., 5., 20., 20., 9., 9., 9., 9.,
-      300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.};
+      300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.,300.};
 
   static constexpr uint32_t layerStart[numberOfLayers + 1] = {0,
                                                               96,
@@ -688,7 +673,7 @@ namespace pixelTopology {
     static constexpr uint16_t numberOfPixelModules = phase1PixelStripTopology::layerStart[numberOfPixelLayers];
     static constexpr uint16_t numberOfStripModules = numberOfModules - numberOfPixelModules;
 
-    static constexpr int nPairsForQuadruplets = 35;                     // quadruplets require hits in all layers
+    static constexpr int nPairsForQuadruplets = 36;                     // quadruplets require hits in all layers
     static constexpr int nPairsForTriplets = nPairsForQuadruplets ;  // include barrel "jumping" layer pairs
     static constexpr int nPairs = nPairsForTriplets;                // include forward "jumping" layer pairs
 

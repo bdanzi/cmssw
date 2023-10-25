@@ -138,7 +138,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
           yerr = nok ? hh[hit].yerrLocal() : yerr;
           dp.frame.toGlobal(hh[hit].xerrLocal(), 0, yerr, ge);
 #else
-          cpeParams->detParams(hh[hit].detectorIndex()).frame.toGlobal(hh[hit].xerrLocal(), 0, hh[hit].yerrLocal(), ge);
+          if (hh[hit].detectorIndex() <= TrackerTraits::numberOfPixelModules)
+            cpeParams->detParams(hh[hit].detectorIndex()).frame.toGlobal(hh[hit].xerrLocal(), 0, hh[hit].yerrLocal(), ge);
+          else
+          {
+            auto xe = hh[hit].xerrLocal();
+            auto ye = hh[hit].yerrLocal();
+
+            ge[0] = xe; //xx
+            ge[1] = sqrt(xe*xe + ye*ye); //xy
+            ge[2] = ye; //yy
+            ge[3] = sqrt(xe*xe + ye*ye); // these are for Z
+            ge[4] = sqrt(xe*xe + ye*ye); 
+            ge[5] = sqrt(xe*xe + ye*ye);
+          }
+          
 #endif
 
 #ifdef BL_DUMP_HITS

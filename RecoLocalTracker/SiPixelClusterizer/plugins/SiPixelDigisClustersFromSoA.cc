@@ -136,7 +136,7 @@ void SiPixelDigisClustersFromSoAT<TrackerTraits>::produce(edm::StreamID,
       ++totClustersFilled;
       const auto& cluster{spc.back()};
       // LogDebug("SiPixelDigisClustersFromSoA")
-      std::cout << "putting in this cluster " << ic << " " << cluster.charge() << " " << cluster.pixelADC().size();
+     // std::cout << "putting in this cluster " << ic << " " << cluster.charge() << " " << cluster.pixelADC().size();
 #endif
       std::push_heap(spc.begin(), spc.end(), [](SiPixelCluster const& cl1, SiPixelCluster const& cl2) {
         return cl1.minPixelRow() < cl2.minPixelRow();

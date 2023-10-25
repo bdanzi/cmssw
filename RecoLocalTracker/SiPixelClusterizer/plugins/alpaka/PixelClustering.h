@@ -108,9 +108,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
               // boundary...
               auto loc = alpaka::atomicInc(
                   acc, clus_view.moduleStart(), std::decay_t<uint32_t>(nMaxModules), alpaka::hierarchy::Blocks{});
-              #ifdef GPU_DEBUG
-                printf("> New module (no. %d) found at digi %d \n",loc,i);
-              #endif
+              //#ifdef GPU_DEBUG
+              //  printf("> New module (no. %d) found at digi %d \n",loc,i);
+              //#endif
               clus_view[loc + 1].moduleStart() = i;
             }
           }
