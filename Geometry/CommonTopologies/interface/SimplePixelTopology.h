@@ -327,7 +327,7 @@ namespace phase1PixelStripTopology {
   using pixelTopology::phi0p09;
 
   constexpr uint32_t numberOfLayers = 12;
-  constexpr int nPairs = 21 + 4 + 10 + 1; // without jump + jumping barrel + jumping forward
+  constexpr int nPairs = 21 + 12 + 10; // without jump + jumping barrel + jumping forward
   constexpr uint16_t numberOfModules = 3392;
 
   HOST_DEVICE_CONSTANT uint8_t layerPairs[2 * nPairs] = {
@@ -336,38 +336,81 @@ namespace phase1PixelStripTopology {
       4, 5, 7, 8,                    // FPIX1 (8)
       2, 3, 2, 4, 2, 7, 5, 6, 8, 9,  // BPIX3 & FPIX2 (13)
       0, 2, 1, 3,                    // Jumping Barrel (15)
-      0, 5, 0, 8,                    // Jumping Forward (BPIX1,FPIX2)
+      0, 5, 0, 8,                    // Jumping Forward (BPIX1,FPIX2) (17)
       4, 6, 7, 9,                     // Jumping Forward (19)
       3, 10,                          // BPIX4 (20)
       4, 10, 5, 10, 6, 10,            // Pixel Positive Endcap (23)
       7, 10, 8, 10, 9, 10,            // Pixel Negative Endcap (26)
       10, 11,                         // TIB1 (27) 
-      1, 10, 2, 10, 3, 11,            // Jumping from Pixel Barrel (30)
-      4, 11, 5, 11, 6, 11,            // Jumping from Pixel Positive Endcap (33)
-      7, 11, 8, 11, 9, 11             // Jumping from Pixel Negative Endcap (36)
+      0, 10, 0, 10, 1, 10, 1, 10, 2, 10, 0, 11, 0, 11, 1, 11, 1, 11, 3, 11, // Jumping from Pixel Barrel (37)
+      4, 11, 5, 11, 6, 11,            // Jumping from Pixel Positive Endcap (40)
+      7, 11, 8, 11, 9, 11             // Jumping from Pixel Negative Endcap (43)
   };
 
-  HOST_DEVICE_CONSTANT int16_t phicuts[nPairs]{phi0p05, phi0p07, phi0p07, phi0p05, phi0p06,
-                                               phi0p06, phi0p05, phi0p05, phi0p06, phi0p06,
-                                               phi0p06, phi0p05, phi0p05, phi0p05, phi0p05,
-                                               
-                                               phi0p05, phi0p05, phi0p05, phi0p05, phi5deg,
-                                               phi5deg, phi5deg, phi5deg, phi0p09, phi0p09,
-                                               phi0p09, phi0p09, phi0p09, phi0p09, phi0p09,
-                                               
-                                               phi0p09, phi0p09, phi0p09, phi0p09, phi0p09,
-                                               phi0p09
+  HOST_DEVICE_CONSTANT int16_t phicuts[nPairs]{phi0p05, phi0p07, phi0p07, // BPIX1 (3)
+                                               phi0p05, phi0p06, phi0p06, // BPIX2 (6)
+                                               phi0p05, phi0p05, // FPIX1 (8)
+                                               phi0p06, phi0p06, phi0p06, phi0p05, phi0p05, // BPIX3 & FPIX2 (13)
+                                               phi0p05, phi0p05, // Jumping Barrel (15)
+                                               phi0p05, phi0p05, // Jumping Forward (BPIX1,FPIX2) (17)
+                                               phi0p05, phi0p05, // Jumping Forward (19)
+                                               phi5deg, // BPIX4 (20)
+                                               phi5deg, phi5deg, phi5deg, // Pixel Positive Endcap (23)
+                                               phi0p09, phi0p09, phi0p09, // Pixel Negative Endcap (26)
+                                               phi0p09, // TIB1 (27) 
+                                               phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09,// Jumping from Pixel Barrel (37)
+                                               phi0p09, phi0p09, phi0p09, // Jumping from Pixel Positive Endcap (40)
+                                               phi0p09, phi0p09, phi0p09 // Jumping from Pixel Negative Endcap (43)
                                                };
 
-  HOST_DEVICE_CONSTANT float minz[nPairs] = {
-      -20., 0., -30., -22., 10., -30., -70., -70., -22., 15., -30, -70., -70., -20., -22., 0, -30., -70., -70.,
-      -22.,-70.,-70.,-70.,-70.,-70.,-70.,-80.,-22.,-22.,-70.,-70.,-70.,-70.,-70.,-70.,-70.};
+  HOST_DEVICE_CONSTANT float minz[nPairs] = { -20., 0., -30., // BPIX1 (3)
+                                              -22., 10., -30., // BPIX2 (6)
+                                              -70., -70., // FPIX1 (8)
+                                              -22., 15., -30, -70., -70., // BPIX3 & FPIX2 (13)
+                                              -20., -22., // Jumping Barrel (15)
+                                                0, -30., // Jumping Forward (BPIX1,FPIX2) (17)
+                                              -70.,-70., // Jumping Forward (19)
+                                              -22., // BPIX4 (20)
+                                              -70.,-70.,-70., // Pixel Positive Endcap (23)
+                                              -70.,-70.,-70., // Pixel Negative Endcap (26)
+                                              -80., // TIB1 (27) 
+                                              -70., 0., -70., 0., -70., -70., 0., -70., 0., -70., // Jumping from Pixel Barrel (37)
+                                              -70.,-70.,-70., // Jumping from Pixel Positive Endcap (40)
+                                              -70.,-70.,-70. // Jumping from Pixel Negative Endcap (43)
+                                              };
   HOST_DEVICE_CONSTANT float maxz[nPairs] = {
-      20., 30., 0., 22., 30., -10., 70., 70., 22., 30., -15., 70., 70., 20., 22., 30., 0., 70., 70.,
-      22.,70.,70.,70.,70.,70.,70.,80.,22.,22.,70.,70., 70.,70.,70.,70.,70.};
+                                              20., 30., 0., // BPIX1 (3)
+                                              22., 30., -10., // BPIX2 (6)
+                                              70., 70., // FPIX1 (8)
+                                              22., 30., -15., 70., 70., // BPIX3 & FPIX2 (13)
+                                              20., 22., // Jumping Barrel (15)
+                                              30., 0., // Jumping Forward (BPIX1,FPIX2) (17)
+                                              70., 70., // Jumping Forward (19)
+                                              22., // BPIX4 (20)
+                                              70.,70.,70., // Pixel Positive Endcap (23)
+                                              70.,70.,70., // Pixel Negative Endcap (26)
+                                              80., // TIB1 (27) 
+                                              -28.,70.,-28.,70.,70.,-28.,70., -28.,70.,70., // Jumping from Pixel Barrel (37)
+                                              70.,70.,70., // Jumping from Pixel Positive Endcap (36)
+                                              70.,70.,70. // Jumping from Pixel Negative Endcap (39)
+                                              
+                                              };
   HOST_DEVICE_CONSTANT float maxr[nPairs] = {
-      20., 9., 9., 20., 7., 7., 5., 5., 20., 6., 6., 5., 5., 20., 20., 9., 9., 9., 9.,
-      10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000.,10000., 10000.,10000.,10000.,10000.,10000.};
+                                              20., 9., 9., // BPIX1 (3)
+                                              20., 7., 7., // BPIX2 (6)
+                                              5., 5., // FPIX1 (8)
+                                              20., 6., 6., 5., 5., // BPIX3 & FPIX2 (13)
+                                              20., 20., // Jumping Barrel (15)
+                                              9., 9., // Jumping Forward (BPIX1,FPIX2) (17)
+                                              9., 9., // Jumping Forward (19)
+                                              10000., // BPIX4 (20)
+                                              10000.,10000.,10000., // Pixel Positive Endcap (23)
+                                              10000.,10000.,10000., // Pixel Negative Endcap (26)
+                                              10000., // TIB1 (27) 
+                                              10000.,10000.,10000.,10000.,10000.,10000., 10000.,10000., 10000.,10000.,// Jumping from Pixel Barrel (37)
+                                              10000.,10000.,10000., // Jumping from Pixel Positive Endcap (40)
+                                              10000.,10000.,10000.  // Jumping from Pixel Negative Endcap (43)
+                                              }; 
 
   static constexpr uint32_t layerStart[numberOfLayers + 1] = {0,
                                                               96,
@@ -648,7 +691,21 @@ namespace pixelTopology {
   struct Phase1Strip : public Phase1 {
 
     typedef Phase1 PixelBase; //Could be removed using based class
-    
+    static constexpr uint32_t maxNumberOfHits = 256 * 1024;
+    static constexpr uint32_t maxCellNeighbors = 64;
+    static constexpr uint32_t maxCellTracks = 302;
+    static constexpr uint32_t maxHitsOnTrack = 15;
+    static constexpr uint32_t maxHitsOnTrackForFullFit = 6;
+    static constexpr uint32_t avgHitsPerTrack = 7;
+    static constexpr uint32_t maxCellsPerHit = 256;
+    static constexpr uint32_t avgTracksPerHit = 10;
+    static constexpr uint32_t maxNumberOfTuples = 256 * 1024;
+    //this is well above thanks to maxNumberOfTuples
+    static constexpr uint32_t maxHitsForContainers = avgHitsPerTrack * maxNumberOfTuples;
+    static constexpr uint32_t maxNumberOfDoublets = 5 * 512 * 1024;
+    static constexpr uint32_t maxNumOfActiveDoublets = maxNumberOfDoublets / 8;
+    static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples;
+    static constexpr uint32_t maxDepth = 12;
     static constexpr uint32_t const *layerStart = phase1PixelStripTopology::layerStart;
     
     static constexpr float const *minz = phase1PixelStripTopology::minz;
@@ -661,11 +718,11 @@ namespace pixelTopology {
     static constexpr uint32_t numberOfStripLayers = 2;
     static constexpr uint32_t numberOfLayers = numberOfStripLayers + numberOfPixelLayers;
 
-    static constexpr uint16_t numberOfModules = 3392;
+    static constexpr uint16_t numberOfModules = phase1PixelStripTopology::numberOfModules;
     static constexpr uint16_t numberOfPixelModules = phase1PixelStripTopology::layerStart[numberOfPixelLayers];
     static constexpr uint16_t numberOfStripModules = numberOfModules - numberOfPixelModules;
 
-    static constexpr int nPairsForQuadruplets = phase1PixelStripTopology::nPairs;                     // quadruplets require hits in all layers
+    static constexpr int nPairsForQuadruplets = phase1PixelStripTopology::nPairs; // quadruplets require hits in all layers
     static constexpr int nPairsForTriplets = nPairsForQuadruplets ;  // include barrel "jumping" layer pairs
     static constexpr int nPairs = nPairsForTriplets;                // include forward "jumping" layer pairs
 
