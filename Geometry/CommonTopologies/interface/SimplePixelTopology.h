@@ -327,7 +327,7 @@ namespace phase1PixelStripTopology {
   using pixelTopology::phi0p09;
 
   constexpr uint32_t numberOfLayers = 12;
-  constexpr int nPairs = 21 + 12 + 10; // without jump + jumping barrel + jumping forward
+  constexpr int nPairs = 21 + 8 + 10; // without jump + jumping barrel + jumping forward
   constexpr uint16_t numberOfModules = 3392;
 
   HOST_DEVICE_CONSTANT uint8_t layerPairs[2 * nPairs] = {
@@ -342,9 +342,9 @@ namespace phase1PixelStripTopology {
       4, 10, 5, 10, 6, 10,            // Pixel Positive Endcap (23)
       7, 10, 8, 10, 9, 10,            // Pixel Negative Endcap (26)
       10, 11,                         // TIB1 (27) 
-      0, 10, 0, 10, 1, 10, 1, 10, 2, 10, 0, 11, 0, 11, 1, 11, 1, 11, 3, 11, // Jumping from Pixel Barrel (37)
-      4, 11, 5, 11, 6, 11,            // Jumping from Pixel Positive Endcap (40)
-      7, 11, 8, 11, 9, 11             // Jumping from Pixel Negative Endcap (43)
+      0, 10, 1, 10,  2, 10, 0, 11, 1, 11, 3, 11, // Jumping from Pixel Barrel (33)
+      4, 11, 5, 11, 6, 11,            // Jumping from Pixel Positive Endcap (36)
+      7, 11, 8, 11, 9, 11             // Jumping from Pixel Negative Endcap (39)
   };
 
   HOST_DEVICE_CONSTANT int16_t phicuts[nPairs]{phi0p05, phi0p07, phi0p07, // BPIX1 (3)
@@ -358,9 +358,9 @@ namespace phase1PixelStripTopology {
                                                phi5deg, phi5deg, phi5deg, // Pixel Positive Endcap (23)
                                                phi0p09, phi0p09, phi0p09, // Pixel Negative Endcap (26)
                                                phi0p09, // TIB1 (27) 
-                                               phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09,// Jumping from Pixel Barrel (37)
-                                               phi0p09, phi0p09, phi0p09, // Jumping from Pixel Positive Endcap (40)
-                                               phi0p09, phi0p09, phi0p09 // Jumping from Pixel Negative Endcap (43)
+                                               phi0p09, phi0p09, phi0p09, phi0p09, phi0p09, phi0p09,// Jumping from Pixel Barrel (33)
+                                               phi0p09, phi0p09, phi0p09, // Jumping from Pixel Positive Endcap (36)
+                                               phi0p09, phi0p09, phi0p09 // Jumping from Pixel Negative Endcap (39)
                                                };
 
   HOST_DEVICE_CONSTANT float minz[nPairs] = { -20., 0., -30., // BPIX1 (3)
@@ -374,9 +374,9 @@ namespace phase1PixelStripTopology {
                                               -70.,-70.,-70., // Pixel Positive Endcap (23)
                                               -70.,-70.,-70., // Pixel Negative Endcap (26)
                                               -80., // TIB1 (27) 
-                                              -70., 0., -70., 0., -70., -70., 0., -70., 0., -70., // Jumping from Pixel Barrel (37)
-                                              -70.,-70.,-70., // Jumping from Pixel Positive Endcap (40)
-                                              -70.,-70.,-70. // Jumping from Pixel Negative Endcap (43)
+                                              -28., -28., -70., -28., -28., -70., // Jumping from Pixel Barrel (33)
+                                              -70.,-70.,-70., // Jumping from Pixel Positive Endcap (36)
+                                              -70.,-70.,-70. // Jumping from Pixel Negative Endcap (39)
                                               };
   HOST_DEVICE_CONSTANT float maxz[nPairs] = {
                                               20., 30., 0., // BPIX1 (3)
@@ -390,7 +390,7 @@ namespace phase1PixelStripTopology {
                                               70.,70.,70., // Pixel Positive Endcap (23)
                                               70.,70.,70., // Pixel Negative Endcap (26)
                                               80., // TIB1 (27) 
-                                              -28.,70.,-28.,70.,70.,-28.,70., -28.,70.,70., // Jumping from Pixel Barrel (37)
+                                              0.,0., 70.,0.,0.,70.,// Jumping from Pixel Barrel (33)
                                               70.,70.,70., // Jumping from Pixel Positive Endcap (36)
                                               70.,70.,70. // Jumping from Pixel Negative Endcap (39)
                                               
@@ -407,9 +407,9 @@ namespace phase1PixelStripTopology {
                                               10000.,10000.,10000., // Pixel Positive Endcap (23)
                                               10000.,10000.,10000., // Pixel Negative Endcap (26)
                                               10000., // TIB1 (27) 
-                                              10000.,10000.,10000.,10000.,10000.,10000., 10000.,10000., 10000.,10000.,// Jumping from Pixel Barrel (37)
-                                              10000.,10000.,10000., // Jumping from Pixel Positive Endcap (40)
-                                              10000.,10000.,10000.  // Jumping from Pixel Negative Endcap (43)
+                                              10000.,10000.,10000.,10000.,10000.,10000., // Jumping from Pixel Barrel (33)
+                                              10000.,10000.,10000., // Jumping from Pixel Positive Endcap (36)
+                                              10000.,10000.,10000.  // Jumping from Pixel Negative Endcap (39)
                                               }; 
 
   static constexpr uint32_t layerStart[numberOfLayers + 1] = {0,
