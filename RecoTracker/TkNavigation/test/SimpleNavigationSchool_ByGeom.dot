@@ -1,0 +1,89 @@
+digraph G {
+node [shape=ellipse, color=black, fillcolor="#EDEDED", style=filled];
+BPix1
+	BPix1 -> BPix2 [color=black, line_style=solid]
+	BPix1 -> BPix3 [color=black, style=dashed]
+	BPix1 -> FNPix1 [color=black, line_style=solid]
+	BPix1 -> FNPix2 [color=black, style=dashed]
+	BPix1 -> TIB1 [color=black, line_style=solid]
+	BPix1 -> TIB2 [color=black, style=dashed]
+	BPix1 -> FPPix1 [color=black, line_style=solid]
+	BPix1 -> FPPix2 [color=black, style=dashed]
+BPix2
+	BPix2 -> BPix3 [color=black, line_style=solid]
+	BPix2 -> BPix4 [color=black, style=dashed]
+	BPix2 -> FNPix1 [color=black, line_style=solid]
+	BPix2 -> TIB1 [color=black, line_style=solid]
+	BPix2 -> TIB2 [color=black, style=dashed]
+	BPix2 -> FPPix1 [color=black, line_style=solid]
+BPix3
+	BPix3 -> BPix4 [color=black, line_style=solid]
+	BPix3 -> FNPix1 [color=black, line_style=solid]
+	BPix3 -> TIB1 [color=black, line_style=solid]
+	BPix3 -> TIB2 [color=black, style=dashed]
+	BPix3 -> FPPix1 [color=black, line_style=solid]
+BPix4
+	BPix4 -> TIB1 [color=black, line_style=solid]
+	BPix4 -> TIB2 [color=black, line_style=solid]
+	BPix4 -> TIDN1 [color=black, line_style=solid]
+	BPix4 -> TIDP1 [color=black, line_style=solid]
+FNPix1
+	FNPix1 -> FNPix2 [color=black, line_style=solid]
+	FNPix1 -> FNPix3 [color=black, style=dashed]
+	FNPix1 -> TIB1 [color=black, line_style=solid]
+	FNPix1 -> TIB2 [color=black, style=dashed]
+	FNPix1 -> TIDN1 [color=black, line_style=solid]
+	FNPix1 -> TIDN2 [color=black, line_style=solid]
+	FNPix1 -> TIDN3 [color=black, line_style=solid]
+FNPix2
+	FNPix2 -> FNPix3 [color=black, line_style=solid]
+	FNPix2 -> TIB1 [color=black, line_style=solid]
+	FNPix2 -> TIB2 [color=black, style=dashed]
+	FNPix2 -> TIDN1 [color=black, line_style=solid]
+	FNPix2 -> TIDN2 [color=black, line_style=solid]
+	FNPix2 -> TIDN3 [color=black, line_style=solid]
+FNPix3
+	FNPix3 -> TIB1 [color=black, line_style=solid]
+	FNPix3 -> TIB2 [color=black, style=dashed]
+	FNPix3 -> TIDN1 [color=black, line_style=solid]
+	FNPix3 -> TIDN2 [color=black, line_style=solid]
+	FNPix3 -> TIDN3 [color=black, line_style=solid]
+FPPix1
+	FPPix1 -> FPPix2 [color=black, line_style=solid]
+	FPPix1 -> FPPix3 [color=black, style=dashed]
+	FPPix1 -> TIB1 [color=black, line_style=solid]
+	FPPix1 -> TIB2 [color=black, style=dashed]
+	FPPix1 -> TIDP1 [color=black, line_style=solid]
+	FPPix1 -> TIDP2 [color=black, line_style=solid]
+	FPPix1 -> TIDP3 [color=black, line_style=solid]
+FPPix2
+	FPPix2 -> FPPix3 [color=black, line_style=solid]
+	FPPix2 -> TIB1 [color=black, line_style=solid]
+	FPPix2 -> TIB2 [color=black, style=dashed]
+	FPPix2 -> TIDP1 [color=black, line_style=solid]
+	FPPix2 -> TIDP2 [color=black, line_style=solid]
+	FPPix2 -> TIDP3 [color=black, line_style=solid]
+FPPix3
+	FPPix3 -> TIB1 [color=black, line_style=solid]
+	FPPix3 -> TIB2 [color=black, style=dashed]
+	FPPix3 -> TIDP1 [color=black, line_style=solid]
+	FPPix3 -> TIDP2 [color=black, line_style=solid]
+	FPPix3 -> TIDP3 [color=black, line_style=solid]
+TIB1
+	TIB1 -> TIB2 [color=black, line_style=solid]
+	TIB1 -> TIDN1 [color=black, line_style=solid]
+	TIB1 -> TIDP1 [color=black, line_style=solid]
+TIB2
+	TIB2 -> TIDN1 [color=black, line_style=solid]
+	TIB2 -> TIDP1 [color=black, line_style=solid]
+TIDN1
+	TIDN1 -> TIDN2 [color=black, line_style=solid]
+TIDN2
+	TIDN2 -> TIDN3 [color=black, line_style=solid]
+TIDN3
+TIDP1
+	TIDP1 -> TIDP2 [color=black, line_style=solid]
+TIDP2
+	TIDP2 -> TIDP3 [color=black, line_style=solid]
+TIDP3
+}

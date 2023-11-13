@@ -1,0 +1,1622 @@
+####################
+Layer: 
+barrel subDetector: PixelBarrel
+layer: 1
+0x7f3160c32520
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 2
+0x7f3160c32a60
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+*** no OUTsideIN connection ***
+####################
+Layer: 
+barrel subDetector: PixelBarrel
+layer: 2
+0x7f3160c32a60
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 3
+0x7f3160c327c0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 1
+0x7f3160c32520
+-----------------
+####################
+Layer: 
+barrel subDetector: PixelBarrel
+layer: 3
+0x7f3160c327c0
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 4
+0x7f3160c32c20
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 2
+0x7f3160c32a60
+-----------------
+####################
+Layer: 
+barrel subDetector: PixelBarrel
+layer: 4
+0x7f3160c32c20
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 3
+0x7f3160c327c0
+-----------------
+####################
+Layer: 
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+-----------------
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+barrel subDetector: PixelBarrel
+layer: 4
+0x7f3160c32c20
+-----------------
+barrel subDetector: PixelBarrel
+layer: 3
+0x7f3160c327c0
+-----------------
+barrel subDetector: PixelBarrel
+layer: 2
+0x7f3160c32a60
+-----------------
+barrel subDetector: PixelBarrel
+layer: 1
+0x7f3160c32520
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TIB
+layer: 3
+0x7f315d344200
+-----------------
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+barrel subDetector: PixelBarrel
+layer: 4
+0x7f3160c32c20
+-----------------
+####################
+Layer: 
+barrel subDetector: TIB
+layer: 3
+0x7f315d344200
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+-----------------
+####################
+Layer: 
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TIB
+layer: 3
+0x7f315d344200
+-----------------
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+####################
+Layer: 
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 2
+0x7f3160c33da0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+-----------------
+barrel subDetector: TIB
+layer: 3
+0x7f315d344200
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+####################
+Layer: 
+barrel subDetector: TOB
+layer: 2
+0x7f3160c33da0
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 3
+0x7f3160c33e80
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+####################
+Layer: 
+barrel subDetector: TOB
+layer: 3
+0x7f3160c33e80
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 4
+0x7f3160c34120
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 2
+0x7f3160c33da0
+-----------------
+####################
+Layer: 
+barrel subDetector: TOB
+layer: 4
+0x7f3160c34120
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 5
+0x7f3160c34200
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 3
+0x7f3160c33e80
+-----------------
+####################
+Layer: 
+barrel subDetector: TOB
+layer: 5
+0x7f3160c34200
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 6
+0x7f3160c342e0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 4
+0x7f3160c34120
+-----------------
+####################
+Layer: 
+barrel subDetector: TOB
+layer: 6
+0x7f3160c342e0
+*** no INsideOUT connection ***
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 5
+0x7f3160c34200
+-----------------
+####################
+Layer: 
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 2
+side: Minus
+0x7f315d933a80
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+endcap subDetector: TEC
+wheel: 4
+side: Minus
+0x7f315d934200
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 3
+0x7f3160c327c0
+-----------------
+barrel subDetector: PixelBarrel
+layer: 2
+0x7f3160c32a60
+-----------------
+barrel subDetector: PixelBarrel
+layer: 1
+0x7f3160c32520
+-----------------
+####################
+Layer: 
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 2
+side: Minus
+0x7f315d933a80
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+endcap subDetector: TEC
+wheel: 4
+side: Minus
+0x7f315d934200
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: TEC
+wheel: 2
+side: Minus
+0x7f315d933a80
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+endcap subDetector: TEC
+wheel: 4
+side: Minus
+0x7f315d934200
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+####################
+Layer: 
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+-----------------
+barrel subDetector: TIB
+layer: 3
+0x7f315d344200
+-----------------
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+barrel subDetector: PixelBarrel
+layer: 4
+0x7f3160c32c20
+-----------------
+####################
+Layer: 
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 2
+side: Minus
+0x7f315d933a80
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 5
+0x7f3160c34200
+-----------------
+barrel subDetector: TOB
+layer: 4
+0x7f3160c34120
+-----------------
+barrel subDetector: TOB
+layer: 3
+0x7f3160c33e80
+-----------------
+barrel subDetector: TOB
+layer: 2
+0x7f3160c33da0
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Minus
+0x7f3152dc4c80
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Minus
+0x7f3152dc4700
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Minus
+0x7f3152dc4180
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 2
+side: Minus
+0x7f315d933a80
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 1
+side: Minus
+0x7f315d9333c0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 4
+side: Minus
+0x7f315d934200
+-----------------
+endcap subDetector: TEC
+wheel: 5
+side: Minus
+0x7f315d9342c0
+-----------------
+endcap subDetector: TEC
+wheel: 6
+side: Minus
+0x7f315d934380
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 2
+side: Minus
+0x7f315d933a80
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 4
+side: Minus
+0x7f315d934200
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 5
+side: Minus
+0x7f315d9342c0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Minus
+0x7f3160c336a0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Minus
+0x7f3160c33320
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Minus
+0x7f3160c33240
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 5
+side: Minus
+0x7f315d9342c0
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 6
+side: Minus
+0x7f315d934380
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 4
+side: Minus
+0x7f315d934200
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 6
+side: Minus
+0x7f315d934380
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 7
+side: Minus
+0x7f315d934440
+-----------------
+endcap subDetector: TEC
+wheel: 8
+side: Minus
+0x7f315d934500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 5
+side: Minus
+0x7f315d9342c0
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Minus
+0x7f315d934140
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 7
+side: Minus
+0x7f315d934440
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 8
+side: Minus
+0x7f315d934500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 6
+side: Minus
+0x7f315d934380
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 8
+side: Minus
+0x7f315d934500
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 9
+side: Minus
+0x7f315d934bc0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 7
+side: Minus
+0x7f315d934440
+-----------------
+endcap subDetector: TEC
+wheel: 6
+side: Minus
+0x7f315d934380
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 9
+side: Minus
+0x7f315d934bc0
+*** no INsideOUT connection ***
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 8
+side: Minus
+0x7f315d934500
+-----------------
+####################
+Layer: 
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+endcap subDetector: TEC
+wheel: 2
+side: Plus
+0x7f315d872bc0
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+endcap subDetector: TEC
+wheel: 4
+side: Plus
+0x7f315d873340
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: PixelBarrel
+layer: 3
+0x7f3160c327c0
+-----------------
+barrel subDetector: PixelBarrel
+layer: 2
+0x7f3160c32a60
+-----------------
+barrel subDetector: PixelBarrel
+layer: 1
+0x7f3160c32520
+-----------------
+####################
+Layer: 
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+endcap subDetector: TEC
+wheel: 2
+side: Plus
+0x7f315d872bc0
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+endcap subDetector: TEC
+wheel: 4
+side: Plus
+0x7f315d873340
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+endcap subDetector: TEC
+wheel: 2
+side: Plus
+0x7f315d872bc0
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+endcap subDetector: TEC
+wheel: 4
+side: Plus
+0x7f315d873340
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+####################
+Layer: 
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TIB
+layer: 4
+0x7f315d344340
+-----------------
+barrel subDetector: TIB
+layer: 3
+0x7f315d344200
+-----------------
+barrel subDetector: TIB
+layer: 2
+0x7f315d3440c0
+-----------------
+barrel subDetector: TIB
+layer: 1
+0x7f315d343080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+barrel subDetector: PixelBarrel
+layer: 4
+0x7f3160c32c20
+-----------------
+####################
+Layer: 
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+*** INsideOUT CONNECTED TO ***
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 2
+side: Plus
+0x7f315d872bc0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+barrel subDetector: TOB
+layer: 5
+0x7f3160c34200
+-----------------
+barrel subDetector: TOB
+layer: 4
+0x7f3160c34120
+-----------------
+barrel subDetector: TOB
+layer: 3
+0x7f3160c33e80
+-----------------
+barrel subDetector: TOB
+layer: 2
+0x7f3160c33da0
+-----------------
+barrel subDetector: TOB
+layer: 1
+0x7f3160c33cc0
+-----------------
+endcap subDetector: TID
+wheel: 3
+side: Plus
+0x7f3152dc3c00
+-----------------
+endcap subDetector: TID
+wheel: 2
+side: Plus
+0x7f3152dc3680
+-----------------
+endcap subDetector: TID
+wheel: 1
+side: Plus
+0x7f3152dc3100
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 2
+side: Plus
+0x7f315d872bc0
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 1
+side: Plus
+0x7f315d872500
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 4
+side: Plus
+0x7f315d873340
+-----------------
+endcap subDetector: TEC
+wheel: 5
+side: Plus
+0x7f315d873400
+-----------------
+endcap subDetector: TEC
+wheel: 6
+side: Plus
+0x7f315d8734c0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 2
+side: Plus
+0x7f315d872bc0
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 4
+side: Plus
+0x7f315d873340
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 5
+side: Plus
+0x7f315d873400
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 3
+side: Plus
+0x7f3160c33160
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 2
+side: Plus
+0x7f3160c33080
+-----------------
+endcap subDetector: PixelEndcap
+wheel: 1
+side: Plus
+0x7f3160c32ec0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 5
+side: Plus
+0x7f315d873400
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 6
+side: Plus
+0x7f315d8734c0
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 4
+side: Plus
+0x7f315d873340
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 6
+side: Plus
+0x7f315d8734c0
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 7
+side: Plus
+0x7f315d873580
+-----------------
+endcap subDetector: TEC
+wheel: 8
+side: Plus
+0x7f315d873640
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 5
+side: Plus
+0x7f315d873400
+-----------------
+endcap subDetector: TEC
+wheel: 3
+side: Plus
+0x7f315d873280
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 7
+side: Plus
+0x7f315d873580
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 8
+side: Plus
+0x7f315d873640
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 6
+side: Plus
+0x7f315d8734c0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 8
+side: Plus
+0x7f315d873640
+*** INsideOUT CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 9
+side: Plus
+0x7f315d873d00
+-----------------
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 7
+side: Plus
+0x7f315d873580
+-----------------
+endcap subDetector: TEC
+wheel: 6
+side: Plus
+0x7f315d8734c0
+-----------------
+####################
+Layer: 
+endcap subDetector: TEC
+wheel: 9
+side: Plus
+0x7f315d873d00
+*** no INsideOUT connection ***
+*** OUTsideIN CONNECTED TO ***
+endcap subDetector: TEC
+wheel: 8
+side: Plus
+0x7f315d873640
+-----------------
+
+
