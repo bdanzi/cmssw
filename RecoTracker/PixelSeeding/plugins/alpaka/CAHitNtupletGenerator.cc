@@ -133,7 +133,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                       cfg.getParameter<bool>("idealConditions"),
                                       (float)cfg.getParameter<double>("z0Cut"),
                                       (float)cfg.getParameter<double>("ptCut"),
-                                      cfg.getParameter<std::vector<int>>("phiCuts")};
+                                      cfg.getParameter<std::vector<int>>("phiCuts"),
+                                      cfg.getParameter<std::vector<int>>("minz"),
+                                      cfg.getParameter<std::vector<int>>("maxz"),
+                                      cfg.getParameter<std::vector<int>>("maxr")
+                                      };
     }
 
   }  // namespace
@@ -241,6 +245,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     desc.add<std::vector<int>>(
            "phiCuts", std::vector<int>(std::begin(phase1PixelStripTopology::phicuts), std::end(phase1PixelStripTopology::phicuts)))
        ->setComment("Cuts in phi for cells");
+    desc.add<std::vector<int>>(
+           "minz", std::vector<int>(std::begin(phase1PixelStripTopology::minz), std::end(phase1PixelStripTopology::minz)))
+       ->setComment("Cuts in minz for cells");
+    desc.add<std::vector<int>>(
+           "maxz", std::vector<int>(std::begin(phase1PixelStripTopology::maxz), std::end(phase1PixelStripTopology::maxz)))
+       ->setComment("Cuts in maxz for cells");
+    desc.add<std::vector<int>>(
+           "maxr", std::vector<int>(std::begin(phase1PixelStripTopology::maxr), std::end(phase1PixelStripTopology::maxr)))
+       ->setComment("Cuts in maxr for cells");
   }
 
   template <>
