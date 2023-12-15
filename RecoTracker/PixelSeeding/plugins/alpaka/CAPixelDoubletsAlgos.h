@@ -49,9 +49,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                 const float z0Cut,
                 const float ptCut,
                 const std::vector<int>& phiCutsV,
-                const std::vector<int>& minzV,
-                const std::vector<int>& maxzV,
-                const std::vector<int>& maxrV)
+                const std::vector<float>& minzV,
+                const std::vector<float>& maxzV,
+                const std::vector<float>& maxrV)
           : doClusterCut_(doClusterCut),
             doZ0Cut_(doZ0Cut),
             doPtCut_(doPtCut),
@@ -63,6 +63,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         std::copy(phiCutsV.begin(), phiCutsV.end(), &phiCuts[0]);
         assert(minzV.size() == TrackerTraits::nPairs);
         std::copy(minzV.begin(), minzV.end(), &minz[0]);
+        assert(maxzV.size() == TrackerTraits::nPairs);
+        std::copy(maxzV.begin(), maxzV.end(), &maxz[0]);
         assert(maxrV.size() == TrackerTraits::nPairs);
         std::copy(maxrV.begin(), maxrV.end(), &maxr[0]);
       }
