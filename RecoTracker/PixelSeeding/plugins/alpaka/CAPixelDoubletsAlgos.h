@@ -78,9 +78,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       float ptCut_;
 
       int phiCuts[T::nPairs];
-      int minz[T::nPairs];
-      int maxz[T::nPairs];
-      int maxr[T::nPairs];
+      float minz[T::nPairs];
+      float maxz[T::nPairs];
+      float maxr[T::nPairs];
 
       template <typename TAcc>
       ALPAKA_FN_ACC ALPAKA_FN_INLINE bool __attribute__((always_inline))
