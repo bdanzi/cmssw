@@ -104,4 +104,5 @@ namespace pixelgpudetails {
   template class PixelRecHitGPUKernel<pixelTopology::Phase1>;
   template class PixelRecHitGPUKernel<pixelTopology::Phase2>;
   template class PixelRecHitGPUKernel<pixelTopology::HIonPhase1>;
+  template class PixelRecHitGPUKernel<pixelTopology::Phase1Strip>;
 }  // namespace pixelgpudetails

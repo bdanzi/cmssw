@@ -182,8 +182,9 @@ void SiPixelRecHitFromSoAAlpaka<TrackerTraits>::produce(edm::StreamID streamID,
 using SiPixelRecHitFromSoAAlpakaPhase1 = SiPixelRecHitFromSoAAlpaka<pixelTopology::Phase1>;
 using SiPixelRecHitFromSoAAlpakaPhase2 = SiPixelRecHitFromSoAAlpaka<pixelTopology::Phase2>;
 using SiPixelRecHitFromSoAAlpakaHIonPhase1 = SiPixelRecHitFromSoAAlpaka<pixelTopology::HIonPhase1>;
-
+using SiPixelRecHitFromSoAAlpakaPhase1Strip = SiPixelRecHitFromSoAAlpaka<pixelTopology::Phase1Strip>;
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(SiPixelRecHitFromSoAAlpakaPhase1);
 DEFINE_FWK_MODULE(SiPixelRecHitFromSoAAlpakaPhase2);
 DEFINE_FWK_MODULE(SiPixelRecHitFromSoAAlpakaHIonPhase1);
+DEFINE_FWK_MODULE(SiPixelRecHitFromSoAAlpakaPhase1Strip);

@@ -87,9 +87,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   using CAHitNtupletAlpakaPhase1 = CAHitNtupletAlpaka<pixelTopology::Phase1>;
   using CAHitNtupletAlpakaPhase2 = CAHitNtupletAlpaka<pixelTopology::Phase2>;
+  using CAHitNtupletAlpakaPhase1Strip = CAHitNtupletAlpaka<pixelTopology::Phase1Strip>;
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/MakerMacros.h"
 
 DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaPhase1);
 DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaPhase2);
+DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaPhase1Strip);

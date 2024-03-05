@@ -1634,6 +1634,20 @@ upgradeWFs['PatatrackPixelOnlyAlpakaValidation'] = PatatrackWorkflow(
     offset = 0.403,
 )
 
+upgradeWFs['PatatrackPixelStripAlpaka'] = PatatrackWorkflow(
+    digi = {
+        # the HLT menu is already set up for using GPUs if available and if the "gpu" modifier is enabled
+    },
+    reco = {
+        '-s': 'RAW2DIGI:RawToDigi_trackerOnly,RECO:reconstruction_pixelTrackingOnly,VALIDATION:@pixelTrackingOnlyValidation,DQM:@pixelTrackingOnlyDQM',
+        '--procModifiers': 'alpaka,stripNtupletFit'
+    },
+    harvest = {
+        '-s': 'HARVESTING:@trackingOnlyValidation+@pixelTrackingOnlyDQM'
+    },
+    suffix = 'Patatrack_PixelStripAlpaka',
+    offset = 0.405,
+)
 upgradeWFs['PatatrackPixelOnlyAlpakaProfiling'] = PatatrackWorkflow(
     digi = {
         '--procModifiers': 'alpaka', # alpaka modifier activates customiseHLTForAlpaka

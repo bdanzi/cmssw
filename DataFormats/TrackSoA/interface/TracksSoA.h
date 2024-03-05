@@ -66,6 +66,10 @@ namespace reco {
   struct IsTrackSoAConstView<TrackSoAConstView<pixelTopology::HIonPhase1>> : std::true_type {};
   template <>
   struct IsTrackSoAConstView<TrackSoAView<pixelTopology::HIonPhase1>> : std::true_type {};
+  template <>
+  struct IsTrackSoAConstView<TrackSoAConstView<pixelTopology::Phase1Strip>> : std::true_type {};
+  template <>
+  struct IsTrackSoAConstView<TrackSoAView<pixelTopology::Phase1Strip>> : std::true_type {};
 
   template <typename T>
   constexpr bool isTrackSoAConstView = IsTrackSoAConstView<T>::value;

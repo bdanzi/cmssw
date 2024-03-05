@@ -480,3 +480,4 @@ void PixelCPEFastParamsHost<TrackerTraits>::fillPSetDescription(edm::ParameterSe
 template class PixelCPEFastParamsHost<pixelTopology::Phase1>;
 template class PixelCPEFastParamsHost<pixelTopology::Phase2>;
 template class PixelCPEFastParamsHost<pixelTopology::HIonPhase1>;
+template class PixelCPEFastParamsHost<pixelTopology::Phase1Strip>;

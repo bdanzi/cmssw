@@ -8,6 +8,7 @@
 <use name="DataFormats/TrackReco"/>
 <use name="DataFormats/TrackerRecHit2D"/>
 <use name="DataFormats/TrackingRecHit"/>
+<use name="DataFormats/TrackingRecHitSoA"/>
 <use name="DataFormats/VertexReco"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/MessageLogger"/>
@@ -40,7 +41,6 @@
   <use name="DataFormats/Portable"/>
   <use name="DataFormats/TrackSoA"/>
   <use name="DataFormats/VertexSoA"/>
-  <use name="DataFormats/TrackingRecHitSoA"/>
   <use name="HeterogeneousCore/AlpakaCore"/>
   <use name="HeterogeneousCore/AlpakaInterface"/>
   <flags ALPAKA_BACKENDS="1"/>
