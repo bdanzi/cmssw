@@ -1,20 +1,15 @@
 import FWCore.ParameterSet.Config as cms
-<<<<<<< HEAD
 import re
 import itertools
 
 from FWCore.ParameterSet.MassReplace import massReplaceInputTag
 from HeterogeneousCore.AlpakaCore.functions import *
 from HLTrigger.Configuration.common import *
-=======
-from HeterogeneousCore.AlpakaCore.functions import *
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
 
 ## PF HLT in Alpaka
 def customizeHLTforAlpakaParticleFlowClustering(process):
     '''Customization to introduce Particle Flow Reconstruction in Alpaka
     '''
-<<<<<<< HEAD
     ## failsafe for fake menus
     if not hasattr(process, 'hltParticleFlowClusterHBHE'):
         return process
@@ -137,32 +132,7 @@ def customizeHLTforAlpakaParticleFlowClustering(process):
                 minAllowedNormalization = cms.double(1e-09)
             ),
             timeResolutionCalcBarrel = cms.PSet(
-=======
-    process.hltPFRecHitHCALParamsRecordSource = cms.ESSource('EmptyESSource',
-            recordName = cms.string('PFRecHitHCALParamsRecord'),
-            iovIsRunNotTime = cms.bool(True),
-            firstValid = cms.vuint32(1)
-            )
 
-    process.hltPFRecHitHCALTopologyRecordSource = cms.ESSource('EmptyESSource',
-            recordName = cms.string('PFRecHitHCALTopologyRecord'),
-            iovIsRunNotTime = cms.bool(True),
-            firstValid = cms.vuint32(1)
-            )
-
-    process.hltPFClusterParamsRecordSource = cms.ESSource('EmptyESSource',
-            recordName = cms.string('JobConfigurationGPURecord'),
-            iovIsRunNotTime = cms.bool(True),
-            firstValid = cms.vuint32(1)
-            )
-
-    process.hltHBHERecHitToSoA = cms.EDProducer("HCALRecHitSoAProducer@alpaka",
-            src = cms.InputTag("hltHbhereco"),
-            synchronise = cms.untracked.bool(False)
-            )
-
-    process.hltPFRecHitHCALTopologyESProducer = cms.ESProducer('PFRecHitHCALTopologyESProducer@alpaka',
-      usePFThresholdsFromDB = cms.bool(True),
       appendToDataLabel = cms.string(''),
     )
 
@@ -1193,6 +1163,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     '''
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
     for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
@@ -1218,6 +1189,8 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         src = cms.InputTag('hltSiPixelClusters'),
     )
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+>>>>>>> 624dc2b5e1c (Cleaning up the customizer for CA strips on HLT)
     # alpaka EDProducer
     # consumes
     #  - TrackingRecHitsSoACollection<TrackerTraits>
@@ -1861,6 +1834,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     if hasattr(process, 'hltL2TauTagNNProducer'):
         process.hltL2TauTagNNProducer = cms.EDProducer("L2TauNNProducerAlpaka", **process.hltL2TauTagNNProducer.parameters_())
 
@@ -1878,6 +1852,8 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         alpaka = dict( backend = 'serial_sync' )
     )
 
+=======
+>>>>>>> 624dc2b5e1c (Cleaning up the customizer for CA strips on HLT)
     process.hltPixelTracks = cms.EDProducer("PixelTrackProducerFromSoAAlpakaPhase1Strip",
         beamSpot = cms.InputTag("hltOnlineBeamSpot"),
         minNumberOfHits = cms.int32(0),
@@ -1908,6 +1884,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         trackSrc = cms.InputTag("hltPixelTracksSoASerialSync")
 =======
 
+<<<<<<< HEAD
     process.hltPixelTracksLegacyFormatCPUSerial = process.hltPixelTracks.clone(
         pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsLegacyFormatCPUSerial"),
         trackSrc = cms.InputTag("hltPixelTracksCPUSerial")
@@ -1933,6 +1910,8 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
 
     process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
 
+=======
+>>>>>>> 624dc2b5e1c (Cleaning up the customizer for CA strips on HLT)
     return process
 
 <<<<<<< HEAD

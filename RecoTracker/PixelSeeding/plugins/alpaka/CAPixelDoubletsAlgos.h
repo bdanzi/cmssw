@@ -217,7 +217,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       ALPAKA_ASSERT_ACC(i < offsets[inner + 1]);
 
       // found hit corresponding to our worker thread, now do the job
+<<<<<<< HEAD
       if ((outer < TrackerTraits::numberOfPixelLayers && hh[i].detectorIndex() > pixelClustering::maxNumModules) || hh[i].detectorIndex() > 5356)
+=======
+      if (hh[i].detectorIndex() > 5356)//pixelClustering::maxNumModules)
+>>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
         continue;  // invalid
 
       /* maybe clever, not effective when zoCut is on
@@ -284,7 +288,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
           auto mo = hh[oi].detectorIndex();
 
           // invalid
+<<<<<<< HEAD
           if ((outer < TrackerTraits::numberOfPixelLayers && mo > pixelClustering::maxNumModules) || mo > 5356)
+=======
+          if (mo > 5356)//pixelClustering::maxNumModules) //4000
+>>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
             continue;
 
           if (doZ0Cut && z0cutoff(oi))

@@ -40,6 +40,7 @@ namespace caHitNtupletGenerator {
     const float hardCurvCut_;
     const float dcaCutInnerTriplet_;
     const float dcaCutOuterTriplet_;
+<<<<<<< HEAD
     const float CAThetaCutBarrelPixelBarrelStrip_;
     const float CAThetaCutBarrelPixelForwardStrip_;
     const float CAThetaCutBarrelStripForwardStrip_;
@@ -49,6 +50,9 @@ namespace caHitNtupletGenerator {
     const float dcaCutOuterTripletPixelStrip_;
     const float dcaCutTripletStrip_;
     const float dcaCutTripletDefault_;
+=======
+    const float dcaCutOuterTripletStrip_;
+>>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
   };
 
   template <typename TrackerTraits, typename Enable = void>

@@ -349,6 +349,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         auto zi = thisCell.inner_z(hh);
         auto ro = thisCell.outer_r(hh);
         auto zo = thisCell.outer_z(hh);
+<<<<<<< HEAD
         float caThetaCut;
         auto isOuterBarrelPixel = thisCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
         auto isInnerBarrelPixel = thisCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
@@ -363,6 +364,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
              (isInnerBarrelStrip && isOuterForwardStrip) ? params.CAThetaCutBarrelStripForwardStrip_ :
              (isInnerBarrelStrip && isOuterBarrelStrip) ? params.CAThetaCutBarrelStrip_ :
              params.CAThetaCutDefault_;
+=======
+        auto isBarrel = thisCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex ;//|| (thisCell.inner_detIndex(hh) >= 1856 && thisCell.inner_detIndex(hh) <= 3392)  ;
+        bool isOT = thisCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
+>>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
         // loop on inner cells
         for (uint32_t j : cms::alpakatools::independent_group_elements_x(acc, numberOfPossibleNeighbors)) {
           auto otherCell = (vi[j]);
@@ -377,6 +382,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
               ro,
               zo,
               params.ptmin_,
+<<<<<<< HEAD
               caThetaCut);  // 2.f*thetaCut); // FIXME tune cuts
             auto isOuterBarrelPixel = oc.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
             auto isOuterForwardPixel = oc.outer_detIndex(hh) >= TrackerTraits::last_barrel_detIndex && oc.outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
@@ -397,6 +403,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
               thisCell.dcaCut(hh,
                               oc,
                               dcaCutTriplet,
+=======
+              isOT? params.CAThetaCutStrip_ : isBarrel ? params.CAThetaCutBarrel_ : params.CAThetaCutForward_);  // 2.f*thetaCut); // FIXME tune cuts
+          if (aligned &&
+              thisCell.dcaCut(hh,
+                              oc,
+                              oc.inner_detIndex(hh)>= TrackerTraits::numberOfPixelModules ? params.dcaCutOuterTripletStrip_ : oc.inner_detIndex(hh) < TrackerTraits::last_bpix1_detIndex ? params.dcaCutInnerTriplet_
+                                                                                         : params.dcaCutOuterTriplet_,
+>>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
                               params.hardCurvCut_)) {  // FIXME tune cuts
             oc.addOuterNeighbor(acc, cellIndex, *cellNeighbors);
             thisCell.setStatusBits(Cell::StatusBit::kUsed);
