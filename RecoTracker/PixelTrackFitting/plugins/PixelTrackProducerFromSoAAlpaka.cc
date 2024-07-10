@@ -71,12 +71,7 @@ private:
   const edm::EDGetTokenT<reco::BeamSpot> tBeamSpot_;
 
   const edm::EDGetTokenT<TrackSoAHost> tokenTrack_;
-<<<<<<< HEAD
   const edm::EDGetTokenT<SiPixelRecHitCollectionNew> cpuPixelHits_;
-=======
-  const edm::EDGetTokenT<SiPixelRecHitCollectionNew> cpuHits_;
-  const edm::EDGetTokenT<HMSstorage> hmsToken_;
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
   edm::EDGetTokenT<SiStripMatchedRecHit2DCollection> cpuStripHits_;
   edm::EDGetTokenT<HMSstorage> hmsToken_;
 
