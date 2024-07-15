@@ -546,19 +546,21 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
       SiStripFedZeroSuppressionMode = cms.uint32( 4 ),
       PedestalSubtractionFedMode = cms.bool( True )
     )
-    )   
-    process.hltSiStripMatchedRecHitsFull = cms.EDProducer( "SiStripRecHitConverter",
-    ClusterProducer = cms.InputTag( "hltSiStripRawToClustersFacility" ),
-    rphiRecHits = cms.string( "rphiRecHit" ),
-    stereoRecHits = cms.string( "stereoRecHit" ),
-    matchedRecHits = cms.string( "matchedRecHit" ),
-    useSiStripQuality = cms.bool( False ),
-    MaskBadAPVFibers = cms.bool( False ),
-    doMatching = cms.bool( True ),
-    StripCPE = cms.ESInputTag( "hltESPStripCPEfromTrackAngle","hltESPStripCPEfromTrackAngle" ),
-    Matcher = cms.ESInputTag( "SiStripRecHitMatcherESProducer","StandardMatcher" ),
-    siStripQualityLabel = cms.ESInputTag( "","" )
     )
+    
+    process.hltSiStripMatchedRecHitsFull = cms.EDProducer( "SiStripRecHitConverter",
+        ClusterProducer = cms.InputTag( "hltHITrackingSiStripRawToClustersFacilityFullZeroSuppression" ),
+        rphiRecHits = cms.string( "rphiRecHit" ),
+        stereoRecHits = cms.string( "stereoRecHit" ),
+        matchedRecHits = cms.string( "matchedRecHit" ),
+        useSiStripQuality = cms.bool( False ),
+        MaskBadAPVFibers = cms.bool( False ),
+        doMatching = cms.bool( True ),
+        StripCPE = cms.ESInputTag( "hltESPStripCPEfromTrackAngle","hltESPStripCPEfromTrackAngle" ),
+        Matcher = cms.ESInputTag( "SiStripRecHitMatcherESProducer","StandardMatcher" ),
+        siStripQualityLabel = cms.ESInputTag( "","" )
+    )
+    
     process.hltSiPixelOnlyRecHitsSoA = cms.EDProducer('SiPixelRecHitAlpakaPhase1@alpaka',
         beamSpot = cms.InputTag('hltOnlineBeamSpotDevice'),
         src = cms.InputTag('hltSiPixelClustersSoA'),
@@ -703,6 +705,21 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
 def customizeHLTforAlpakaPixelRecoTracking(process):
     '''Customisation to introduce the Pixel-Track Reconstruction in Alpaka
     '''
+    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
+        print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
+
+    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
+        print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
 
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
@@ -1106,6 +1123,23 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     process.HLTRecoPixelTracksSequence = cms.Sequence( process.HLTRecoPixelTracksTask )
     process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
 
+    process.hltPixelTracksLegacyFormatCPUSerial = process.hltPixelTracks.clone(
+        pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsLegacyFormatCPUSerial"),
+        trackSrc = cms.InputTag("hltPixelTracksCPUSerial")
+    )
+
+    process.HLTRecoPixelTracksTask = cms.ConditionalTask(
+        process.hltPixelTracksSoA,
+        process.hltPixelTracks,
+    )
+
+    process.HLTRecoPixelTracksCPUSerialTask = cms.ConditionalTask(
+        process.hltPixelTracksCPUSerial,
+        process.hltPixelTracksLegacyFormatCPUSerial,
+    )
+
+    process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
+
     return process
 
 def customizeHLTAlpakaDeleteCPE(process):
@@ -1152,6 +1186,9 @@ def customizeHLTforAlpakaPixelRecoVertexing(process):
     #  - TkSoADevice
     # produces
     #  - ZVertexDevice
+
+
+    
     process.hltPixelVerticesSoA = cms.EDProducer('PixelVertexProducerAlpakaPhase1Strip@alpaka',
         oneKernel = cms.bool(True),
         useDensity = cms.bool(True),
