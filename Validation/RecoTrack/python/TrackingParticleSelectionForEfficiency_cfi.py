@@ -7,19 +7,11 @@ TrackingParticleSelectionForEfficiency = cms.PSet(
     pdgIdTP = cms.vint32(),
     signalOnlyTP = cms.bool(False),
     intimeOnlyTP = cms.bool(True),
-<<<<<<< HEAD
     minRapidityTP = cms.double(-3.0),
     minHitTP = cms.int32(0),
     ptMinTP = cms.double(0.005),
     ptMaxTP = cms.double(1e100),
     maxRapidityTP = cms.double(3.0),
-=======
-    minRapidityTP = cms.double(-2.0),
-    minHitTP = cms.int32(0),
-    ptMinTP = cms.double(0.005),
-    ptMaxTP = cms.double(1e100),
-    maxRapidityTP = cms.double(2.0),
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
     tipTP = cms.double(60),
     invertRapidityCutTP = cms.bool(False),
     maxPhi = cms.double(3.2),

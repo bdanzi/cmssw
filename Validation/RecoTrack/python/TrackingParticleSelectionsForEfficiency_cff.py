@@ -7,19 +7,11 @@ generalTpSelectorBlock = cms.PSet(
     signalOnly = cms.bool(True),
     intimeOnly = cms.bool(False),
     stableOnly = cms.bool(False),
-<<<<<<< HEAD
     minRapidity = cms.double(-3.0),
     minHit = cms.int32(0),
     ptMin = cms.double(0.9),
     ptMax = cms.double(1e100),
     maxRapidity = cms.double(3.0),
-=======
-    minRapidity = cms.double(-2.0),
-    minHit = cms.int32(0),
-    ptMin = cms.double(0.9),
-    ptMax = cms.double(1e100),
-    maxRapidity = cms.double(2.0),
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
     tip = cms.double(3.5),
     minPhi = cms.double(-3.2),
     maxPhi = cms.double(3.2),
