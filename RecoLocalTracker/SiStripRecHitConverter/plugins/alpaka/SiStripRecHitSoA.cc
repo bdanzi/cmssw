@@ -124,33 +124,20 @@ void SiStripRecHitSoA<TrackerTraits>::produce(device::Event& iEvent, device::Eve
 
   // Count strip hits
   size_t nStripHits = 0;
-<<<<<<< HEAD
   //std::cout << "number of modules: " << TrackerTraits::numberOfModules << std::endl;
   //std::cout << "stripHits size: " << stripHits.size() << std::endl;
   for (const auto& detSet : stripHits) {
     const GluedGeomDet* det = static_cast<const GluedGeomDet*>(trackerGeometry->idToDet(detSet.detId()));
     //std::cout << "detSet.detId()" << detSet.detId() << std::endl;
     //std::cout << "det->stereoDet()->index()" << det->stereoDet()->index() << std::endl;
-=======
-  std::cout << "number of modules: " << TrackerTraits::numberOfModules << std::endl;
-  for (const auto& detSet : stripHits) {
-    const GluedGeomDet* det = static_cast<const GluedGeomDet*>(trackerGeometry->idToDet(detSet.detId()));
-    std::cout << "detSet.detId()" << detSet.detId() << std::endl;
-    std::cout << "det->stereoDet()->index()" << det->stereoDet()->index() << std::endl;
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
     if (TrackerTraits::mapIndex(det->stereoDet()->index()) < TrackerTraits::numberOfModules)
         nStripHits += detSet.size();
   } 
 
   size_t nPixelHits = pixelHitsHost.view().metadata().size();
 
-<<<<<<< HEAD
   //std::cout << "nStripHits = " << nStripHits << std::endl;
   //std::cout << "nPixelHits = " << nPixelHits << std::endl;
-=======
-  std::cout << "nStripHits = " << nStripHits << std::endl;
-  std::cout << "nPixelHits = " << nPixelHits << std::endl;
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
 
   // HostView<const PixelHits, PixelHitsHost> pixelHitsHostView(pixelHits, iEvent.queue());
   // PixelHitsHost& pixelHitsHost = pixelHitsHostView.get();

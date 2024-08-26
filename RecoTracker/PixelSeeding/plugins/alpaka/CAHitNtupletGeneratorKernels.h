@@ -49,7 +49,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const float hardCurvCut_;
       const float dcaCutInnerTriplet_;
       const float dcaCutOuterTriplet_;
-<<<<<<< HEAD
       const float CAThetaCutBarrelPixelBarrelStrip_;
       const float CAThetaCutBarrelPixelForwardStrip_;
       const float CAThetaCutBarrelStripForwardStrip_;
@@ -59,9 +58,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const float dcaCutOuterTripletPixelStrip_;
       const float dcaCutTripletStrip_;
       const float dcaCutTripletDefault_;
-=======
-      const float dcaCutOuterTripletStrip_;
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
     };
 
     template <typename TrackerTraits, typename Enable = void>
@@ -75,11 +71,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       /// Is is a starting layer pair?
       ALPAKA_FN_ACC ALPAKA_FN_INLINE bool startingLayerPair(int16_t pid) const {
         if constexpr (std::is_same_v<TrackerTraits, pixelTopology::Phase1Strip>) {
-<<<<<<< HEAD
         return (pid < 12 || pid == 48 || pid == 53 || pid == 43 || pid == 44 || pid == 41 || pid == 42);
-=======
-        return (pid < 12 || pid == 48 || pid == 53);
->>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
         }
         else{
           return minHitsPerNtuplet_ > 3 ? pid < 3 : pid < 8 || pid > 12;

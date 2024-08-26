@@ -148,6 +148,7 @@ namespace phase1PixelStripTopology {
   { FPIX1Pos, TID1Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 50
   { FPIX1Pos, TID2Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 51
   { FPIX1Pos, TID3Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 52
+  //{ FPIX1Neg, FPIX3Neg,   phi0p07,  -70.,   70.,      9.        }, // 53
   { FPIX1Neg, FPIX3Neg,   phi0p05,  -70.,   70.,      9.        }, // 53
   { FPIX1Neg, TIB2,       phi5deg,  -70.,   70.,   1000.        }, // 54
   { FPIX1Neg, TID1Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 55
