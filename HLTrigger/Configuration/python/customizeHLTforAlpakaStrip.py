@@ -1173,7 +1173,8 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
 
     process.hltPixelTracksSerialSync = process.hltPixelTracks.clone(
-        pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsLegacyFormatCPUSerial"),
+        pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsSerialSync"),
+        hitModuleStartSrc = cms.InputTag("hltSiPixelRecHitsSoASerialSync"),     
         trackSrc = cms.InputTag("hltPixelTracksSoASerialSync")
     )
 
@@ -1292,8 +1293,6 @@ def customizeHLTforAlpakaPixelRecoVertexing(process):
         process.hltPixelVertices,
         process.hltTrimmedPixelVertices
     )
-
-
     process.HLTRecopixelvertexingCPUSerialTask = cms.ConditionalTask(
         process.HLTRecoPixelTracksCPUSerialTask,
         process.hltPixelVerticesSoASerialSync,
