@@ -272,6 +272,7 @@ def customizeHLTforAlpakaParticleFlowClustering(process):
 
     return process
 
+
 ## Pixel HLT in Alpaka
 def customizeHLTforDQMGPUvsCPUPixel(process):
     '''Ad-hoc changes to test HLT config containing only DQM_PixelReconstruction_v and DQMGPUvsCPU stream
@@ -288,6 +289,7 @@ def customizeHLTforDQMGPUvsCPUPixel(process):
 
     for prod in producers_by_type(process, 'SiPixelPhase1MonitorRecHitsSoAAlpaka'):
         return process
+
     # modify EventContent of DQMGPUvsCPU stream
     try:
         outCmds_new = [foo for foo in process.hltOutputDQMGPUvsCPU.outputCommands if 'Pixel' not in foo]
@@ -334,15 +336,14 @@ def customizeHLTforDQMGPUvsCPUPixel(process):
         useQualityCut = cms.bool(True)
     )
 
-    process.hltPixelTracksSoAMonitorGPU = cms.EDProducer("SiPixelPhase1StripMonitorTrackSoAAlpaka",
-        mightGet = cms.optional.untracked.vstring,
+    process.hltPixelTracksSoAMonitorGPU = cms.EDProducer("SiPixelPhase1MonitorTrackSoAAlpaka",
         minQuality = cms.string('loose'),
         pixelTrackSrc = cms.InputTag('hltPixelTracksSoA'),
         topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackGPU'),
         useQualityCut = cms.bool(True)
     )
 
-    process.hltPixelTracksSoACompareGPUvsCPU = cms.EDProducer("SiPixelPhase1StripCompareTrackSoAAlpaka",
+    process.hltPixelTracksSoACompareGPUvsCPU = cms.EDProducer("SiPixelPhase1CompareTrackSoAAlpaka",
         deltaR2cut = cms.double(0.04),
         minQuality = cms.string('loose'),
         pixelTrackSrcHost = cms.InputTag("hltPixelTracksSoASerialSync"),
@@ -359,7 +360,6 @@ def customizeHLTforDQMGPUvsCPUPixel(process):
 
     process.hltPixelVertexSoAMonitorGPU = cms.EDProducer("SiPixelMonitorVertexSoAAlpaka",
         beamSpotSrc = cms.InputTag("hltOnlineBeamSpot"),
-        mightGet = cms.optional.untracked.vstring,
         pixelVertexSrc = cms.InputTag("hltPixelVerticesSoA"),
         topFolderName = cms.string('SiPixelHeterogeneous/PixelVertexGPU')
     )
@@ -392,10 +392,9 @@ def customizeHLTforDQMGPUvsCPUPixel(process):
 
 
 def customizeHLTforAlpakaPixelRecoLocal(process):
-    print("i am entering the Pixel Reco Local")
-    
     '''Customisation to introduce the Local Pixel Reconstruction in Alpaka
     '''
+
     if not hasattr(process, 'HLTDoLocalPixelSequence'):
         return process
     if not hasattr(process, 'HLTDoLocalPixelSequenceSerialSync'):
@@ -457,7 +456,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     #  - SiPixelDigiErrorsSoACollection *
     #  - SiPixelFormatterErrors *
     process.hltSiPixelClustersSoA = cms.EDProducer('SiPixelRawToClusterPhase1@alpaka',
-        mightGet = cms.optional.untracked.vstring,
         IncludeErrors = cms.bool(True),
         UseQualityInfo = cms.bool(False),
         clusterThreshold_layer1 = cms.int32(4000),
@@ -604,12 +602,13 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     siStripQualityLabel = cms.ESInputTag( "","" )
     )
     
+    
     for producer in producers_by_type(process, "SiStripRecHitConverter"):
         print("entered the producers loop in RecoLocal")
         if hasattr(producer, "doMatching"):
             print("found doMatching stuff")
             setattr(producer, 'doMatching', cms.bool(True))
-            
+    
     process.hltSiPixelOnlyRecHitsSoA = cms.EDProducer('SiPixelRecHitAlpakaPhase1@alpaka',
         beamSpot = cms.InputTag('hltOnlineBeamSpotDevice'),
         src = cms.InputTag('hltSiPixelClustersSoA'),
@@ -753,6 +752,7 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
 def customizeHLTforAlpakaPixelRecoTracking(process):
     '''Customisation to introduce the Pixel-Track Reconstruction in Alpaka
     '''
+
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
     for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
