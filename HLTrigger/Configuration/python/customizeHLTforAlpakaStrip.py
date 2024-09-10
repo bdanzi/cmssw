@@ -602,13 +602,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     siStripQualityLabel = cms.ESInputTag( "","" )
     )
     
-    
-    for producer in producers_by_type(process, "SiStripRecHitConverter"):
-        print("entered the producers loop in RecoLocal")
-        if hasattr(producer, "doMatching"):
-            print("found doMatching stuff")
-            setattr(producer, 'doMatching', cms.bool(True))
-    
     process.hltSiPixelOnlyRecHitsSoA = cms.EDProducer('SiPixelRecHitAlpakaPhase1@alpaka',
         beamSpot = cms.InputTag('hltOnlineBeamSpotDevice'),
         src = cms.InputTag('hltSiPixelClustersSoA'),
@@ -756,17 +749,17 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
     for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
-        print("entered the producers loop")
+        #print("entered the producers loop")
         if hasattr(producer, "CPE"):
-            print("found CPE stuff")
+            #print("found CPE stuff")
             delattr(producer, "CPE")
         if not hasattr(producer, 'frameSoA'):
             setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
 
     for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
-        print("entered the producers loop")
+        #print("entered the producers loop")
         if hasattr(producer, "CPE"):
-            print("found CPE stuff")
+            #print("found CPE stuff")
             delattr(producer, "CPE")
         if not hasattr(producer, 'frameSoA'):
             setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
