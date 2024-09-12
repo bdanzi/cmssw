@@ -44,12 +44,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       desc.add<double>("ptmin", 0.9f)->setComment("Cut on minimum pt");
       desc.add<double>("CAThetaCutBarrel", 0.002f)->setComment("Cut on RZ alignement for Barrel");
       desc.add<double>("CAThetaCutForward", 0.003f)->setComment("Cut on RZ alignment for Forward");
-      desc.add<double>("CAThetaCutStrip", 0.003f)->setComment("Cut on RZ alignment for Strip");
       desc.add<double>("hardCurvCut", 1.f / (0.35 * 87.f))
           ->setComment("Cut on minimum curvature, used in DCA ntuplet selection");
       desc.add<double>("dcaCutInnerTriplet", 0.15f)->setComment("Cut on origin radius when the inner hit is on BPix1");
       desc.add<double>("dcaCutOuterTriplet", 0.25f)->setComment("Cut on origin radius when the outer hit is on BPix1");
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
       desc.add<double>("CAThetaCutBarrelPixelBarrelStrip",0.002f)->setComment("Cut on RZ alignement for Barrel");
       desc.add<double>("CAThetaCutBarrelPixelForwardStrip",0.003f)->setComment("Cut on RZ alignment for Forward");
       desc.add<double>("CAThetaCutBarrelStripForwardStrip",0.003f)->setComment("Cut on RZ alignment for Forward");
@@ -59,9 +61,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       desc.add<double>("dcaCutOuterTripletPixelStrip",0.25f)->setComment("Cut on origin radius when the outer hit is on BPix1");
       desc.add<double>("dcaCutTripletStrip",0.25f)->setComment("Cut on origin radius when the outer hit is on Strip");
       desc.add<double>("dcaCutTripletDefault",0.25f)->setComment("Cut on origin radius default");
+<<<<<<< HEAD
 =======
       desc.add<double>("dcaCutOuterTripletStrip", 0.25f)->setComment("Cut on origin radius when the outer hit is on BPix1");
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
       desc.add<bool>("earlyFishbone", true);
       desc.add<bool>("lateFishbone", false);
       desc.add<bool>("fillStatistics", false);
@@ -104,11 +109,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                          (float)cfg.getParameter<double>("ptmin"),
                                          (float)cfg.getParameter<double>("CAThetaCutBarrel"),
                                          (float)cfg.getParameter<double>("CAThetaCutForward"),
-                                         (float)cfg.getParameter<double>("CAThetaCutStrip"),
                                          (float)cfg.getParameter<double>("hardCurvCut"),
                                          (float)cfg.getParameter<double>("dcaCutInnerTriplet"),
                                          (float)cfg.getParameter<double>("dcaCutOuterTriplet"),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
                                          (float)cfg.getParameter<double>("CAThetaCutBarrelPixelBarrelStrip"),
                                          (float)cfg.getParameter<double>("CAThetaCutBarrelPixelForwardStrip"),
                                          (float)cfg.getParameter<double>("CAThetaCutBarrelStripForwardStrip"),
@@ -118,9 +125,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                          (float)cfg.getParameter<double>("dcaCutOuterTripletPixelStrip"),
                                          (float)cfg.getParameter<double>("dcaCutTripletStrip"),
                                          (float)cfg.getParameter<double>("dcaCutTripletDefault")}};
+<<<<<<< HEAD
 =======
                                          (float)cfg.getParameter<double>("dcaCutOuterTripletStrip")}};
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
       };
 
       static constexpr ::pixelTrack::QualityCutsT<TrackerTraits> makeQualityCuts(edm::ParameterSet const& pset) {
@@ -153,11 +163,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                          (float)cfg.getParameter<double>("ptmin"),
                                          (float)cfg.getParameter<double>("CAThetaCutBarrel"),
                                          (float)cfg.getParameter<double>("CAThetaCutForward"),
-                                         (float)cfg.getParameter<double>("CAThetaCutStrip"),
                                          (float)cfg.getParameter<double>("hardCurvCut"),
                                          (float)cfg.getParameter<double>("dcaCutInnerTriplet"),
                                          (float)cfg.getParameter<double>("dcaCutOuterTriplet"),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
                                          (float)cfg.getParameter<double>("CAThetaCutBarrelPixelBarrelStrip"),
                                          (float)cfg.getParameter<double>("CAThetaCutBarrelPixelForwardStrip"),
                                          (float)cfg.getParameter<double>("CAThetaCutBarrelStripForwardStrip"),
@@ -167,9 +179,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                          (float)cfg.getParameter<double>("dcaCutOuterTripletPixelStrip"),
                                          (float)cfg.getParameter<double>("dcaCutTripletStrip"),
                                          (float)cfg.getParameter<double>("dcaCutTripletDefault")},
+<<<<<<< HEAD
 =======
                                          (float)cfg.getParameter<double>("dcaCutOuterTripletStrip")},
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
                                         {(bool)cfg.getParameter<bool>("includeFarForwards")}};
       }
 

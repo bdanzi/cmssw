@@ -163,10 +163,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                        const float hardCurvCut,
                                        const float caThetaCutBarrel,
                                        const float caThetaCutForward,
-                                       const float caThetaCutStrip,
                                        const float dcaCutInnerTriplet,
                                        const float dcaCutOuterTriplet,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
                                        const float caThetaCutBarrelPixelBarrelStrip,
                                        const float caThetaCutBarrelPixelForwardStrip,
                                        const float caThetaCutBarrelStripForwardStrip,
@@ -176,9 +178,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                        const float dcaCutOuterTripletPixelStrip,
                                        const float dcaCutTripletStrip,
                                        const float dcaCutTripletDefault) const {
+<<<<<<< HEAD
 =======
                                        const float dcaCutOuterTripletStrip) const {
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
       // detIndex of the layerStart for the Phase1 Pixel Detector:
       // [BPX1, BPX2, BPX3, BPX4,  FP1,  FP2,  FP3,  FN1,  FN2,  FN3, LAST_VALID]
       // [   0,   96,  320,  672, 1184, 1296, 1408, 1520, 1632, 1744,       1856] , 3392 TIB2
@@ -190,6 +195,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       auto r1 = otherCell.inner_r(hh);
       auto z1 = otherCell.inner_z(hh);
+<<<<<<< HEAD
 <<<<<<< HEAD
       //auto isBarrel = otherCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
       //bool isOT = otherCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
@@ -234,13 +240,53 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       auto isBarrel = otherCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
       bool isOT = otherCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
       bool isOTdca = otherCell.inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
+=======
+      //auto isBarrel = otherCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
+      //bool isOT = otherCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
+      //bool isOTdca = otherCell.inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
       // TODO tune CA cuts below (theta and dca)
-      bool aligned = areAlignedRZ(r1, z1, ri, zi, ro, zo, ptmin, isOT? caThetaCutStrip: isBarrel ? caThetaCutBarrel : caThetaCutForward);
+      // Distinguish caThetaCuts for different cases
+      float caThetaCut;
+
+      auto isOuterBarrelPixel = otherCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
+      auto isInnerBarrelPixel = otherCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
+      auto isOuterForwardPixel = otherCell.outer_detIndex(hh) >= TrackerTraits::last_barrel_detIndex && otherCell.outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
+      auto isInnerForwardPixel = otherCell.inner_detIndex(hh) >= TrackerTraits::last_barrel_detIndex && otherCell.inner_detIndex(hh) < TrackerTraits::numberOfPixelModules;
+      auto isOuterBarrelStrip =  otherCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules && otherCell.outer_detIndex(hh) < 3392;
+      auto isInnerBarrelStrip =  otherCell.inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules && otherCell.inner_detIndex(hh) < 3392;
+      auto isOuterForwardStrip = otherCell.outer_detIndex(hh) >= 3392;
+      auto isInnerForwardStrip = otherCell.inner_detIndex(hh) >= 3392;
+      caThetaCut = (isInnerBarrelPixel && isOuterBarrelPixel) ? caThetaCutBarrel :
+             (isInnerBarrelPixel && isOuterForwardPixel) ? caThetaCutForward :
+             (isInnerBarrelPixel && isOuterBarrelStrip) ? caThetaCutBarrelPixelBarrelStrip :
+             (isInnerBarrelPixel && isOuterForwardStrip) ? caThetaCutBarrelPixelForwardStrip :
+             (isInnerBarrelStrip && isOuterForwardStrip) ? caThetaCutBarrelStripForwardStrip :
+             (isInnerBarrelStrip && isOuterBarrelStrip) ? caThetaCutBarrelStrip :
+             caThetaCutDefault;
+
+      auto isFirstInnerBarrelPixel = otherCell.inner_detIndex(hh) < TrackerTraits::last_bpix1_detIndex;
+      auto isBeyondFirstInnerBarrelPixel = otherCell.inner_detIndex(hh) > TrackerTraits::last_bpix1_detIndex && otherCell.inner_detIndex(hh) < TrackerTraits::numberOfPixelModules;
+      float dcaCutTriplet;
+     
+      dcaCutTriplet = (isFirstInnerBarrelPixel && (isOuterBarrelStrip || isOuterForwardStrip)) ? dcaCutInnerTripletPixelStrip :
+                (isBeyondFirstInnerBarrelPixel && (isOuterBarrelStrip || isOuterForwardStrip)) ? dcaCutOuterTripletPixelStrip :
+                (isFirstInnerBarrelPixel && (isOuterBarrelPixel || isOuterForwardPixel)) ? dcaCutInnerTriplet :
+                (isBeyondFirstInnerBarrelPixel && (isOuterBarrelPixel || isOuterForwardPixel)) ? dcaCutOuterTriplet :
+                ((isInnerBarrelStrip || isInnerForwardStrip) && (isOuterBarrelStrip || isOuterForwardStrip)) ? dcaCutTripletStrip :
+                dcaCutTripletDefault;
+
+
+      bool aligned = areAlignedRZ(r1, z1, ri, zi, ro, zo, ptmin, caThetaCut);
       return (aligned && dcaCut(hh,
                                 otherCell,
+<<<<<<< HEAD
                                 isOTdca? dcaCutOuterTripletStrip : otherCell.inner_detIndex(hh) < TrackerTraits::last_bpix1_detIndex ? dcaCutInnerTriplet
                                                                                                   : dcaCutOuterTriplet,
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+                                dcaCutTriplet,
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
                                 hardCurvCut));
     }
 

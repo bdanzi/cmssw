@@ -350,6 +350,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         auto ro = thisCell.outer_r(hh);
         auto zo = thisCell.outer_z(hh);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
         float caThetaCut;
         auto isOuterBarrelPixel = thisCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
         auto isInnerBarrelPixel = thisCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
@@ -364,10 +367,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
              (isInnerBarrelStrip && isOuterForwardStrip) ? params.CAThetaCutBarrelStripForwardStrip_ :
              (isInnerBarrelStrip && isOuterBarrelStrip) ? params.CAThetaCutBarrelStrip_ :
              params.CAThetaCutDefault_;
+<<<<<<< HEAD
 =======
         auto isBarrel = thisCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex ;//|| (thisCell.inner_detIndex(hh) >= 1856 && thisCell.inner_detIndex(hh) <= 3392)  ;
         bool isOT = thisCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
         // loop on inner cells
         for (uint32_t j : cms::alpakatools::independent_group_elements_x(acc, numberOfPossibleNeighbors)) {
           auto otherCell = (vi[j]);
@@ -383,6 +389,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
               zo,
               params.ptmin_,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
               caThetaCut);  // 2.f*thetaCut); // FIXME tune cuts
             auto isOuterBarrelPixel = oc.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
             auto isOuterForwardPixel = oc.outer_detIndex(hh) >= TrackerTraits::last_barrel_detIndex && oc.outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
@@ -399,6 +408,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
                 (isBeyondFirstInnerBarrelPixel && (isOuterBarrelPixel || isOuterForwardPixel)) ? params.dcaCutOuterTriplet_ :
                 ((isInnerBarrelStrip || isInnerForwardStrip) && (isOuterBarrelStrip || isOuterForwardStrip)) ? params.dcaCutTripletStrip_ :
                 params.dcaCutTripletDefault_;
+<<<<<<< HEAD
           if (aligned &&
               thisCell.dcaCut(hh,
                               oc,
@@ -411,6 +421,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
                               oc.inner_detIndex(hh)>= TrackerTraits::numberOfPixelModules ? params.dcaCutOuterTripletStrip_ : oc.inner_detIndex(hh) < TrackerTraits::last_bpix1_detIndex ? params.dcaCutInnerTriplet_
                                                                                          : params.dcaCutOuterTriplet_,
 >>>>>>> 62a8dc99575 (Squash all 29 commits from CA strips implementation)
+=======
+          if (aligned &&
+              thisCell.dcaCut(hh,
+                              oc,
+                              dcaCutTriplet,
+>>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
                               params.hardCurvCut_)) {  // FIXME tune cuts
             oc.addOuterNeighbor(acc, cellIndex, *cellNeighbors);
             thisCell.setStatusBits(Cell::StatusBit::kUsed);

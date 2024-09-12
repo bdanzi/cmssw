@@ -45,7 +45,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const float ptmin_;
       const float CAThetaCutBarrel_;
       const float CAThetaCutForward_;
-      const float CAThetaCutStrip_;
       const float hardCurvCut_;
       const float dcaCutInnerTriplet_;
       const float dcaCutOuterTriplet_;

@@ -1,4 +1,3 @@
-#define PIXVERTEX_DEBUG_PRODUCE
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Common/interface/OrphanHandle.h"
 #include "DataFormats/TrackReco/interface/Track.h"
