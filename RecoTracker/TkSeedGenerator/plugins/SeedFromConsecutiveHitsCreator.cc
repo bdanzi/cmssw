@@ -193,10 +193,6 @@ void SeedFromConsecutiveHitsCreator::buildSeed(TrajectorySeedCollection& seedCol
     //} else {
     //    std::cout << "Hit is in an unknown detector." << std::endl;
     //}
-<<<<<<< HEAD
-=======
-    
->>>>>>> 1c20e047287 (Cleaning and additional strip params to recover efficiency wrt pixel only)
     //pixelTopology::Phase1Strip::mapIndex(trackerGeometry_->idToDet(hit->stereoId()->index())))
     TrajectoryStateOnSurface state =
         (gluedDet) ? ((iHit == 0) ? propagator_->propagate(fts, trackerGeometry_->idToDet(hit->geographicalId())->surface())
