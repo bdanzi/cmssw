@@ -15,6 +15,7 @@ from DQM.SiPixelHeterogeneous.siPixelHIonPhase1MonitorRecHitsSoAAlpaka_cfi impor
 from DQM.SiPixelHeterogeneous.siPixelPhase1MonitorTrackSoAAlpaka_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelPhase2MonitorTrackSoAAlpaka_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelHIonPhase1MonitorTrackSoAAlpaka_cfi import *
+from DQM.SiPixelHeterogeneous.siPixelPhase1StripMonitorTrackSoAAlpaka_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelMonitorVertexSoAAlpaka_cfi import *
 
 # Run-3 sequence
@@ -211,6 +212,32 @@ siPixelVertexSoAMonitorDevice = siPixelMonitorVertexSoAAlpaka.clone(
     topFolderName = cms.string('SiPixelHeterogeneous/PixelVertexDevice')
 )
 
+monitorPixelTracksAlpaka = cms.Sequence(siPixelTrackSoAMonitorSerial *
+                                        siPixelTrackSoAMonitorDevice *
+                                        siPixelPhase1CompareTrackSoAAlpaka)
+
+# PixelTracks: monitor of CPUSerial product (Alpaka backend: 'serial_sync')
+siPixelTrackSoAMonitorSerialStrip = siPixelPhase1StripMonitorTrackSoAAlpaka.clone(
+    pixelTrackSrc = cms.InputTag('pixelTracksAlpakaSerial'),
+    topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackSerial')
+)
+
+# PixelTracks: monitor of CPUSerial product (Alpaka backend: 'serial_sync')
+siPixelTrackSoAMonitorDeviceStrip = siPixelPhase1StripMonitorTrackSoAAlpaka.clone(
+    pixelTrackSrc = cms.InputTag('pixelTracksAlpaka'),
+    topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackDevice')
+)
+
+monitorPixelTracksAlpakaStrip = cms.Sequence( siPixelTrackSoAMonitorSerialStrip *
+                                              siPixelTrackSoAMonitorDeviceStrip *
+                                              siPixelPhase1StripCompareTrackSoAAlpaka)
+
+from Configuration.ProcessModifiers.stripNtupletFit_cff import stripNtupletFit
+stripNtupletFit.toReplaceWith(monitorPixelTracksAlpaka, monitorPixelTracksAlpakaStrip)
+stripNtupletFit.toReplaceWith(siPixelPhase1CompareTrackSoAAlpaka, siPixelPhase1StripCompareTrackSoAAlpaka)
+stripNtupletFit.toReplaceWith(siPixelTrackSoAMonitorSerial, siPixelTrackSoAMonitorSerialStrip)
+stripNtupletFit.toReplaceWith(siPixelTrackSoAMonitorDevice, siPixelTrackSoAMonitorDeviceStrip)
+
 # Run-3 sequence
 monitorpixelSoACompareSource = cms.Sequence(siPixelPhase1MonitorRawDataACPU *
                                             siPixelPhase1MonitorRawDataAGPU *
@@ -234,7 +261,12 @@ monitorpixelSoACompareSourceAlpaka = cms.Sequence(
                                             siPixelPhase1CompareRecHits *
                                             siPixelTrackSoAMonitorSerial *
                                             siPixelTrackSoAMonitorDevice *
+<<<<<<< HEAD
                                             siPixelPhase1CompareTracks *
+=======
+                                            siPixelPhase1CompareTrackSoAAlpaka *
+                                            monitorPixelTracksAlpaka *
+>>>>>>> bdanzi/CA_strips_14_0_15
                                             siPixelVertexSoAMonitorSerial *
                                             siPixelVertexSoAMonitorDevice *
                                             siPixelCompareVertices )
