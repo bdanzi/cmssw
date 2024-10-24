@@ -350,8 +350,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         auto zi = thisCell.inner_z(hh);
         auto ro = thisCell.outer_r(hh);
         auto zo = thisCell.outer_z(hh);
-        auto isBarrel = thisCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
-
+        float caThetaCut;
+        auto isOuterBarrelPixel = thisCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
+        auto isInnerBarrelPixel = thisCell.inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
+        auto isOuterForwardPixel = thisCell.outer_detIndex(hh) >= TrackerTraits::last_barrel_detIndex && thisCell.outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
+        auto isOuterBarrelStrip =  thisCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules && thisCell.outer_detIndex(hh) < 3392;
+        auto isInnerBarrelStrip =  thisCell.inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules && thisCell.inner_detIndex(hh) < 3392;
+        auto isOuterForwardStrip = thisCell.outer_detIndex(hh) >= 3392;
+        caThetaCut = (isInnerBarrelPixel && isOuterBarrelPixel) ? params.CAThetaCutBarrel_ :
+             (isInnerBarrelPixel && isOuterForwardPixel) ? params.CAThetaCutForward_ :
+             (isInnerBarrelPixel && isOuterBarrelStrip) ? params.CAThetaCutBarrelPixelBarrelStrip_ :
+             (isInnerBarrelPixel && isOuterForwardStrip) ? params.CAThetaCutBarrelPixelForwardStrip_ :
+             (isInnerBarrelStrip && isOuterForwardStrip) ? params.CAThetaCutBarrelStripForwardStrip_ :
+             (isInnerBarrelStrip && isOuterBarrelStrip) ? params.CAThetaCutBarrelStrip_ :
+             params.CAThetaCutDefault_;
         // loop on inner cells
         for (uint32_t j : cms::alpakatools::independent_group_elements_x(acc, numberOfPossibleNeighbors)) {
           auto otherCell = (vi[j]);
@@ -366,12 +378,26 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
               ro,
               zo,
               params.ptmin_,
-              isBarrel ? params.CAThetaCutBarrel_ : params.CAThetaCutForward_);  // 2.f*thetaCut); // FIXME tune cuts
+              caThetaCut);  // 2.f*thetaCut); // FIXME tune cuts
+            auto isOuterBarrelPixel = oc.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
+            auto isOuterForwardPixel = oc.outer_detIndex(hh) >= TrackerTraits::last_barrel_detIndex && oc.outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
+            auto isOuterBarrelStrip =  oc.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules && oc.outer_detIndex(hh) < 3392;
+            auto isInnerBarrelStrip =  oc.inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules && oc.inner_detIndex(hh) < 3392;
+            auto isOuterForwardStrip = oc.outer_detIndex(hh) >= 3392;
+            auto isInnerForwardStrip = oc.inner_detIndex(hh) >= 3392;
+            auto isFirstInnerBarrelPixel = oc.inner_detIndex(hh) < TrackerTraits::last_bpix1_detIndex;
+            auto isBeyondFirstInnerBarrelPixel = oc.inner_detIndex(hh) > TrackerTraits::last_bpix1_detIndex && oc.inner_detIndex(hh) < TrackerTraits::numberOfPixelModules;
+            float dcaCutTriplet;
+            dcaCutTriplet = (isFirstInnerBarrelPixel && (isOuterBarrelStrip || isOuterForwardStrip)) ? params.dcaCutInnerTripletPixelStrip_ :
+                (isBeyondFirstInnerBarrelPixel && (isOuterBarrelStrip || isOuterForwardStrip)) ? params.dcaCutOuterTripletPixelStrip_ :
+                (isFirstInnerBarrelPixel && (isOuterBarrelPixel || isOuterForwardPixel)) ? params.dcaCutInnerTriplet_ :
+                (isBeyondFirstInnerBarrelPixel && (isOuterBarrelPixel || isOuterForwardPixel)) ? params.dcaCutOuterTriplet_ :
+                ((isInnerBarrelStrip || isInnerForwardStrip) && (isOuterBarrelStrip || isOuterForwardStrip)) ? params.dcaCutTripletStrip_ :
+                params.dcaCutTripletDefault_;
           if (aligned &&
               thisCell.dcaCut(hh,
                               oc,
-                              oc.inner_detIndex(hh) < TrackerTraits::last_bpix1_detIndex ? params.dcaCutInnerTriplet_
-                                                                                         : params.dcaCutOuterTriplet_,
+                              dcaCutTriplet,
                               params.hardCurvCut_)) {  // FIXME tune cuts
             oc.addOuterNeighbor(acc, cellIndex, *cellNeighbors);
             thisCell.setStatusBits(Cell::StatusBit::kUsed);

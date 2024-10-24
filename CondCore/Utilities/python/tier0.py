@@ -120,11 +120,9 @@ class Tier0Handler( object ):
 
         proxy = f"--proxy {self._proxy}" if self._proxy else ""
         certs = self._getCerts() if not self._proxy or force_cert else ""
-        
         cmd = f'/usr/bin/curl -k -L --user-agent "{userAgent}" {proxy}'\
               f' --connect-timeout {self._timeOut} --max-time {self._maxTime} --retry {self._retries}'\
               f' {debug} {url} {certs}'
-
         # time the curl to understand if re-tries have been carried out
         start = time.time()
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
