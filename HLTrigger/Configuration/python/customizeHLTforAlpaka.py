@@ -671,17 +671,40 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
 
-    for prod in producers_by_type(process, 'CAHitNtupletAlpakaPhase1@alpaka'):
-        return process
+    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
+        #print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
+
+    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
+        #print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
+
 
     # alpaka EDProducer
     # consumes
     #  - TrackingRecHitsSoACollection<TrackerTraits>
     # produces
     #  - TkSoADevice
+    process.frameSoAESProducerPhase1 = cms.ESProducer('FrameSoAESProducerPhase1@alpaka',
+      ComponentName = cms.string('FrameSoAPhase1'),
+      appendToDataLabel = cms.string(''),
+      alpaka = cms.untracked.PSet(
+        backend = cms.untracked.string('')
+      )
+    )
+    
     process.hltPixelTracksSoA = cms.EDProducer('CAHitNtupletAlpakaPhase1@alpaka',
         pixelRecHitSrc = cms.InputTag('hltSiPixelRecHitsSoA'),
-        CPE = cms.string('PixelCPEFastParams'),
+        #CPE = cms.string('PixelCPEFastParams'),
+        frameSoA = cms.string('FrameSoAPhase1'),
         ptmin = cms.double(0.9),
         CAThetaCutBarrel = cms.double(0.002),
         CAThetaCutForward = cms.double(0.003),
@@ -772,14 +795,40 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     if hasattr(process, 'HLTRecoPixelTracksCPUOnlyTask'):
         del process.HLTRecoPixelTracksCPUOnlyTask
 
-    process.hltPixelTracksInRegionL2CPUOnly.tracks = "hltPixelTracksSerialSync"
+    #process.hltPixelTracksInRegionL2CPUOnly.tracks = "hltPixelTracksSerialSync"
 
-    process.hltPixelTracksInRegionL1CPUOnly.tracks = "hltPixelTracksSerialSync"
+    #process.hltPixelTracksInRegionL1CPUOnly.tracks = "hltPixelTracksSerialSync"
 
-    process.hltIter0PFLowPixelSeedsFromPixelTracksCPUOnly.InputCollection = "hltPixelTracksSerialSync"
+    #process.hltIter0PFLowPixelSeedsFromPixelTracksCPUOnly.InputCollection = "hltPixelTracksSerialSync"
 
     return process
 
+def customizeHLTAlpakaDeleteCPE(process):
+    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
+        #print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            #print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
+
+    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
+        #print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            #print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
+
+    process.frameSoAESProducerPhase1Strip = cms.ESProducer('FrameSoAESProducerPhase1@alpaka',
+      ComponentName = cms.string('FrameSoAPhase1'),
+      appendToDataLabel = cms.string(''),
+      alpaka = cms.untracked.PSet(
+        backend = cms.untracked.string('')
+      )
+    )
+
+    return process
 
 def customizeHLTforAlpakaPixelRecoVertexing(process):
     '''Customisation to introduce the Pixel-Vertex Reconstruction in Alpaka

@@ -235,10 +235,12 @@ void SiPixelCompareRecHitsSoAAlpaka<T>::fillDescriptions(edm::ConfigurationDescr
 }
 
 using SiPixelPhase1CompareRecHitsSoAAlpaka = SiPixelCompareRecHitsSoAAlpaka<pixelTopology::Phase1>;
+using SiPixelPhase1StripCompareRecHitsSoAAlpaka = SiPixelCompareRecHitsSoAAlpaka<pixelTopology::Phase1Strip>;
 using SiPixelPhase2CompareRecHitsSoAAlpaka = SiPixelCompareRecHitsSoAAlpaka<pixelTopology::Phase2>;
 using SiPixelHIonPhase1CompareRecHitsSoAAlpaka = SiPixelCompareRecHitsSoAAlpaka<pixelTopology::HIonPhase1>;
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(SiPixelPhase1CompareRecHitsSoAAlpaka);
+DEFINE_FWK_MODULE(SiPixelPhase1StripCompareRecHitsSoAAlpaka);
 DEFINE_FWK_MODULE(SiPixelPhase2CompareRecHitsSoAAlpaka);
 DEFINE_FWK_MODULE(SiPixelHIonPhase1CompareRecHitsSoAAlpaka);
