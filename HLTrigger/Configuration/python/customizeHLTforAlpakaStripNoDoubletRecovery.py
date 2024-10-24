@@ -507,7 +507,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         ErrorList = cms.vint32(29),
         UserErrorList = cms.vint32(40)
     )
-    
     # alpaka EDProducer
     # consumes
     #  - BeamSpotDevice
@@ -515,7 +514,51 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     #  - SiPixelDigisSoACollection
     # produces
     #  - TrackingRecHitsSoACollection<TrackerTraits>
+    process.hltSiStripRawToClustersFacility = cms.EDProducer( "SiStripClusterizerFromRaw",
+    ProductLabel = cms.InputTag( "rawDataCollector" ),
+    ConditionsLabel = cms.string( "" ),
+    onDemand = cms.bool( False ),
+    DoAPVEmulatorCheck = cms.bool( False ),
+    LegacyUnpacker = cms.bool( False ),
+    HybridZeroSuppressed = cms.bool( False ),
+    Clusterizer = cms.PSet( 
+      ConditionsLabel = cms.string( "" ),
+      ClusterThreshold = cms.double( 5.0 ),
+      SeedThreshold = cms.double( 3.0 ),
+      Algorithm = cms.string( "ThreeThresholdAlgorithm" ),
+      ChannelThreshold = cms.double( 2.0 ),
+      MaxAdjacentBad = cms.uint32( 0 ),
+      setDetId = cms.bool( True ),
+      MaxSequentialHoles = cms.uint32( 0 ),
+      RemoveApvShots = cms.bool( True ),
+      clusterChargeCut = cms.PSet(  refToPSet_ = cms.string( "HLTSiStripClusterChargeCutNone" ) ),
+      MaxSequentialBad = cms.uint32( 1 )
+    ),
+    RawDigiProducersList = cms.VInputTag( 'hltSiStripRawToDigi:VirginRaw','hltSiStripRawToDigi:ProcessedRaw','hltSiStripRawToDigi:ScopeMode','hltSiStripRawToDigi:ZeroSuppressed' ),
+    storeCM = cms.bool( False ),
+    fixCM = cms.bool( False ),
+    produceRawDigis = cms.bool( False ),
+    produceCalculatedBaseline = cms.bool( False ),
+    produceBaselinePoints = cms.bool( False ),
+    storeInZScollBadAPV = cms.bool( True ),
+    produceHybridFormat = cms.bool( False )
+    )
     
+    process.hltSiStripClusterizerForRawPrime = cms.EDProducer( "SiStripClusterizer",
+    Clusterizer = cms.PSet( 
+      Algorithm = cms.string( "ThreeThresholdAlgorithm" ),
+      ChannelThreshold = cms.double( 2.0 ),
+      SeedThreshold = cms.double( 3.0 ),
+      ClusterThreshold = cms.double( 5.0 ),
+      MaxSequentialHoles = cms.uint32( 0 ),
+      MaxSequentialBad = cms.uint32( 1 ),
+      MaxAdjacentBad = cms.uint32( 0 ),
+      RemoveApvShots = cms.bool( True ),
+      clusterChargeCut = cms.PSet(  refToPSet_ = cms.string( "HLTSiStripClusterChargeCutNone" ) ),
+      ConditionsLabel = cms.string( "" )
+    ),
+    DigiProducersList = cms.VInputTag( 'hltSiStripZeroSuppression:ZeroSuppressed','hltSiStripZeroSuppression:VirginRaw','hltSiStripZeroSuppression:ProcessedRaw','hltSiStripZeroSuppression:ScopeMode' )
+    )
     process.hltSiStripRawToClustersFacility = cms.EDProducer( "SiStripClusterizerFromRaw",
     ProductLabel = cms.InputTag( "rawDataCollector" ),
     ConditionsLabel = cms.string( "" ),
@@ -586,7 +629,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     #    del process.hltSiPixelRecHitsFromGPU
     #if hasattr(process, 'hltSiPixelRecHitsSoAFromGPU'):
     #    del process.hltSiPixelRecHitsSoAFromGPU
-
     process.hltSiPixelRecHits = cms.EDProducer('SiPixelRecHitFromSoAAlpakaPhase1',
         pixelRecHitSrc = cms.InputTag('hltSiPixelOnlyRecHitsSoA'),
         src = cms.InputTag('hltSiPixelClusters'),
@@ -630,7 +672,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         beamSpot = 'hltOnlineBeamSpotDeviceSerialSync',
         src = 'hltSiPixelClustersSoASerialSync'
     )
-    
     process.hltSiPixelRecHitsSoASerialSync = makeSerialClone(process.hltSiPixelRecHitsSoA,
       pixelRecHitSoASource = cms.InputTag('hltSiPixelOnlyRecHitsSoACPUSerial'),
       )
@@ -704,6 +745,46 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
 def customizeHLTforAlpakaPixelRecoTracking(process):
     '''Customisation to introduce the Pixel-Track Reconstruction in Alpaka
     '''
+
+    if not hasattr(process, 'HLTRecoPixelTracksSequence'):
+        return process
+    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
+        if hasattr(producer, "CPE"):
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
+            
+    for producer in producers_by_type(process, "TrackListMerger"):
+        current_producers = producer.TrackProducers
+        if (
+            'hltIter0PFlowTrackSelectionHighPurity' in current_producers and 
+            'hltDoubletRecoveryPFlowTrackSelectionHighPurity' in current_producers
+        ):
+            setattr(producer, "TrackProducers",cms.VInputTag('hltIter0PFlowTrackSelectionHighPurity'))
+            setattr(producer, "selectedTrackQuals", cms.VInputTag( 'hltIter0PFlowTrackSelectionHighPurity'))
+                    
+    if hasattr(process, "hltDoubletRecoveryPFlowTrackSelectionHighPurity"):
+        del process.hltDoubletRecoveryPFlowTrackSelectionHighPurity
+
+    for producer in producers_by_type(process, "TrackListMerger"):
+        current_producers = producer.TrackProducers
+        if (
+            'hltIter0PFlowTrackSelectionHighPuritySerialSync' in current_producers and
+            'hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync' in current_producers
+        ):
+            setattr(producer, "TrackProducers",cms.VInputTag('hltIter0PFlowTrackSelectionHighPuritySerialSync'))
+            setattr(producer, "selectedTrackQuals", cms.VInputTag( 'hltIter0PFlowTrackSelectionHighPuritySerialSync'))
+
+    if hasattr(process, "hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync"):
+        del process.hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync
+                    
+    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
+        #print("entered the producers loop")
+        if hasattr(producer, "CPE"):
+            #print("found CPE stuff")
+            delattr(producer, "CPE")
+        if not hasattr(producer, 'frameSoA'):
+            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
 
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
@@ -1051,7 +1132,6 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         -70.,  
         -70.,  
         -70.),
-
         # autoselect the alpaka backend
         alpaka = cms.untracked.PSet(
             backend = cms.untracked.string('')
@@ -1060,7 +1140,6 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
 
     if hasattr(process, 'hltL2TauTagNNProducer'):
         process.hltL2TauTagNNProducer = cms.EDProducer("L2TauNNProducerAlpaka", **process.hltL2TauTagNNProducer.parameters_())
-
     process.hltPixelTracksSoASerialSync = makeSerialClone(process.hltPixelTracksSoA,
         pixelRecHitSrc = 'hltSiPixelRecHitsSoASerialSync'
     )
@@ -1087,6 +1166,24 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     )
     
             
+    process.hltPixelTracksSerialSync = process.hltPixelTracks.clone(
+        pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsSerialSync"),
+        hitModuleStartSrc = cms.InputTag("hltSiPixelRecHitsSoASerialSync"),     
+        trackSrc = cms.InputTag("hltPixelTracksSoASerialSync")
+    )
+
+    process.HLTRecoPixelTracksTask = cms.ConditionalTask(
+        process.hltPixelTracksSoA,
+        process.hltPixelTracks,
+    )
+
+    process.HLTRecoPixelTracksCPUSerialTask = cms.ConditionalTask(
+        process.hltPixelTracksSoASerialSync,
+        process.hltPixelTracksSerialSync,
+    )
+    process.HLTRecoPixelTracksSequence = cms.Sequence( process.HLTRecoPixelTracksTask )
+    process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
+
     process.hltPixelTracksSerialSync = process.hltPixelTracks.clone(
         pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsSerialSync"),
         hitModuleStartSrc = cms.InputTag("hltSiPixelRecHitsSoASerialSync"),     
@@ -1208,8 +1305,6 @@ def customizeHLTforAlpakaPixelRecoVertexing(process):
         process.hltPixelVertices,
         process.hltTrimmedPixelVertices
     )
-
-
     process.HLTRecopixelvertexingCPUSerialTask = cms.ConditionalTask(
         process.HLTRecoPixelTracksCPUSerialTask,
         process.hltPixelVerticesSoASerialSync,
@@ -1451,7 +1546,6 @@ def customizeHLTforAlpakaEcalLocalReco(process):
 
     return process
 
-
 def customizeHLTforAlpakaStatus(process):
 
     if not hasattr(process, 'statusOnGPU'):
@@ -1570,7 +1664,7 @@ def customizeHLTforAlpakaStrip(process):
     process = customizeHLTforAlpakaStatus(process)
     process = customizeHLTforAlpakaPixelReco(process)
     process = customizeHLTforAlpakaEcalLocalReco(process)
-   # process = customizeHLTforAlpakaParticleFlowClustering(process)
+    process = customizeHLTforAlpakaParticleFlowClustering(process)
     process = customizeHLTforAlpakaRename(process)
 
     return process

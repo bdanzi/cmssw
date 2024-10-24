@@ -94,7 +94,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   using CAHitNtupletAlpakaPhase1 = CAHitNtupletAlpaka<pixelTopology::Phase1>;
   using CAHitNtupletAlpakaHIonPhase1 = CAHitNtupletAlpaka<pixelTopology::HIonPhase1>;
   using CAHitNtupletAlpakaPhase2 = CAHitNtupletAlpaka<pixelTopology::Phase2>;
-  using CAHitNtupletAlpakaHIonPhase1 = CAHitNtupletAlpaka<pixelTopology::HIonPhase1>;
   using CAHitNtupletAlpakaPhase1Strip = CAHitNtupletAlpaka<pixelTopology::Phase1Strip>;
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
@@ -104,6 +103,5 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaPhase1);
 DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaHIonPhase1);
 DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaPhase2);
-DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaHIonPhase1);
 DEFINE_FWK_ALPAKA_MODULE(CAHitNtupletAlpakaPhase1Strip);
 

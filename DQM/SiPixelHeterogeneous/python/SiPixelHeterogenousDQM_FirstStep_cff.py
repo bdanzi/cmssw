@@ -261,12 +261,7 @@ monitorpixelSoACompareSourceAlpaka = cms.Sequence(
                                             siPixelPhase1CompareRecHits *
                                             siPixelTrackSoAMonitorSerial *
                                             siPixelTrackSoAMonitorDevice *
-<<<<<<< HEAD
                                             siPixelPhase1CompareTracks *
-=======
-                                            siPixelPhase1CompareTrackSoAAlpaka *
-                                            monitorPixelTracksAlpaka *
->>>>>>> 02b0f13c130 (Squash all commits after 14_0_9 rebase)
                                             siPixelVertexSoAMonitorSerial *
                                             siPixelVertexSoAMonitorDevice *
                                             siPixelCompareVertices )
