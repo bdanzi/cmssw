@@ -761,7 +761,10 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
             'hltDoubletRecoveryPFlowTrackSelectionHighPurity' in current_producers
         ):
             setattr(producer, "TrackProducers",cms.VInputTag('hltIter0PFlowTrackSelectionHighPurity'))
+            setattr(producer,"hasSelector",cms.vint32( 0))
+            setattr(producer,"indivShareFrac",cms.vdouble( 1.0))
             setattr(producer, "selectedTrackQuals", cms.VInputTag( 'hltIter0PFlowTrackSelectionHighPurity'))
+            setattr(producer,"setsToMerge",cms.VPSet( cms.PSet(  pQual = cms.bool( False ), tLists = cms.vint32( 0))))
                     
     if hasattr(process, "hltDoubletRecoveryPFlowTrackSelectionHighPurity"):
         del process.hltDoubletRecoveryPFlowTrackSelectionHighPurity
@@ -773,7 +776,10 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
             'hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync' in current_producers
         ):
             setattr(producer, "TrackProducers",cms.VInputTag('hltIter0PFlowTrackSelectionHighPuritySerialSync'))
+            setattr(producer,"hasSelector",cms.vint32( 0))
+            setattr(producer,"indivShareFrac",cms.vdouble( 1.0))
             setattr(producer, "selectedTrackQuals", cms.VInputTag( 'hltIter0PFlowTrackSelectionHighPuritySerialSync'))
+            setattr(producer,"setsToMerge",cms.VPSet( cms.PSet(  pQual = cms.bool( False ), tLists = cms.vint32( 0))))
 
     if hasattr(process, "hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync"):
         del process.hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync
@@ -1659,12 +1665,12 @@ def customizeHLTforAlpakaRename(process):
     return process
 
 
-def customizeHLTforAlpakaStrip(process):
+def customizeHLTforAlpakaStripNoDoubletRecovery(process):
     process.load('Configuration.StandardSequences.Accelerators_cff')
     process = customizeHLTforAlpakaStatus(process)
     process = customizeHLTforAlpakaPixelReco(process)
     process = customizeHLTforAlpakaEcalLocalReco(process)
-    process = customizeHLTforAlpakaParticleFlowClustering(process)
+#    process = customizeHLTforAlpakaParticleFlowClustering(process)
     process = customizeHLTforAlpakaRename(process)
 
     return process
