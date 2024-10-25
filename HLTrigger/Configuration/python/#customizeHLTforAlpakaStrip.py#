@@ -329,21 +329,21 @@ def customizeHLTforDQMGPUvsCPUPixel(process):
         minD2cut = cms.double(1.0e-4)
     )
 
-    process.hltPixelTracksSoAMonitorCPU = cms.EDProducer("SiPixelPhase1MonitorTrackSoAAlpaka",
+    process.hltPixelTracksSoAMonitorCPU = cms.EDProducer("SiPixelPhase1StripMonitorTrackSoAAlpaka",
         minQuality = cms.string('loose'),
         pixelTrackSrc = cms.InputTag('hltPixelTracksSoASerialSync'),
         topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackCPU'),
         useQualityCut = cms.bool(True)
     )
 
-    process.hltPixelTracksSoAMonitorGPU = cms.EDProducer("SiPixelPhase1MonitorTrackSoAAlpaka",
+    process.hltPixelTracksSoAMonitorGPU = cms.EDProducer("SiPixelPhase1StripMonitorTrackSoAAlpaka",
         minQuality = cms.string('loose'),
         pixelTrackSrc = cms.InputTag('hltPixelTracksSoA'),
         topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackGPU'),
         useQualityCut = cms.bool(True)
     )
 
-    process.hltPixelTracksSoACompareGPUvsCPU = cms.EDProducer("SiPixelPhase1StripCompareTrackSoAAlpaka",
+    process.hltPixelTracksSoACompareGPUvsCPU = cms.EDProducer("SiPixelPhase1CompareTrackSoAAlpaka",
         deltaR2cut = cms.double(0.04),
         minQuality = cms.string('loose'),
         pixelTrackSrcHost = cms.InputTag("hltPixelTracksSoASerialSync"),

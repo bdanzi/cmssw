@@ -7,6 +7,7 @@ from DQM.SiPixelHeterogeneous.siPixelPhase1MonitorTrackSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelPhase2MonitorTrackSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelHIonPhase1MonitorTrackSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelMonitorVertexSoA_cfi import *
+from DQM.SiPixelHeterogeneous.siPixelPhase1StripMonitorTrackSoA_cfi import *
 # Alpaka Modules
 from Configuration.ProcessModifiers.alpaka_cff import alpaka
 from DQM.SiPixelHeterogeneous.siPixelPhase1MonitorRecHitsSoAAlpaka_cfi import *
@@ -15,8 +16,9 @@ from DQM.SiPixelHeterogeneous.siPixelHIonPhase1MonitorRecHitsSoAAlpaka_cfi impor
 from DQM.SiPixelHeterogeneous.siPixelPhase1MonitorTrackSoAAlpaka_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelPhase2MonitorTrackSoAAlpaka_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelHIonPhase1MonitorTrackSoAAlpaka_cfi import *
-from DQM.SiPixelHeterogeneous.siPixelPhase1StripMonitorTrackSoAAlpaka_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelMonitorVertexSoAAlpaka_cfi import *
+
+
 
 # Run-3 sequence
 monitorpixelSoASource = cms.Sequence(siPixelPhase1MonitorRecHitsSoA * siPixelPhase1MonitorTrackSoA * siPixelMonitorVertexSoA)
@@ -46,6 +48,7 @@ from DQM.SiPixelHeterogeneous.siPixelHIonPhase1CompareRecHitsSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelPhase1CompareTrackSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelPhase2CompareTrackSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelHIonPhase1CompareTrackSoA_cfi import *
+from DQM.SiPixelHeterogeneous.siPixelPhase1StripCompareTrackSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelCompareVertexSoA_cfi import *
 from DQM.SiPixelHeterogeneous.siPixelPhase1RawDataErrorComparator_cfi import *
 from DQM.SiPixelPhase1Common.SiPixelPhase1RawData_cfi import *
@@ -214,29 +217,30 @@ siPixelVertexSoAMonitorDevice = siPixelMonitorVertexSoAAlpaka.clone(
 
 monitorPixelTracksAlpaka = cms.Sequence(siPixelTrackSoAMonitorSerial *
                                         siPixelTrackSoAMonitorDevice *
-                                        siPixelPhase1CompareTrackSoAAlpaka)
+                                        siPixelPhase1CompareTrackSoA)
 
 # PixelTracks: monitor of CPUSerial product (Alpaka backend: 'serial_sync')
-siPixelTrackSoAMonitorSerialStrip = siPixelPhase1StripMonitorTrackSoAAlpaka.clone(
+siPixelTrackSoAMonitorSerialStrip = siPixelPhase1StripMonitorTrackSoA.clone(
     pixelTrackSrc = cms.InputTag('pixelTracksAlpakaSerial'),
     topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackSerial')
 )
 
 # PixelTracks: monitor of CPUSerial product (Alpaka backend: 'serial_sync')
-siPixelTrackSoAMonitorDeviceStrip = siPixelPhase1StripMonitorTrackSoAAlpaka.clone(
+siPixelTrackSoAMonitorDeviceStrip = siPixelPhase1StripMonitorTrackSoA.clone(
     pixelTrackSrc = cms.InputTag('pixelTracksAlpaka'),
     topFolderName = cms.string('SiPixelHeterogeneous/PixelTrackDevice')
 )
 
 monitorPixelTracksAlpakaStrip = cms.Sequence( siPixelTrackSoAMonitorSerialStrip *
                                               siPixelTrackSoAMonitorDeviceStrip *
-                                              siPixelPhase1StripCompareTrackSoAAlpaka)
+                                              siPixelPhase1StripCompareTrackSoA)
+                                              
 
 from Configuration.ProcessModifiers.stripNtupletFit_cff import stripNtupletFit
 stripNtupletFit.toReplaceWith(monitorPixelTracksAlpaka, monitorPixelTracksAlpakaStrip)
-stripNtupletFit.toReplaceWith(siPixelPhase1CompareTrackSoAAlpaka, siPixelPhase1StripCompareTrackSoAAlpaka)
-stripNtupletFit.toReplaceWith(siPixelTrackSoAMonitorSerial, siPixelTrackSoAMonitorSerialStrip)
-stripNtupletFit.toReplaceWith(siPixelTrackSoAMonitorDevice, siPixelTrackSoAMonitorDeviceStrip)
+stripNtupletFit.toReplaceWith(siPixelPhase1CompareTrackSoA, siPixelPhase1StripCompareTrackSoA)
+stripNtupletFit.toReplaceWith(siPixelTrackSoAMonitorSerial, siPixelTrackSoAMonitorSerial)
+stripNtupletFit.toReplaceWith(siPixelTrackSoAMonitorDevice, siPixelTrackSoAMonitorDevice)
 
 # Run-3 sequence
 monitorpixelSoACompareSource = cms.Sequence(siPixelPhase1MonitorRawDataACPU *

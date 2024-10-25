@@ -343,7 +343,7 @@ def customizeHLTforDQMGPUvsCPUPixel(process):
         useQualityCut = cms.bool(True)
     )
 
-    process.hltPixelTracksSoACompareGPUvsCPU = cms.EDProducer("SiPixelPhase1CompareTrackSoAAlpaka",
+    process.hltPixelTracksSoACompareGPUvsCPU = cms.EDProducer("SiPixelPhase1StripCompareTrackSoAAlpaka",
         deltaR2cut = cms.double(0.04),
         minQuality = cms.string('loose'),
         pixelTrackSrcHost = cms.InputTag("hltPixelTracksSoASerialSync"),
@@ -780,7 +780,10 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
             setattr(producer,"indivShareFrac",cms.vdouble( 1.0))
             setattr(producer, "selectedTrackQuals", cms.VInputTag( 'hltIter0PFlowTrackSelectionHighPuritySerialSync'))
             setattr(producer,"setsToMerge",cms.VPSet( cms.PSet(  pQual = cms.bool( False ), tLists = cms.vint32( 0))))
-
+    if hasattr(process, "HLTIterativeTrackingDoubletRecovery"):
+        del process.HLTIterativeTrackingDoubletRecovery
+    if hasattr(process, "HLTIterativeTrackingDoubletRecoverySerialSync"):
+        del process.HLTIterativeTrackingDoubletRecoverySerialSync
     if hasattr(process, "hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync"):
         del process.hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync
                     
