@@ -281,8 +281,8 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
     (stripNtupletFit).makeProcessModifier(customizeHLTforAlpakaStripNoDoubletRecovery).apply(process)
      
     #from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
-    #from HLTrigger.Configuration.customizeHLTforAlpakaStrip import customizeHLTforAlpakaStrip
-    #(pixelNtupletFit).makeProcessModifier(customizeHLTforAlpakaStrip).apply(process)
+    from HLTrigger.Configuration.customizeHLTforAlpakaStrip import customizeHLTforAlpakaStrip
+    #(stripNtupletFit).makeProcessModifier(customizeHLTforAlpakaStrip).apply(process)
      
      
     # add call to action function in proper order: newest last!
