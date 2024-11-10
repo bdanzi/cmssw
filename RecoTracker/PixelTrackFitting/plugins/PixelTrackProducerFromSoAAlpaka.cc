@@ -101,7 +101,7 @@ PixelTrackProducerFromSoAAlpaka<TrackerTraits>::PixelTrackProducerFromSoAAlpaka(
     throw cms::Exception("PixelTrackConfiguration")
         << iConfig.getParameter<std::string>("minQuality") + " is not a pixelTrack::Quality";
   }
-  if (minQuality_ < pixelTrack::Quality::dup) {
+  if (minQuality_ < pixelTrack::Quality::bad) {
     throw cms::Exception("PixelTrackConfiguration")
         << iConfig.getParameter<std::string>("minQuality") + " not supported";
   }

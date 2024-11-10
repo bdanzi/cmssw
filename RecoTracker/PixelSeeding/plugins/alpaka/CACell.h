@@ -2,10 +2,8 @@
 #define RecoTracker_PixelSeeding_plugins_alpaka_CACell_h
 
 // #define ONLY_TRIPLETS_IN_HOLE
-
 #include <cmath>
 #include <limits>
-
 #include <alpaka/alpaka.hpp>
 
 #include "DataFormats/TrackSoA/interface/TrackDefinitions.h"
@@ -358,7 +356,27 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         }
         if (last) {  // if long enough save...
           unsigned int pixelhits = 0;
-          for (auto c : tmpNtuplet) {
+	  unsigned int striphits = 0;
+	  bool counted[TrackerTraits::numberOfPixelModules] = {false};
+	  for (auto c : tmpNtuplet) {
+	    int innerIndex = static_cast<int>(cells[c].inner_detIndex(hh));
+	    int outerIndex = static_cast<int>(cells[c].outer_detIndex(hh));
+	    bool isPixel = innerIndex < TrackerTraits::numberOfPixelModules;
+	    bool isPixelOuter = outerIndex < TrackerTraits::numberOfPixelModules;
+	    if (isPixel && !counted[innerIndex]){
+            pixelhits += 1; 
+            counted[innerIndex] = true; 
+	    }
+	    if (cells[c].outerNeighbors().empty() && isPixelOuter && !counted[outerIndex]) {
+            pixelhits += 1; 
+            counted[outerIndex] = true;
+	    }
+	    if (cells[c].outerNeighbors().empty() && ((!isPixelOuter && outerIndex < 2528) || (outerIndex > 4580 && outerIndex<4676) || (outerIndex > 4988 && outerIndex < 5084))) {
+            striphits += 1;
+	    }
+	  }
+
+          /*for (auto c : tmpNtuplet) {
                 //auto isBarrel = cells[c].inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex ;
                 //auto isEndCaps = cells[c].inner_detIndex(hh) > TrackerTraits::last_barrel_detIndex && cells[c].inner_detIndex(hh) < TrackerTraits::numberOfPixelModules;
                 //bool isOT = cells[c].inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
@@ -375,9 +393,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                     pixelhits = pixelhits + 1;
                    }
                 }
-              }
-          }
-          if ((unsigned int)(tmpNtuplet.size()) >= minHitsPerNtuplet - 1 || pixelhits >= 3) {
+              }*/
+	  //printf("NPixelHits per tmpNtuplet : %u", pixelhits, "NStripHits per tmpNtuplet : %u\n",striphits);
+          if ((unsigned int)(tmpNtuplet.size()) >= minHitsPerNtuplet - 1 || pixelhits >= 2){//  || (pixelhits>=2 && striphits>=1)) {
 #ifdef ONLY_TRIPLETS_IN_HOLE
             // triplets accepted only pointing to the hole
             if (tmpNtuplet.size() >= 3 || (startAt0 && hole4(hh, cells[tmpNtuplet[0]])) ||

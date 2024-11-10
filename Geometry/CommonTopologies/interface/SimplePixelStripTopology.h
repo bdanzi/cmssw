@@ -107,62 +107,65 @@ namespace phase1PixelStripTopology {
   { BPIX2,    BPIX4,      phi0p05,  -22.,   22.,  20.           }, // 9  OK
   { BPIX1,    FPIX2Pos,   phi0p05,    0.,   30.,  9.            }, // 10 (No inner layer) OK
   { BPIX1,    FPIX2Neg,   phi0p05,  -30.,   0.,   9.            }, // 11 (No inner layer) Until here Starting Pairs OK
-  { FPIX1Pos, TIB1,       phi5deg,  -70.,   70.,  1000.         }, // 12 
-  { FPIX1Neg, TIB1,       phi5deg,  -70.,   70.,  1000.         }, // 13 
+  { FPIX1Pos, TIB1,       phi0p05,  -70.,   70.,  1000.         }, // 12 
+  { FPIX1Neg, TIB1,       phi0p05,  -70.,   70.,  1000.         }, // 13 
   { BPIX3,    BPIX4,      phi0p06,  -22.,   22.,  20.           }, // 14    
   { BPIX3,    FPIX1Pos,   phi0p06,  15.,    30.,  6.            }, // 15 
   { BPIX3,    FPIX1Neg,   phi0p06,  -30,   -15.,  6.            }, // 16 
   { FPIX2Pos, FPIX3Pos,   phi0p05,  -70.,   70.,  5.            }, // 17 
   { FPIX2Neg, FPIX3Neg,   phi0p05,  -70.,   70.,  5.            }, // 18 
-  { BPIX3,    TIB1,       phi5deg,  -22.,   22.,   1000.        }, // 19 
-  { BPIX4,    TIB1,       phi5deg,  -22.,   22.,   1000.        }, // 20 
-  { BPIX4,    TIB2,       phi5deg,  -22.,   22.,   1000.        }, // 21 
-  { TIB1,     TIB2,       phi5deg,  -55.,   55.,   1000.        }, // 22
-  { FPIX2Pos, TIB1,       phi5deg,  -70.,   70.,   1000.        }, // 23 
-  { FPIX2Neg, TIB1,       phi5deg,  -70.,   70.,   1000.        }, // 24 
-  { FPIX3Pos, TIB1,       phi5deg,  -70.,   70.,   1000.        }, // 25
-  { FPIX3Pos, TID1Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 26 
-  { FPIX3Pos, TID2Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 27
-  { FPIX3Pos, TID3Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 28
-  { FPIX3Neg, TIB1,       phi5deg,  -70.,   70.,   1000.        }, // 29
-  { FPIX3Neg, TID1Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 30
-  { FPIX3Neg, TID2Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 31
-  { FPIX3Neg, TID3Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 32
-  { TID1Pos2D,TID2Pos2D,  phi0p09,  -1000., 1000., 1000.        }, // 33
-  { TID2Pos2D,TID3Pos2D,  phi0p09,  -1000., 1000., 1000.        }, // 34
-  { TID1Neg2D,TID2Neg2D,  phi0p09,  -1000., 1000., 1000.        }, // 35
-  { TID2Neg2D,TID3Neg2D,  phi0p09,  -1000., 1000., 1000.        }, // 36
-  { TIB1,     TID1Pos2D,  phi5deg,   0.,    55.,   1000.        }, // 37
-  { TIB1,     TID1Neg2D,  phi5deg,  -55.,   0.,    1000.        }, // 38
-  { TIB2,     TID1Pos2D,  phi5deg,    0.,   55.,   1000.        }, // 39
-  { TIB2,     TID1Neg2D,  phi5deg,  -55.,   0.,    1000.        }, // 40
-  { BPIX2,    TIB1,       phi0p09,  -22.,   0.,    1000.        }, // 41 
-  { BPIX2,    TIB2,       phi0p09,  -22.,   0.,    1000.        }, // 42
-  { BPIX1,    TIB1,       phi5deg,  -22.,   0.,    1000.        }, // 43
-  { BPIX1,    TIB2,       phi5deg,  -22.,   0.,    1000.        }, // 44
-  { BPIX3,    TIB2,       phi5deg,  -22.,   22.,   1000.        }, // 45
-  { BPIX4,    TID1Pos2D,  phi5deg,   0.,   55.,   1000.        }, // 46
-  { BPIX4,    TID1Neg2D,  phi5deg,  -55.,  0.,    1000.        }, // 47
+  { BPIX3,    TIB1,       phi0p05,  -70.,   70.,   1000.        }, // 19 
+  { BPIX4,    TIB1,       phi0p05,  -70.,   70.,   1000.        }, // 20 
+  { BPIX4,    TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 21 
+  { TIB1,     TIB2,       phi0p05,  -55.,   55.,   1000.        }, // 22
+  { FPIX2Pos, TIB1,       phi0p05,  -70.,   70.,   1000.        }, // 23 
+  { FPIX2Neg, TIB1,       phi0p05,  -70.,   70.,   1000.        }, // 24 
+  { FPIX3Pos, TIB1,       phi0p05,  -70.,   70.,   1000.        }, // 25
+  { FPIX3Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 26 
+  { FPIX3Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 27
+  { FPIX3Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 28
+  { FPIX3Neg, TIB1,       phi0p05,  -70.,   70.,   1000.        }, // 29
+  { FPIX3Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 30
+  { FPIX3Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 31
+  { FPIX3Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 32
+  { TID1Pos2D,TID2Pos2D,  phi0p05,  -1000., 1000., 1000.        }, // 33
+  { TID2Pos2D,TID3Pos2D,  phi0p05,  -1000., 1000., 1000.        }, // 34
+  { TID1Neg2D,TID2Neg2D,  phi0p05,  -1000., 1000., 1000.        }, // 35
+  { TID2Neg2D,TID3Neg2D,  phi0p05,  -1000., 1000., 1000.        }, // 36
+  { TIB1,     TID1Pos2D,  phi0p05,   0.,    55.,   1000.        }, // 37
+  { TIB1,     TID1Neg2D,  phi0p05,  -55.,   0.,    1000.        }, // 38
+  { TIB2,     TID1Pos2D,  phi0p05,    0.,   55.,   1000.        }, // 39
+  { TIB2,     TID1Neg2D,  phi0p05,  -55.,   0.,    1000.        }, // 40
+  { BPIX2,    TIB1,       phi0p05,  -70.,   0.,    1000.        }, // 41 
+  { BPIX2,    TIB2,       phi0p05,  -70.,   0.,    1000.        }, // 42
+  { BPIX1,    TIB1,       phi0p05,  -70.,   0.,    1000.        }, // 43
+  { BPIX1,    TIB2,       phi0p05,  -70.,   0.,    1000.        }, // 44
+  { BPIX3,    TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 45
+  { BPIX4,    TID1Pos2D,  phi0p05,   0.,   55.,   1000.         }, // 46
+  { BPIX4,    TID1Neg2D,  phi0p05,  -55.,  0.,    1000.         }, // 47
   { FPIX1Pos, FPIX3Pos,   phi0p05,  -70.,   70.,      9.        }, // 48
-  { FPIX1Pos, TIB2,       phi5deg,  -70.,   70.,   1000.        }, // 49
-  { FPIX1Pos, TID1Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 50
-  { FPIX1Pos, TID2Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 51
-  { FPIX1Pos, TID3Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 52
+  { FPIX1Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 49
+  { FPIX1Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 50
+  { FPIX1Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 51
+  { FPIX1Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 52
   { FPIX1Neg, FPIX3Neg,   phi0p05,  -70.,   70.,      9.        }, // 53
-  { FPIX1Neg, TIB2,       phi5deg,  -70.,   70.,   1000.        }, // 54
-  { FPIX1Neg, TID1Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 55
-  { FPIX1Neg, TID2Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 56
-  { FPIX1Neg, TID3Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 57
-  { FPIX2Pos, TIB2,       phi5deg,  -70.,   70.,   1000.        }, // 58
-  { FPIX2Pos, TID1Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 59
-  { FPIX2Pos, TID2Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 60
-  { FPIX2Pos, TID3Pos2D,  phi5deg,  -70.,   70.,   1000.        }, // 61
-  { FPIX2Neg, TIB2,       phi5deg,  -70.,   70.,   1000.        }, // 62
-  { FPIX2Neg, TID1Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 63
-  { FPIX2Neg, TID2Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 64
-  { FPIX2Neg, TID3Neg2D,  phi5deg,  -70.,   70.,   1000.        }, // 65
-  { FPIX3Pos, TIB2,       phi5deg,  -70.,   70.,   1000.        }, // 66
-  { FPIX3Neg, TIB2,       phi5deg,  -70.,   70.,   1000.        }  // 67
+  { FPIX1Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 54
+  { FPIX1Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 55
+  { FPIX1Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 56
+  { FPIX1Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 57
+  { FPIX2Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 58
+  { FPIX2Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 59
+  { FPIX2Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 60
+  { FPIX2Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 61
+  { FPIX2Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 62
+  { FPIX2Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 63
+  { FPIX2Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 64
+  { FPIX2Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 65
+  { FPIX3Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 66
+  { FPIX3Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        },  // 67
+  { BPIX2,    FPIX2Neg,   phi0p05,  -70.,   70.,   1000.        }, // 68
+  { BPIX2,    FPIX2Pos,   phi0p05,  -70.,   70.,   1000.        }
+  
   };
   
   constexpr uint32_t maxNumClustersPerModules = 1024;
@@ -293,20 +296,20 @@ namespace pixelTopology {
     static constexpr uint32_t maxNumClustersPerModules = phase1PixelStripTopology::maxNumClustersPerModules;
     static constexpr uint32_t maxHitsInModule = phase1PixelStripTopology::maxNumClustersPerModules;
     static constexpr uint32_t maxNumberOfHits = 256 * 2048;
-    static constexpr uint32_t maxCellNeighbors = 64;
-    static constexpr uint32_t maxCellTracks = 302;
-    static constexpr uint32_t maxHitsOnTrack = 15;
+    static constexpr uint32_t maxCellNeighbors = 64;//64
+    static constexpr uint32_t maxCellTracks = 302; //302
+    static constexpr uint32_t maxHitsOnTrack = 15; //15
     static constexpr uint32_t maxHitsOnTrackForFullFit = 6;
-    static constexpr uint32_t avgHitsPerTrack = 7;
+    static constexpr uint32_t avgHitsPerTrack = 7;//7
     static constexpr uint32_t maxCellsPerHit = 256;
-    static constexpr uint32_t avgTracksPerHit = 10;
-    static constexpr uint32_t maxNumberOfTuples = 256 * 2048;
+    static constexpr uint32_t avgTracksPerHit = 10;//10
+    static constexpr uint32_t maxNumberOfTuples = 256 * 2048; //256*2048
     //this is well above thanks to maxNumberOfTuples
     static constexpr uint32_t maxHitsForContainers = avgHitsPerTrack * maxNumberOfTuples;
     static constexpr uint32_t maxNumberOfDoublets = 5 * 512 * 2048;
     static constexpr uint32_t maxNumOfActiveDoublets = maxNumberOfDoublets / 8;
-    static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples*4;
-    static constexpr uint32_t maxDepth = 12;
+    static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples*10;//*4
+    static constexpr uint32_t maxDepth = 12;//12
 
     static constexpr uint32_t const *layerStart = phase1PixelStripTopology::layerStart.data();
     

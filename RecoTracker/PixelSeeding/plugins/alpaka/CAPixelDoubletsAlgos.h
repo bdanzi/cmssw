@@ -13,6 +13,7 @@
 #include "DataFormats/SiPixelClusterSoA/interface/ClusteringConstants.h"
 #include "DataFormats/TrackingRecHitSoA/interface/TrackingRecHitsSoA.h"
 #include "Geometry/CommonTopologies/interface/SimplePixelTopology.h"
+#include "Geometry/CommonTopologies/interface/SimplePixelStripTopology.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/VecArray.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/workdivision.h"
@@ -21,7 +22,7 @@
 #include "CAStructures.h"
 
 //#define GPU_DEBUG
-//#define NTUPLE_DEBUG
+#define NTUPLE_DEBUG
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
   using namespace cms::alpakatools;
@@ -291,12 +292,31 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
             continue;
 
           auto mop = hh[oi].iphi();
-          uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop)));
+	  auto mopos2 = std::pow(hh[oi].xGlobal(), 2) + std::pow(hh[oi].yGlobal(), 2);
+	  auto mepos2 = std::pow(hh[i].xGlobal(), 2) + std::pow(hh[i].yGlobal(), 2);
+	  const float thisDXYSign05 = mopos2 > mepos2 ? -0.5f : 0.5f;
+	  const float thisDXY = thisDXYSign05 * sqrt(std::pow(hh[oi].xGlobal() - hh[i].xGlobal(), 2) + std::pow(hh[oi].yGlobal() - hh[i].yGlobal(), 2));
+	  const float invR1GeV = 1.f / 87.6; //1.f / Config::track1GeVradius;
+	  auto pt = [&](int j, int16_t idphi) {
+          auto r2t4 = minRadius2T4;
+          auto ri = mer;
+          auto ro = hh[j].rGlobal();
+          auto dphi = short2phi(idphi);
+          return dphi * dphi * (r2t4 - ri * ro);
+	  };
+	  uint16_t idphiGlobal = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop)));
+	  auto invptq_first = 1/ pt(i,idphiGlobal);
+	  auto invptq_second = 1/ pt(oi,idphiGlobal);
+	  const float newPhi1 = mep - thisDXY * invR1GeV * invptq_first;
+	  const float newPhi2 = mop + thisDXY * invR1GeV * invptq_second;
+	  auto cdist = [](float a) { return a > 3.14159265358979323846 ? 6.28318530717958647692 - a : a; };
+	  const float idphi = cdist(std::abs(newPhi1 - newPhi2));
+	  //uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop))); 
 
-          if (idphi > iphicut)
+          if (idphi > float(iphicut))
             continue;
 
-          if (doClusterCut && cuts.zSizeCut(acc, hh, i, oi))
+          if (doClusterCut && cuts.zSizeCut(acc, hh, i, oi) && oi < TrackerTraits::numberOfPixelLayers)
             continue;
 
           if (doPtCut && ptcut(oi, idphi))
@@ -318,8 +338,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       }
 //      #endif
 #ifdef GPU_DEBUG
-        if (tooMany > 0 or tot > 0)
-          printf("OuterHitOfCell for %d in layer %d/%d, %d,%d %d, %d %.3f %.3f %s\n",
+      if (tooMany > 0 or tot > 0){
+	  printf("i,inner,outer,nmin,tot,tooMany,iphicut,cuts.minz[pairLayerId],cuts.maxz[pairLayerId]");
+          printf("OuterHitOfCell for %d in layer %d/%d, %d,%d %d, %d %.3d %.3d %s\n",
                  i,
                  inner,
                  outer,
@@ -329,7 +350,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
                  iphicut,
                  cuts.minz[pairLayerId],
                  cuts.maxz[pairLayerId],
-                 tooMany > 0 ? "FULL!!" : "not full.");
+                 tooMany > 0 ? "FULL!!" : "not full.");}
 #endif
     }  // loop in block...
   }
