@@ -123,7 +123,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
       }
 #endif
 
-      if (cms::alpakatools::once_per_grid(acc)) {
+            if (cms::alpakatools::once_per_grid(acc)) {
+      #ifdef GPU_DEBUG
         if (apc->get().first >= TrackerTraits::maxNumberOfQuadruplets)
           printf("Tuples overflow\n");
         if (*nCells >= maxNumberOfDoublets)
@@ -134,13 +135,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
           printf("cellTracks overflow\n");
         if (int(hitToTuple->nOnes()) < nHits)
           printf("ERROR hitToTuple  overflow %d %d\n", hitToTuple->nOnes(), nHits);
-#ifdef GPU_DEBUG
         printf("size of cellNeighbors %d \n cellTracks %d \n hitToTuple %d \n",
                cellNeighbors->size(),
                cellTracks->size(),
                hitToTuple->size());
 #endif
-      }
+	}
 
       for (auto idx : cms::alpakatools::uniform_elements(acc, *nCells)) {
         auto const &thisCell = cells[idx];
@@ -422,23 +422,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
       // recursive: not obvious to widen
 
       using Cell = CACellT<TrackerTraits>;
-
 #ifdef GPU_DEBUG
       if (cms::alpakatools::once_per_grid(acc))
         printf("starting producing ntuplets from %d cells \n", *nCells);
 #endif
-
       for (auto idx : cms::alpakatools::uniform_elements(acc, (*nCells))) {
         auto const &thisCell = cells[idx];
-
+	
         // cut by earlyFishbone
         if (thisCell.isKilled())
           continue;
-
+	
         // we require at least three hits
         if (thisCell.outerNeighbors().empty())
           continue;
-
+	
         auto pid = thisCell.layerPairId();
         bool doit = params.startingLayerPair(pid);
 

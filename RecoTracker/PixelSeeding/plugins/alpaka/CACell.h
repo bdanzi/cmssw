@@ -41,7 +41,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     using HitContainer = typename reco::TrackSoA<TrackerTraits>::HitContainer;
     using Quality = ::pixelTrack::Quality;
     static constexpr auto bad = ::pixelTrack::Quality::bad;
-
     enum class StatusBit : uint16_t { kUsed = 1, kInTrack = 2, kKilled = 1 << 15 };
 
     CACellT() = default;
@@ -371,8 +370,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
             pixelhits += 1; 
             counted[outerIndex] = true;
 	    }
-	    if (cells[c].outerNeighbors().empty() && ((!isPixelOuter && outerIndex < 2528) || (outerIndex > 4580 && outerIndex<4676) || (outerIndex > 4988 && outerIndex < 5084))) {
+	    if (cells[c].outerNeighbors().empty() && !isPixelOuter) {
             striphits += 1;
+	    if(!isPixel)
+	      {striphits += 1; }
+	      
 	    }
 	  }
 
@@ -394,8 +396,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                    }
                 }
               }*/
-	  //printf("NPixelHits per tmpNtuplet : %u", pixelhits, "NStripHits per tmpNtuplet : %u\n",striphits);
-          if ((unsigned int)(tmpNtuplet.size()) >= minHitsPerNtuplet - 1 || pixelhits >= 2){//  || (pixelhits>=2 && striphits>=1)) {
+          if ((unsigned int)(tmpNtuplet.size()) >= minHitsPerNtuplet - 1  || (pixelhits>=2)) {
 #ifdef ONLY_TRIPLETS_IN_HOLE
             // triplets accepted only pointing to the hole
             if (tmpNtuplet.size() >= 3 || (startAt0 && hole4(hh, cells[tmpNtuplet[0]])) ||
@@ -416,11 +417,27 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
               ALPAKA_ASSERT_ACC(nh < TrackerTraits::maxHitsOnTrack);
               hits[nh] = theOuterHitId;
               auto it = foundNtuplets.bulkFill(acc, apc, hits, nh + 1);
+	      
               if (it >= 0) {  // if negative is overflow....
+		/*		printf("-----------------------------------------------------\n");
+		printf("Start new ntuplet having size %u\n",tmpNtuplet.size());
+		for (auto c : tmpNtuplet) {
+		  int innerIndex = cells[c].inner_detIndex(hh);
+		  int outerIndex = cells[c].outer_detIndex(hh);
+		  
+		  // Stampa i dettagli di ciascuna cella                                                                                                                                                                                                              
+		  printf("Inner_detIndex: %d, Outer_detIndex: %d\n", innerIndex, outerIndex);
+		}
+		printf("NPixelHits per tmpNtuplet size %u: %u, NStripHits per tmpNtuplet: %u\n", tmpNtuplet.size()+1, pixelhits, striphits);
+		printf("-----------------------------------------------------\n");
+		*/
                 for (auto c : tmpNtuplet)
                   cells[c].addTrack(acc, it, cellTracks);
                 quality[it] = bad;  // initialize to bad
               }
+	      else{
+		printf("Going into overflow from bulkFill");
+	      }
             }
           }
         }

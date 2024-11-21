@@ -21,8 +21,8 @@
 #include "CACell.h"
 #include "CAStructures.h"
 
-//#define GPU_DEBUG
-#define NTUPLE_DEBUG
+#define GPU_DEBUG
+//#define NTUPLE_DEBUG
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
   using namespace cms::alpakatools;
@@ -218,7 +218,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       ALPAKA_ASSERT_ACC(i < offsets[inner + 1]);
 
       // found hit corresponding to our worker thread, now do the job
-      if ((outer < TrackerTraits::numberOfPixelLayers && hh[i].detectorIndex() > pixelClustering::maxNumModules) || hh[i].detectorIndex() > 5356)
+      if ((outer < TrackerTraits::numberOfPixelLayers && hh[i].detectorIndex() > pixelClustering::maxNumModules))
         continue;  // invalid
 
       /* maybe clever, not effective when zoCut is on
@@ -234,7 +234,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
 
       if (doClusterCut && outer > pixelTopology::last_barrel_layer && cuts.clusterCut(acc, hh, i) && outer < TrackerTraits::numberOfPixelLayers)
         continue;
-
+      
       auto mep = hh[i].iphi();
       auto mer = hh[i].rGlobal();
 
@@ -283,11 +283,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
           ALPAKA_ASSERT_ACC(oi >= offsets[outer]);
           ALPAKA_ASSERT_ACC(oi < offsets[outer + 1]);
           auto mo = hh[oi].detectorIndex();
-
+	  //#ifdef GPU_DEBUG
+	  //printf("detectorIndex internal %d detectorIndex external %d\n",hh[i].detectorIndex(),mo);
+	  //#endif 
           // invalid
-          if ((outer < TrackerTraits::numberOfPixelLayers && mo > pixelClustering::maxNumModules) || mo > 5356)
-            continue;
-
+          if ((outer < TrackerTraits::numberOfPixelLayers && mo > pixelClustering::maxNumModules))
+	      continue;
           if (doZ0Cut && z0cutoff(oi))
             continue;
 
@@ -305,6 +306,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
           return dphi * dphi * (r2t4 - ri * ro);
 	  };
 	  uint16_t idphiGlobal = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop)));
+	  
 	  auto invptq_first = 1/ pt(i,idphiGlobal);
 	  auto invptq_second = 1/ pt(oi,idphiGlobal);
 	  const float newPhi1 = mep - thisDXY * invR1GeV * invptq_first;
@@ -312,7 +314,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
 	  auto cdist = [](float a) { return a > 3.14159265358979323846 ? 6.28318530717958647692 - a : a; };
 	  const float idphi = cdist(std::abs(newPhi1 - newPhi2));
 	  //uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop))); 
-
+	  #ifdef GPU_DEBUG
+	  printf("Inner Index/Outer Index: %d/%d, Pt Inner/Outer %f/%f dPhiGlob/dPhiLoc %d/%f Ri/Ro %f/%f\n",hh[i].detectorIndex(),mo,pt(i,idphiGlobal),pt(oi,idphiGlobal),idphiGlobal,idphi, mer,hh[j].rGlobal());
+          #endif
           if (idphi > float(iphicut))
             continue;
 
@@ -323,7 +327,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
             continue;
 
           auto ind = alpaka::atomicAdd(acc, nCells, (uint32_t)1, alpaka::hierarchy::Blocks{});
-          if (ind >= maxNumOfDoublets) {
+	  if (ind >= maxNumOfDoublets) {
+	    #ifdef GPU_DEBUG
+	    printf("Limit on MaxNumOfDoublets exceeded!!!!!, limit reached is %d\n",ind);
+	    #endif
             alpaka::atomicSub(acc, nCells, (uint32_t)1, alpaka::hierarchy::Blocks{});
             break;
           }  // move to SimpleVector??
@@ -338,7 +345,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       }
 //      #endif
 #ifdef GPU_DEBUG
-      if (tooMany > 0 or tot > 0){
+  /* if (tooMany > 0 or tot > 0){
 	  printf("i,inner,outer,nmin,tot,tooMany,iphicut,cuts.minz[pairLayerId],cuts.maxz[pairLayerId]");
           printf("OuterHitOfCell for %d in layer %d/%d, %d,%d %d, %d %.3d %.3d %s\n",
                  i,
@@ -350,7 +357,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
                  iphicut,
                  cuts.minz[pairLayerId],
                  cuts.maxz[pairLayerId],
-                 tooMany > 0 ? "FULL!!" : "not full.");}
+                 tooMany > 0 ? "FULL!!" : "not full.");}*/
 #endif
     }  // loop in block...
   }

@@ -195,10 +195,14 @@ void PixelTrackProducerFromSoAAlpaka<TrackerTraits>::produce(edm::StreamID strea
       auto const &clus = hit.firstClusterRef();
       auto const idx = hitsModuleStart[detI] + clus.pixelCluster().originalId();
       
-      if (idx >= hitsModuleStart[detI + 1]) {
-        std::cout << "excess pixel hit" << std::endl;
-        continue;
-      }
+      /*if (idx >= hitsModuleStart[detI + 1]) {
+            std::cout << "excess pixel hit" << std::endl;
+              continue;
+	      }*/
+	   if (idx >= hitmap.size())
+	hitmap.resize(idx + 256, nullptr);  // only in case of hit overflow in one module
+
+      assert(nullptr == hitmap[idx]);
 
       hitmap[idx] = &hit;
       // ++counter[idx];
@@ -322,7 +326,9 @@ void PixelTrackProducerFromSoAAlpaka<TrackerTraits>::produce(edm::StreamID strea
     math::XYZVector mom(pp.x(), pp.y(), pp.z());
 
     auto track = std::make_unique<reco::Track>(chi2, ndof, pos, mom, gp.charge(), CurvilinearTrajectoryError(mo));
-
+    #ifdef GPU_DEBUG
+    std::cout << "chi2 " << chi2 << " ndof: " << ndof << "pos " << pos << " mom " << mom << " gp.charge() " << gp.charge()<<  std::endl;
+    #endif
     // bad and edup not supported as fit not present or not reliable
     auto tkq = recoQuality[int(q)];
     track->setQuality(tkq);
