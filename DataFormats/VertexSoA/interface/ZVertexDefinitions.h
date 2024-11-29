@@ -5,8 +5,8 @@
 
 namespace zVertex {
 
-  constexpr uint32_t MAXTRACKS = 256 * 1024;
-  constexpr uint32_t MAXVTX = 1024;
+  constexpr uint32_t MAXTRACKS = 2*256 * 1024;
+  constexpr uint32_t MAXVTX = 5000;
 
 }  // namespace zVertex
 

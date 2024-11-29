@@ -195,12 +195,12 @@ void PixelTrackProducerFromSoAAlpaka<TrackerTraits>::produce(edm::StreamID strea
       auto const &clus = hit.firstClusterRef();
       auto const idx = hitsModuleStart[detI] + clus.pixelCluster().originalId();
       
-      /*if (idx >= hitsModuleStart[detI + 1]) {
+       if (idx >= hitsModuleStart[detI + 1]) {
             std::cout << "excess pixel hit" << std::endl;
               continue;
-	      }*/
-	   if (idx >= hitmap.size())
-	hitmap.resize(idx + 256, nullptr);  // only in case of hit overflow in one module
+	      }
+       if (idx >= hitmap.size())
+	 hitmap.resize(idx + 256, nullptr);  /// only in case of hit overflow in one module 
 
       assert(nullptr == hitmap[idx]);
 

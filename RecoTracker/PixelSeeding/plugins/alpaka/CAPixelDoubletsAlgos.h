@@ -21,7 +21,7 @@
 #include "CACell.h"
 #include "CAStructures.h"
 
-#define GPU_DEBUG
+//#define GPU_DEBUG
 //#define NTUPLE_DEBUG
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
@@ -105,7 +105,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       auto dr = hh[i].rGlobal() - hh[o].rGlobal();
 
       auto innerBarrel = mi < T::last_barrel_detIndex; //|| (mi >= 1856 && mi <=3392);
-      auto onlyBarrel = mo < T::last_barrel_detIndex ;//|| (mo >= 1856 && mo <=3392);
+      auto onlyBarrel = mo < T::last_barrel_detIndex ;//|| (mo >= 1856 && hh[o].detectorIndex() <=3392);
 
       if (not innerBarrel and not onlyBarrel)
         return false;
@@ -206,8 +206,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       ALPAKA_ASSERT_ACC(j < innerLayerCumulativeSize[pairLayerId]);
       ALPAKA_ASSERT_ACC(0 == pairLayerId || j >= innerLayerCumulativeSize[pairLayerId - 1]);
 
-      uint8_t inner = TrackerTraits::layerPairs[2 * pairLayerId];
-      uint8_t outer = TrackerTraits::layerPairs[2 * pairLayerId + 1];
+      uint8_t inner = TrackerTraits::layerPairs[2 * pairLayerId]; // layer id
+      uint8_t outer = TrackerTraits::layerPairs[2 * pairLayerId + 1]; // layer id
       ALPAKA_ASSERT_ACC(outer > inner);
 
       auto hoff = PhiBinner::histOff(outer);
@@ -220,7 +220,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
       // found hit corresponding to our worker thread, now do the job
       if ((outer < TrackerTraits::numberOfPixelLayers && hh[i].detectorIndex() > pixelClustering::maxNumModules))
         continue;  // invalid
-
       /* maybe clever, not effective when zoCut is on
       auto bpos = (mi%8)/4;  // if barrel is 1 for z>0
       auto fpos = (outer>3) & (outer<7);
@@ -231,9 +230,41 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
 
         if (mez < cuts.minz[pairLayerId] || mez > cuts.maxz[pairLayerId])
           continue;
-
-      if (doClusterCut && outer > pixelTopology::last_barrel_layer && cuts.clusterCut(acc, hh, i) && outer < TrackerTraits::numberOfPixelLayers)
-        continue;
+	#ifdef GPU_DEBUG
+	if (doClusterCut && outer > pixelTopology::last_barrel_layer && outer > TrackerTraits::numberOfPixelLayers )
+	  {
+	    bool innerB1 = i < T::last_bpix1_detIndex;
+	    bool isOuterLadder =  0 == (i / 8) % 2;
+	    bool innerB2 = (i >= T::last_bpix1_detIndex) && (i < T::last_bpix2_detIndex);
+	    auto mes = (!innerB1) || isOuterLadder ? hh[i].clusterSizeY() : -1;
+	    //if (hh[oi].detectorIndex() <=3392){
+	    if (mes > 0 && innerB1)
+	      printf("ClusterSizeY innerB1 StripBarrel: %d", hh[i].clusterSizeY());
+	    if (mes > 0 && innerB2)
+	      printf("ClusterSizeY innerB2 StripBarrel: %d", hh[i].clusterSizeY());
+	    //}
+	    /*else{
+	      if (mes > 0 && innerB1)
+              printf("ClusterSizeY innerB1 StripDisks: %d", hh[i].clusterSizeY());
+            if (mes > 0 && innerB2)
+              printf("ClusterSizeY innerB2 StripDisks: %d", hh[i].clusterSizeY());
+	      }*/
+	    
+	  }
+	if (doClusterCut && outer > pixelTopology::last_barrel_layer && outer < TrackerTraits::numberOfPixelLayers )
+          {
+            bool innerB1 = i < T::last_bpix1_detIndex;
+            bool isOuterLadder =  0 == (i / 8) % 2;
+            bool innerB2 = (i >= T::last_bpix1_detIndex) && (i < T::last_bpix2_detIndex);
+	    auto mes = (!innerB1) || isOuterLadder ? hh[i].clusterSizeY() : -1;
+            if (mes > 0 && innerB1)
+              printf("ClusterSizeY innerB1 FPix: %d", hh[i].clusterSizeY());
+            if (mes > 0 && innerB2)
+              printf("ClusterSizeY innerB2 FPix: %d", hh[i].clusterSizeY());
+            }
+	#endif
+	if (doClusterCut && outer > pixelTopology::last_barrel_layer && cuts.clusterCut(acc, hh, i) && outer < TrackerTraits::numberOfPixelLayers)
+	  continue;
       
       auto mep = hh[i].iphi();
       auto mer = hh[i].rGlobal();
@@ -305,19 +336,24 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
           auto dphi = short2phi(idphi);
           return dphi * dphi * (r2t4 - ri * ro);
 	  };
+	  /*auto ptSecondmethod = [&](int j, int16_t idphi) {
+          auto ri = mer;
+          auto ro = hh[j].rGlobal();
+	  auto pt = 0.3* 3.8*(ro-ri)/(2*std::sin(idphi/2));
+          auto dphi = short2phi(idphi);
+          return pt;
+          };*/
 	  uint16_t idphiGlobal = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop)));
 	  
 	  auto invptq_first = 1/ pt(i,idphiGlobal);
 	  auto invptq_second = 1/ pt(oi,idphiGlobal);
 	  const float newPhi1 = mep - thisDXY * invR1GeV * invptq_first;
 	  const float newPhi2 = mop + thisDXY * invR1GeV * invptq_second;
-	  auto cdist = [](float a) { return a > 3.14159265358979323846 ? 6.28318530717958647692 - a : a; };
-	  const float idphi = cdist(std::abs(newPhi1 - newPhi2));
-	  //uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop))); 
-	  #ifdef GPU_DEBUG
-	  printf("Inner Index/Outer Index: %d/%d, Pt Inner/Outer %f/%f dPhiGlob/dPhiLoc %d/%f Ri/Ro %f/%f\n",hh[i].detectorIndex(),mo,pt(i,idphiGlobal),pt(oi,idphiGlobal),idphiGlobal,idphi, mer,hh[j].rGlobal());
-          #endif
-          if (idphi > float(iphicut))
+	  //auto cdist = [](float a) { return a > 3.14159265358979323846 ? 6.28318530717958647692 - a : a; };
+	  //uint16_t idphi = short2phi(cdist(std::abs(newPhi1 - newPhi2)));
+	  uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop))); 
+          //if (idphi > float(iphicut))
+	  if (idphi > iphicut)
             continue;
 
           if (doClusterCut && cuts.zSizeCut(acc, hh, i, oi) && oi < TrackerTraits::numberOfPixelLayers)
@@ -325,15 +361,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
 
           if (doPtCut && ptcut(oi, idphi))
             continue;
-
+	
+	  //#ifdef GPU_DEBUG
+	  //auto printdr =  hh[oi].rGlobal()-mer;
+	  //  printf("Inner Index/Outer Index: %d/%d, Pt Doublet %f Pt SecondMethod %f dPhiGlob %d Ri/Ro %f/%f dr %f\n",
+	  //	     hh[i].detectorIndex(), mo, pt(i, idphiGlobal),ptSecondmethod(i,idphiGlobal), idphiGlobal,  mer, hh[oi].rGlobal(), printdr);
+	  //   printf("Index check: i=%d, j=%d, oi=%d, idphiGlobal=%d\n", i, j, oi, idphiGlobal);
+	  //#endif
           auto ind = alpaka::atomicAdd(acc, nCells, (uint32_t)1, alpaka::hierarchy::Blocks{});
 	  if (ind >= maxNumOfDoublets) {
-	    #ifdef GPU_DEBUG
+	    /*#ifdef GPU_DEBUG
 	    printf("Limit on MaxNumOfDoublets exceeded!!!!!, limit reached is %d\n",ind);
-	    #endif
+	    #endif*/
             alpaka::atomicSub(acc, nCells, (uint32_t)1, alpaka::hierarchy::Blocks{});
             break;
-          }  // move to SimpleVector??
+	    }  // move to SimpleVector?? */
           cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, i, oi);
           isOuterHitOfCell[oi].push_back(acc, ind);
 #ifdef GPU_DEBUG

@@ -139,32 +139,31 @@ namespace phase1PixelStripTopology {
   { BPIX2,    TIB1,       phi0p05,  -70.,   0.,    1000.        }, // 41 
   { BPIX2,    TIB2,       phi0p05,  -70.,   0.,    1000.        }, // 42
   { BPIX1,    TIB1,       phi0p05,  -70.,   0.,    1000.        }, // 43
-  { BPIX1,    TIB2,       phi0p05,  -70.,   0.,    1000.        }, // 44
-  { BPIX3,    TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 45
-  { BPIX4,    TID1Pos2D,  phi0p05,   0.,   55.,   1000.         }, // 46
-  { BPIX4,    TID1Neg2D,  phi0p05,  -55.,  0.,    1000.         }, // 47
-  { FPIX1Pos, FPIX3Pos,   phi0p05,  -70.,   70.,      9.        }, // 48
-  { FPIX1Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 49
-  { FPIX1Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 50
-  { FPIX1Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 51
-  { FPIX1Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 52
-  { FPIX1Neg, FPIX3Neg,   phi0p05,  -70.,   70.,      9.        }, // 53
-  { FPIX1Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 54
-  { FPIX1Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 55
-  { FPIX1Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 56
-  { FPIX1Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 57
-  { FPIX2Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 58
-  { FPIX2Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 59
-  { FPIX2Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 60
-  { FPIX2Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 61
-  { FPIX2Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 62
-  { FPIX2Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 63
-  { FPIX2Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 64
-  { FPIX2Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 65
-  { FPIX3Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 66
-  { FPIX3Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        },  // 67
-  { BPIX2,    FPIX2Neg,   phi0p05,  -70.,   70.,   1000.        }, // 68
-  { BPIX2,    FPIX2Pos,   phi0p05,  -70.,   70.,   1000.        }
+  { BPIX3,    TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 44
+  { BPIX4,    TID1Pos2D,  phi0p05,   0.,   55.,   1000.         }, // 45
+  { BPIX4,    TID1Neg2D,  phi0p05,  -55.,  0.,    1000.         }, // 46
+  { FPIX1Pos, FPIX3Pos,   phi0p05,  -70.,   70.,      9.        }, // 47
+  { FPIX1Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 48
+  { FPIX1Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 49
+  { FPIX1Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 50
+  { FPIX1Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 51
+  { FPIX1Neg, FPIX3Neg,   phi0p05,  -70.,   70.,      9.        }, // 52
+  { FPIX1Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 53
+  { FPIX1Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 54
+  { FPIX1Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 55
+  { FPIX1Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 56
+  { FPIX2Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 57
+  { FPIX2Pos, TID1Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 58
+  { FPIX2Pos, TID2Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 59
+  { FPIX2Pos, TID3Pos2D,  phi0p05,  -70.,   70.,   1000.        }, // 60
+  { FPIX2Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 61
+  { FPIX2Neg, TID1Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 62
+  { FPIX2Neg, TID2Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 63
+  { FPIX2Neg, TID3Neg2D,  phi0p05,  -70.,   70.,   1000.        }, // 64
+  { FPIX3Pos, TIB2,       phi0p05,  -70.,   70.,   1000.        }, // 65
+  { FPIX3Neg, TIB2,       phi0p05,  -70.,   70.,   1000.        },  // 66
+  { BPIX2,    FPIX2Neg,   phi0p05,  -70.,   70.,   1000.        }, // 67
+  { BPIX2,    FPIX2Pos,   phi0p05,  -70.,   70.,   1000.        } // 68
   
   };
   
@@ -303,12 +302,12 @@ namespace pixelTopology {
     static constexpr uint32_t avgHitsPerTrack = 7;//7
     static constexpr uint32_t maxCellsPerHit = 256;
     static constexpr uint32_t avgTracksPerHit = 10;//10
-    static constexpr uint32_t maxNumberOfTuples =  256 * 2048; //256*2048
+    static constexpr uint32_t maxNumberOfTuples = 256*2048;// 256 * 2048*10; //256*2048
     //this is well above thanks to maxNumberOfTuples
     static constexpr uint32_t maxHitsForContainers = avgHitsPerTrack * maxNumberOfTuples;
-    static constexpr uint32_t maxNumberOfDoublets = 5 * 512 * 2048;
+    static constexpr uint32_t maxNumberOfDoublets = 10 * 256 * 1024;
     static constexpr uint32_t maxNumOfActiveDoublets = maxNumberOfDoublets / 8;
-    static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples*10;//*4
+    static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples*4;//*4
     static constexpr uint32_t maxDepth = 12;//12
 
     static constexpr uint32_t const *layerStart = phase1PixelStripTopology::layerStart.data();

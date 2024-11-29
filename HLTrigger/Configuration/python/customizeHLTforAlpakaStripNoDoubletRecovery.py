@@ -831,6 +831,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         pixelRecHitSrc = cms.InputTag('hltSiPixelRecHitsSoA'),
         frameSoA = cms.string('FrameSoAPhase1Strip'),
         ptmin = cms.double(0.9),
+        maxNumberOfDoublets = cms.uint32(10*256*1024),
         CAThetaCutBarrel = cms.double(0.002),
         CAThetaCutForward = cms.double(0.003),
         hardCurvCut = cms.double(0.0328407225),
@@ -839,16 +840,18 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         earlyFishbone = cms.bool(True),
         lateFishbone = cms.bool(False),
         fillStatistics = cms.bool(False),
-        minHitsPerNtuplet = cms.uint32(4),
+        minHitsPerNtuplet = cms.uint32(3),
         minHitsForSharingCut = cms.uint32(10),
         fitNas4 = cms.bool(False),
         doClusterCut = cms.bool(True),
         doZ0Cut = cms.bool(True),
+	cellZ0Cut = cms.double(10.0),
+        cellPtCut = cms.double(0.5),
         doPtCut = cms.bool(True),
         useRiemannFit = cms.bool(False),
-        doSharedHitCut = cms.bool(True),
-        dupPassThrough = cms.bool(False),
-        useSimpleTripletCleaner = cms.bool(True),
+        doSharedHitCut = cms.bool(False), #originall True                                                                                              
+        dupPassThrough = cms.bool(False), #originall False                                                                                             
+        useSimpleTripletCleaner = cms.bool(True),#originally True,                                                                                     
         idealConditions = cms.bool(False),
         includeJumpingForwardDoublets = cms.bool(True),
         trackQualityCuts = cms.PSet(
@@ -857,7 +860,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
             0.9,
             1.8
           ),
-          chi2Scale = cms.double(8),
+	chi2Scale = cms.double(8),
           tripletMinPt = cms.double(0.5),
           tripletMaxTip = cms.double(0.3),
           tripletMaxZip = cms.double(12),
@@ -865,18 +868,12 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
           quadrupletMaxTip = cms.double(0.5),
           quadrupletMaxZip = cms.double(12)
         ),
-        minz = cms.vdouble(
-            -20.0, 0.0, -30.0, -22.0, 10.0, -30.0, -70.0, -70.0, -20.0, -22.0, 0.0, -30.0, -70.0, -70.0, -22.0, 15.0, -30.0, -70.0, -70.0, -22.0, -22.0, -22.0, -55.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -1000.0, -1000.0, -1000.0, -1000.0, 0.0, -55.0, 0.0, -55.0, -22.0, -22.0, -22.0, -22.0, -22.0, 0.0, -55.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0 ,
+        phiCuts = cms.vint32( 522, 730, 730, 522, 730, 626, 626, 522, 522, 522, 626, 522, 1200, 1200, 626, 730, 626, 626, 522, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 626, 5000, 5000, 5000, 5000, 522, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000,
         ),
-        # maxr
-        maxr = cms.vdouble(
-            20.0, 9.0, 9.0, 20.0, 7.0, 7.0, 5.0, 5.0, 20.0, 20.0, 9.0, 9.0, 1000.0, 1000.0, 20.0, 6.0, 6.0, 5.0, 5.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 9.0, 1000.0, 1000.0, 1000.0, 1000.0, 9.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0 ,
-        ),
-        # phicuts
-        phiCuts = cms.vint32(
-            522, 730, 730, 522, 626, 626, 522, 522, 522, 522, 522, 522, 1820, 1820, 626, 626, 626, 522, 522, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 900, 900, 900, 900, 1820, 1820, 1820, 1820, 900, 900, 1820, 1820, 1820, 1820, 1820, 522, 1820, 1820, 1820, 1820, 522, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 1820 ,
-        ),
-        
+# Efficienza buona ma doublet recovery fa ancora un 10%                                                                                                
+minz = cms.vdouble(
+     -20.0, 0.0, -30.0, -22.0, 10.0, -30.0, -70.0, -70.0, -20.0, -22.0, 0.0, -30.0, -70.0, -70.0, -22.0, 15.0, -30.0, -70.0, -70.0, -22.0, -22.0, -22.0, -55.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -1000.0, -1000.0, -1000.0, -1000.0, 0.0, -55.0, 0.0, -55.0, -22.0, -22.0, -22.0, -22.0, 0.0, -55.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -70.0, -30.0, 0.0 ,
+),
         # autoselect the alpaka backend
         alpaka = cms.untracked.PSet(
             backend = cms.untracked.string('')
