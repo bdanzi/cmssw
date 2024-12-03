@@ -217,7 +217,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 #endif
 
     // remove duplicates (tracks that share a doublet)
-    numberOfBlocks = cms::alpakatools::divide_up_by(3 * m_params.caParams_.maxNumberOfDoublets_ / 4, blockSize);
+    numberOfBlocks = cms::alpakatools::divide_up_by(3 * m_params.caParams_.maxNumberOfDoublets_ / 4, blockSize)
+      ;
     workDiv1D = cms::alpakatools::make_workdiv<Acc1D>(numberOfBlocks, blockSize);
     
     alpaka::exec<Acc1D>(queue,

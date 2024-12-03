@@ -198,14 +198,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
                                   TkSoAView<TrackerTraits> tracks_view,
                                   bool dupPassThrough) const {
       // quality to mark rejected
-      constexpr auto reject = Quality::bad;  /// cannot be loose
+      constexpr auto reject = pixelTrack::Quality::edup;  /// cannot be loose
       ALPAKA_ASSERT_ACC(nCells);
       for (auto idx : cms::alpakatools::uniform_elements(acc, *nCells)) {
         auto const &thisCell = cells[idx];
 
         if (thisCell.tracks().size() < 2)
           continue;
-	/*
+	
         int8_t maxNl = 0;
 
         // find maxNl
@@ -221,7 +221,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         for (auto it : thisCell.tracks()) {
           if (tracks_view[it].nLayers() < maxNl)
             tracks_view[it].quality() = reject;  // no race: simple assignment of the same constant
-	    }*/
+	    }
       }
     }
   };
@@ -237,8 +237,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
                                   TkSoAView<TrackerTraits> tracks_view,
                                   bool dupPassThrough) const {
       // quality to mark rejected
-      auto const reject = dupPassThrough ? Quality::loose : Quality::bad;
-      constexpr auto loose = Quality::edup;
+      auto const reject = dupPassThrough ? Quality::loose : Quality::dup;
+      constexpr auto loose = Quality::loose;
 
       ALPAKA_ASSERT_ACC(nCells);
       const auto ntNCells = (*nCells);
@@ -489,8 +489,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         auto nhits = tracks_view.hitIndices().size(it);
         if (nhits < 3)
           continue;
-        //if (tracks_view[it].quality() == Quality::edup)
-        //  continue;
+        if (tracks_view[it].quality() == Quality::edup)
+          continue;
         ALPAKA_ASSERT_ACC(tracks_view[it].quality() == Quality::bad);
         if (nhits > TrackerTraits::maxHitsOnTrack)  // current limit
           printf("wrong mult %d %d\n", it, nhits);
@@ -511,8 +511,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         auto nhits = tracks_view.hitIndices().size(it);
         if (nhits < 3)
           continue;
-        //if (tracks_view[it].quality() == Quality::edup)
-        //  continue;
+        if (tracks_view[it].quality() == Quality::edup)
+          continue;
         ALPAKA_ASSERT_ACC(tracks_view[it].quality() == Quality::bad);
         if (nhits > TrackerTraits::maxHitsOnTrack)
           printf("wrong mult %d %d\n", it, nhits);
@@ -535,8 +535,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
           break;  // guard
 
         // if duplicate: not even fit
-        //if (tracks_view[it].quality() == Quality::edup)
-        //  continue;
+        if (tracks_view[it].quality() == Quality::edup)
+           continue;
 
         ALPAKA_ASSERT_ACC(tracks_view[it].quality() == Quality::bad);
 
