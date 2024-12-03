@@ -420,7 +420,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 	      
               if (it >= 0) {  // if negative is overflow....
 		/*printf("-----------------------------------------------------\n");
-				/*Rintf  ("Start new ntuplet having size %u\n",tmpNtuplet.size()+1);
+		printf  ("Start new ntuplet having size %u\n",tmpNtuplet.size()+1);
 		printf("Found Ntuplets id: %u\n",it);
 		for (auto c : tmpNtuplet) {
 		   int innerIndex = cells[c].inner_detIndex(hh);
@@ -429,10 +429,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 		  float outerX = cells[c].outer_x(hh);
 		  printf("Inner_detIndex: %d , Outer_detIndex: %d  \n", innerIndex, outerIndex);
 		  // Stampa i dettagli di ciascuna cella                                                                                                                                                                
-		  //printf("Inner_detIndex: %d Inner_x %.2f, Outer_detIndex: %d Outer_x %.2f \n", innerIndex, innerX, outerIndex, outerX);
+		  printf("Inner_detIndex: %d Inner_x %.2f, Outer_detIndex: %d Outer_x %.2f \n", innerIndex, innerX, outerIndex, outerX);
 		  }
 		printf("NPixelHits per tmpNtuplet size %u: %u, NStripHits per tmpNtuplet: %u\n", tmpNtuplet.size()+1, pixelhits, striphits);
-		printf("-----------------------------------------------------\n");*/
+		printf("-----------------------------------------------------\n"); */
 		
                 for (auto c : tmpNtuplet)
                   cells[c].addTrack(acc, it, cellTracks);
