@@ -105,7 +105,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
 
-    std::string name = "FrameSoA";
+    std::string name = "FrameSoAPhase1";
     name += TrackerTraits::nameModifier;
     desc.add<std::string>("ComponentName", name);
 

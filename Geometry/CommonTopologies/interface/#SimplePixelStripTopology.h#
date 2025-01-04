@@ -290,7 +290,6 @@ namespace phase1PixelStripTopology {
 namespace pixelTopology {
 
   struct Phase1Strip : public Phase1 {
-
     typedef Phase1 PixelBase; //Could be removed using based class
     static constexpr uint32_t maxNumClustersPerModules = phase1PixelStripTopology::maxNumClustersPerModules;
     static constexpr uint32_t maxHitsInModule = phase1PixelStripTopology::maxNumClustersPerModules;
@@ -301,15 +300,15 @@ namespace pixelTopology {
     static constexpr uint32_t avgHitsPerTrack = 7;//7
     static constexpr uint32_t maxCellsPerHit = 256;
     static constexpr uint32_t avgTracksPerHit = 10;//10
-    static constexpr uint32_t maxNumberOfTuples = 256*1024*2;// 256 * 2048*10; //256*2048
+    static constexpr uint32_t maxNumberOfTuples = 256*1024*4;// 256 * 2048*10; //256*2048
     //this is well above thanks to maxNumberOfTuples
     static constexpr uint32_t maxHitsForContainers = avgHitsPerTrack * maxNumberOfTuples;
     static constexpr uint32_t maxNumberOfDoublets = 10 * 256 * 1024;
     static constexpr uint32_t maxNumOfActiveDoublets = maxNumberOfDoublets / 8;
     static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples;//*4
     static constexpr uint32_t maxDepth = 12;//12
-    static constexpr int minYsizeB1 = 24;
-    static constexpr int minYsizeB2 = 16;
+    //static constexpr int minYsizeB1 = 8;
+    //static constexpr int minYsizeB2 = 8;
     static constexpr uint32_t const *layerStart = phase1PixelStripTopology::layerStart.data();
     
     static constexpr float const *minz = phase1PixelStripTopology::minz.data();

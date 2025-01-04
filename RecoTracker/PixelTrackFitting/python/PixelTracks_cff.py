@@ -91,11 +91,9 @@ trackingLowPU.toReplaceWith(pixelTracksTask, _pixelTracksTask_lowPU)
 
 # "Patatrack" pixel ntuplets, fishbone cleaning, Broken Line fit, and density-based vertex reconstruction
 from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
-
 from RecoTracker.PixelSeeding.caHitNtupletCUDAPhase1_cfi import caHitNtupletCUDAPhase1 as _pixelTracksCUDA
 from RecoTracker.PixelSeeding.caHitNtupletCUDAPhase2_cfi import caHitNtupletCUDAPhase2 as _pixelTracksCUDAPhase2
 from RecoTracker.PixelSeeding.caHitNtupletCUDAHIonPhase1_cfi import caHitNtupletCUDAHIonPhase1 as _pixelTracksCUDAHIonPhase1
-
 # Phase 2 modifier
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 # HIon modifiers

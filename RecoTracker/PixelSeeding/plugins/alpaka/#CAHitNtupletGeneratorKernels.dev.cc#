@@ -450,10 +450,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                           this->m_params.dupPassThrough_,
                           this->device_hitToTuple_.data());
       
+
       if (this->m_params.useSimpleTripletCleaner_) {
         // (typename HitToTuple{}::capacity(),
         numberOfBlocks = cms::alpakatools::divide_up_by(HitToTuple{}.capacity(), blockSize);
         workDiv1D = cms::alpakatools::make_workdiv<Acc1D>(numberOfBlocks, blockSize);
+	if(this->m_params.useRemovers_){
         alpaka::exec<Acc1D>(queue,
                             workDiv1D,
                             Kernel_simpleTripletCleaner<TrackerTraits>{},
@@ -472,7 +474,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                             this->m_params.dupPassThrough_,
                             this->device_hitToTuple_.data());
       }
-
 #ifdef GPU_DEBUG
       alpaka::wait(queue);
 #endif

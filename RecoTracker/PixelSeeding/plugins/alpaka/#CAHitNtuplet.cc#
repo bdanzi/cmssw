@@ -22,7 +22,8 @@
 #include "RecoTracker/TkMSParametrization/interface/PixelRecoUtilities.h"
 #include "RecoLocalTracker/Records/interface/PixelCPEFastParamsRecord.h"
 #include "RecoLocalTracker/SiPixelRecHits/interface/alpaka/PixelCPEFastParamsCollection.h"
-
+#include "Geometry/CommonTopologies/interface/SimplePixelTopology.h"
+#include "Geometry/CommonTopologies/interface/SimplePixelStripTopology.h"
 #include "RecoLocalTracker/Records/interface/FrameSoARecord.h"
 #include "RecoLocalTracker/ClusterParameterEstimator/interface/alpaka/FrameSoACollection.h"
 

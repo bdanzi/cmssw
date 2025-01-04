@@ -1417,10 +1417,10 @@ def customizeHLTforAlpakaRename(process):
 
 def customizeHLTforAlpakaStripNoDoubletRecovery(process):
     process.load('Configuration.StandardSequences.Accelerators_cff')
-    #process = customizeHLTforAlpakaStatus(process)
+    process = customizeHLTforAlpakaStatus(process)
     process = customizeHLTforAlpakaPixelReco(process)
-    #process = customizeHLTforAlpakaEcalLocalReco(process)
-    #process = customizeHLTforAlpakaParticleFlowClustering(process)
-    #process = customizeHLTforAlpakaRename(process)
+    process = customizeHLTforAlpakaEcalLocalReco(process)
+#    process = customizeHLTforAlpakaParticleFlowClustering(process)
+    process = customizeHLTforAlpakaRename(process)
 
     return process

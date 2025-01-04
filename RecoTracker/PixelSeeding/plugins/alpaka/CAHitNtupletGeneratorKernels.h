@@ -36,6 +36,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const bool doSharedHitCut_;
       const bool dupPassThrough_;
       const bool useSimpleTripletCleaner_;
+      const bool useRemovers_;
     };
 
     //CAParams

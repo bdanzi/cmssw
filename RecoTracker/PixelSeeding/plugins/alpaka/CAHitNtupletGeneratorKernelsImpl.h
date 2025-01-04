@@ -912,9 +912,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
       }  // loop over hits
     }
   };
-
-  template <typename TrackerTraits>
-  class Kernel_simpleTripletCleaner {
+  
+template <typename TrackerTraits>
+class Kernel_simpleTripletCleaner {
   public:
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(TAcc const &acc,
@@ -923,9 +923,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
                                   bool dupPassThrough,
                                   HitToTuple<TrackerTraits> const *__restrict__ phitToTuple) const {
       // quality to mark rejected
-      auto const reject = Quality::dup;
+      auto const reject = Quality::loose;
       /// min quality of good
-      //auto const good = Quality::dup;
+      auto const good = Quality::loose;
 
       auto &hitToTuple = *phitToTuple;
 
@@ -937,28 +937,28 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caHitNtupletGeneratorKernels {
         uint16_t im = tkNotFound;
 
         // choose best tip!  (should we first find best quality???)
-        /*for (auto ip = hitToTuple.begin(idx); ip != hitToTuple.end(idx); ++ip) {
+        for (auto ip = hitToTuple.begin(idx); ip != hitToTuple.end(idx); ++ip) {
           auto const it = *ip;
           if (tracks_view[it].quality() >= good && std::abs(reco::tip(tracks_view, it)) < mc) {
             mc = std::abs(reco::tip(tracks_view, it));
             im = it;
           }
-	  }
+        }
 
         if (tkNotFound == im)
           continue;
-	*/
+
         // mark worse ambiguities
-	/*
         for (auto ip = hitToTuple.begin(idx); ip != hitToTuple.end(idx); ++ip) {
           auto const it = *ip;
-          //if (tracks_view[it].quality() > reject && it != im)// reco::isTriplet(tracks_view, it) && it != im)
+          if (tracks_view[it].quality() > reject && tracks_view.hitIndices().size(it) < 4 && it != im)
             tracks_view[it].quality() = reject;  //no race:  simple assignment of the same constant
-	    }*/
+        }
 
-      }  // loop over hits 
+      }  // loop over hits
     }
-  };
+};
+
 
   template <typename TrackerTraits>
   class Kernel_print_found_ntuplets {
