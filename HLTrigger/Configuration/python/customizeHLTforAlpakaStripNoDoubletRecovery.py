@@ -6,273 +6,6 @@ from FWCore.ParameterSet.MassReplace import massReplaceInputTag
 from HeterogeneousCore.AlpakaCore.functions import *
 from HLTrigger.Configuration.common import *
 
-## PF HLT in Alpaka
-def customizeHLTforAlpakaParticleFlowClustering(process):
-    '''Customization to introduce Particle Flow Reconstruction in Alpaka
-    '''
-    ## failsafe for fake menus
-    if not hasattr(process, 'hltParticleFlowClusterHBHE'):
-        return process
-
-    for prod in producers_by_type(process, 'HCALRecHitSoAProducer@alpaka'):
-        return process
-
-    process.hltESSPFRecHitHCALParamsRecord = cms.ESSource('EmptyESSource',
-        recordName = cms.string('PFRecHitHCALParamsRecord'),
-        iovIsRunNotTime = cms.bool(True),
-        firstValid = cms.vuint32(1)
-    )
-
-    process.hltESSPFRecHitHCALTopologyRecord = cms.ESSource('EmptyESSource',
-        recordName = cms.string('PFRecHitHCALTopologyRecord'),
-        iovIsRunNotTime = cms.bool(True),
-        firstValid = cms.vuint32(1)
-    )
-
-    process.hltESSJobConfigurationGPURecord = cms.ESSource('EmptyESSource',
-        recordName = cms.string('JobConfigurationGPURecord'),
-        iovIsRunNotTime = cms.bool(True),
-        firstValid = cms.vuint32(1)
-    )
-
-    process.hltHbheRecHitSoA = cms.EDProducer("HCALRecHitSoAProducer@alpaka",
-        src = cms.InputTag("hltHbhereco"),
-        synchronise = cms.untracked.bool(False),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltESPPFRecHitHCALTopology = cms.ESProducer('PFRecHitHCALTopologyESProducer@alpaka',
-        usePFThresholdsFromDB = cms.bool(True),
-        appendToDataLabel = cms.string(''),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltESPPFRecHitHCALParams = cms.ESProducer('PFRecHitHCALParamsESProducer@alpaka',
-        energyThresholdsHB = cms.vdouble(0.1, 0.2, 0.3, 0.3),
-        energyThresholdsHE = cms.vdouble(0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2),
-        appendToDataLabel = cms.string(''),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltParticleFlowRecHitHBHESoA = cms.EDProducer("PFRecHitSoAProducerHCAL@alpaka",
-        producers = cms.VPSet(
-            cms.PSet(
-                src = cms.InputTag("hltHbheRecHitSoA"),
-                params = cms.ESInputTag("hltESPPFRecHitHCALParams:"),
-            )
-        ),
-        topology = cms.ESInputTag("hltESPPFRecHitHCALTopology:"),
-        synchronise = cms.untracked.bool(False),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltParticleFlowRecHitHBHE = cms.EDProducer("LegacyPFRecHitProducer",
-        src = cms.InputTag("hltParticleFlowRecHitHBHESoA")
-    )
-
-    process.hltESPPFClusterParams = cms.ESProducer("PFClusterParamsESProducer@alpaka",
-        seedFinder = cms.PSet(
-            nNeighbours = cms.int32(4),
-            thresholdsByDetector = cms.VPSet(
-                cms.PSet(
-                    detector = cms.string('HCAL_BARREL1'),
-                    seedingThreshold = cms.vdouble(0.125, 0.25, 0.35, 0.35),
-                    seedingThresholdPt = cms.double(0)
-                ),
-                cms.PSet(
-                    detector = cms.string('HCAL_ENDCAP'),
-                    seedingThreshold = cms.vdouble(0.1375, 0.275, 0.275, 0.275, 0.275, 0.275, 0.275),
-                    seedingThresholdPt = cms.double(0)
-                )
-            )
-        ),
-        initialClusteringStep = cms.PSet(
-            thresholdsByDetector = cms.VPSet(
-                cms.PSet(
-                    detector = cms.string('HCAL_BARREL1'),
-                    gatheringThreshold = cms.vdouble(0.1, 0.2, 0.3, 0.3)
-                ),
-                cms.PSet(
-                    detector = cms.string('HCAL_ENDCAP'),
-                    gatheringThreshold = cms.vdouble(0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)
-                )
-            )
-        ),
-        pfClusterBuilder = cms.PSet(
-            maxIterations = cms.uint32(5),
-            minFracTot = cms.double(1e-20),
-            minFractionToKeep = cms.double(1e-07),
-            excludeOtherSeeds = cms.bool(True),
-            showerSigma = cms.double(10),
-            stoppingTolerance = cms.double(1e-08),
-            recHitEnergyNorms = cms.VPSet(
-                cms.PSet(
-                    detector = cms.string('HCAL_BARREL1'),
-                    recHitEnergyNorm = cms.vdouble(0.1, 0.2, 0.3, 0.3)
-                ),
-                cms.PSet(
-                    detector = cms.string('HCAL_ENDCAP'),
-                    recHitEnergyNorm = cms.vdouble(0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)
-                )
-            ),
-            positionCalc = cms.PSet(
-                minFractionInCalc = cms.double(1e-09),
-                minAllowedNormalization = cms.double(1e-09)
-            ),
-            timeResolutionCalcBarrel = cms.PSet(
-                corrTermLowE = cms.double(0),
-                threshLowE = cms.double(6),
-                noiseTerm = cms.double(21.86),
-                constantTermLowE = cms.double(4.24),
-                noiseTermLowE = cms.double(8),
-                threshHighE = cms.double(15),
-                constantTerm = cms.double(2.82)
-            ),
-            timeResolutionCalcEndcap = cms.PSet(
-                corrTermLowE = cms.double(0),
-                threshLowE = cms.double(6),
-                noiseTerm = cms.double(21.86),
-                constantTermLowE = cms.double(4.24),
-                noiseTermLowE = cms.double(8),
-                threshHighE = cms.double(15),
-                constantTerm = cms.double(2.82)
-            )
-        ),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltParticleFlowClusterHBHESoA = cms.EDProducer("PFClusterSoAProducer@alpaka",
-        pfRecHits = cms.InputTag("hltParticleFlowRecHitHBHESoA"),
-        topology = cms.ESInputTag("hltESPPFRecHitHCALTopology:"),
-        pfClusterParams = cms.ESInputTag("hltESPPFClusterParams:"),
-        synchronise = cms.bool(False),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltParticleFlowClusterHBHE = cms.EDProducer("LegacyPFClusterProducer",
-        src = cms.InputTag("hltParticleFlowClusterHBHESoA"),
-        pfClusterBuilder = process.hltParticleFlowClusterHBHE.pfClusterBuilder,
-        usePFThresholdsFromDB = cms.bool(True),
-        recHitsSource = cms.InputTag("hltParticleFlowRecHitHBHE"),
-        PFRecHitsLabelIn = cms.InputTag("hltParticleFlowRecHitHBHESoA")
-    )
-
-    process.HLTPFHcalClustering = cms.Sequence(
-        process.hltHbheRecHitSoA +
-        process.hltParticleFlowRecHitHBHESoA +
-        process.hltParticleFlowRecHitHBHE +
-        process.hltParticleFlowClusterHBHESoA +
-        process.hltParticleFlowClusterHBHE +
-        process.hltParticleFlowClusterHCAL
-    )
-
-    # Some Sequences contain all the modules of process.HLTPFHcalClustering Sequence instead of the Sequence itself
-    # find these Sequences and replace all the modules with the Sequence
-    def replaceItemsInSequence(process, seqNames, itemsToReplace, replacingSequence):
-        for seqName in seqNames:
-            if not hasattr(process, seqName):
-                continue
-            seq = getattr(process, seqName)
-            for item in itemsToReplace:
-                # remove items that will be replaced by replacingSequence
-                if (item != itemsToReplace[-1]):
-                    seq.remove(item)
-                else:
-                    # if last item, replace it with the Sequence
-                    seq.replace(item, replacingSequence)
-        return process
-
-    process = replaceItemsInSequence(
-        process, [
-            'HLTParticleFlowSequence',
-            'HLTParticleFlowSequenceForTaus',
-            'HLTParticleFlowSequenceForDisplTaus',
-            'HLTParticleFlowSequencePPOnAA',
-            'HLTPixelOnlyParticleFlowSequence',
-        ], [
-            process.hltParticleFlowRecHitHBHE,
-            process.hltParticleFlowClusterHBHE,
-            process.hltParticleFlowClusterHCAL
-        ],
-        process.HLTPFHcalClustering
-    )
-
-    process.hltHbheRecHitSoACPUSerial = makeSerialClone(process.hltHbheRecHitSoA)
-
-    process.hltParticleFlowRecHitHBHESoACPUSerial = makeSerialClone(process.hltParticleFlowRecHitHBHESoA)
-    process.hltParticleFlowRecHitHBHESoACPUSerial.producers[0].src = 'hltHbheRecHitSoACPUSerial'
-
-    process.hltParticleFlowRecHitHBHECPUOnly = process.hltParticleFlowRecHitHBHE.clone(
-        src = 'hltParticleFlowRecHitHBHESoACPUSerial',
-    )
-
-    process.hltParticleFlowClusterHBHESoACPUSerial = makeSerialClone(process.hltParticleFlowClusterHBHESoA,
-        pfRecHits = 'hltParticleFlowRecHitHBHESoACPUSerial',
-    )
-
-    process.hltParticleFlowClusterHBHECPUOnly = process.hltParticleFlowClusterHBHE.clone(
-        src = 'hltParticleFlowClusterHBHESoACPUSerial',
-        recHitsSource = 'hltParticleFlowRecHitHBHECPUOnly',
-        PFRecHitsLabelIn = 'hltParticleFlowRecHitHBHESoACPUSerial',
-    )
-
-    process.HLTPFHcalClusteringCPUOnly = cms.Sequence(
-        process.hltHbheRecHitSoACPUSerial +
-        process.hltParticleFlowRecHitHBHESoACPUSerial +
-        process.hltParticleFlowRecHitHBHECPUOnly +
-        process.hltParticleFlowClusterHBHESoACPUSerial +
-        process.hltParticleFlowClusterHBHECPUOnly +
-        process.hltParticleFlowClusterHCALCPUOnly
-    )
-
-    process = replaceItemsInSequence(process, ['HLTParticleFlowCPUOnlySequence'],
-        [process.hltParticleFlowRecHitHBHECPUOnly, process.hltParticleFlowClusterHBHECPUOnly, process.hltParticleFlowClusterHCALCPUOnly],
-        process.HLTPFHcalClusteringCPUOnly)
-
-    # modify EventContent of *DQMGPUvsCPU streams
-    for hltOutModMatch in ['hltOutputDQMGPUvsCPU', 'hltOutputHIDQMGPUvsCPU']:
-        if hasattr(process, hltOutModMatch):
-            outMod = getattr(process, hltOutModMatch)
-            outMod.outputCommands.extend([
-                'keep *_hltParticleFlowClusterHBHESoA_*_*',
-                'keep *_hltParticleFlowClusterHBHESoACPUSerial_*_*',
-            ])
-
-    # Add PF sequences to DQM_*HcalReconstruction_v Path
-    for pathNameMatch in ['DQM_HcalReconstruction_v', 'DQM_HIHcalReconstruction_v']:
-        dqmHcalRecoPathName = None
-        for pathName in process.paths_():
-            if pathName.startswith(pathNameMatch):
-                dqmHcalRecoPathName = pathName
-                break
-        if dqmHcalRecoPathName == None:
-            continue
-        dqmHcalPath = getattr(process, dqmHcalRecoPathName)
-        dqmHcalRecoPathIndex = dqmHcalPath.index(process.hltHcalConsumerGPU) + 1
-        dqmHcalPath.insert(dqmHcalRecoPathIndex, process.HLTPFHcalClusteringCPUOnly)
-        dqmHcalPath.insert(dqmHcalRecoPathIndex, process.HLTPFHcalClustering)
-
-    return process
-
-
 ## Pixel HLT in Alpaka
 def customizeHLTforDQMGPUvsCPUPixel(process):
     '''Ad-hoc changes to test HLT config containing only DQM_PixelReconstruction_v and DQMGPUvsCPU stream
@@ -397,10 +130,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
 
     if not hasattr(process, 'HLTDoLocalPixelSequence'):
         return process
-    if not hasattr(process, 'HLTDoLocalPixelSequenceSerialSync'):
-        return process
-    #for prod in producers_by_type(process, 'SiPixelRawToClusterPhase1@alpaka'):
-    #    return process
 
     process.hltESPSiPixelCablingSoA = cms.ESProducer('SiPixelCablingSoAESProducer@alpaka',
         CablingMapLabel = cms.string(''),
@@ -514,82 +243,39 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     #  - SiPixelDigisSoACollection
     # produces
     #  - TrackingRecHitsSoACollection<TrackerTraits>
-    process.hltSiStripRawToClustersFacility = cms.EDProducer( "SiStripClusterizerFromRaw",
-    ProductLabel = cms.InputTag( "rawDataCollector" ),
-    ConditionsLabel = cms.string( "" ),
-    onDemand = cms.bool( False ),
-    DoAPVEmulatorCheck = cms.bool( False ),
-    LegacyUnpacker = cms.bool( False ),
-    HybridZeroSuppressed = cms.bool( False ),
-    Clusterizer = cms.PSet( 
-      ConditionsLabel = cms.string( "" ),
-      ClusterThreshold = cms.double( 5.0 ),
-      SeedThreshold = cms.double( 3.0 ),
-      Algorithm = cms.string( "ThreeThresholdAlgorithm" ),
-      ChannelThreshold = cms.double( 2.0 ),
-      MaxAdjacentBad = cms.uint32( 0 ),
-      setDetId = cms.bool( True ),
-      MaxSequentialHoles = cms.uint32( 0 ),
-      RemoveApvShots = cms.bool( True ),
-      clusterChargeCut = cms.PSet(  refToPSet_ = cms.string( "HLTSiStripClusterChargeCutNone" ) ),
-      MaxSequentialBad = cms.uint32( 1 )
+    process.hltSiStripRawToClustersFacility = cms.EDProducer("SiStripClusterizerFromRaw",
+    Algorithms = cms.PSet(
+        CommonModeNoiseSubtractionMode = cms.string('Median'),
+        PedestalSubtractionFedMode = cms.bool(True),
+        SiStripFedZeroSuppressionMode = cms.uint32(4),
+        TruncateInSuppressor = cms.bool(True),
+        Use10bitsTruncation = cms.bool(False),
+        doAPVRestore = cms.bool(False),
+        useCMMeanMap = cms.bool(False)
     ),
-    RawDigiProducersList = cms.VInputTag( 'hltSiStripRawToDigi:VirginRaw','hltSiStripRawToDigi:ProcessedRaw','hltSiStripRawToDigi:ScopeMode','hltSiStripRawToDigi:ZeroSuppressed' ),
-    storeCM = cms.bool( False ),
-    fixCM = cms.bool( False ),
-    produceRawDigis = cms.bool( False ),
-    produceCalculatedBaseline = cms.bool( False ),
-    produceBaselinePoints = cms.bool( False ),
-    storeInZScollBadAPV = cms.bool( True ),
-    produceHybridFormat = cms.bool( False )
-    )
-    
-    process.hltSiStripClusterizerForRawPrime = cms.EDProducer( "SiStripClusterizer",
-    Clusterizer = cms.PSet( 
-      Algorithm = cms.string( "ThreeThresholdAlgorithm" ),
-      ChannelThreshold = cms.double( 2.0 ),
-      SeedThreshold = cms.double( 3.0 ),
-      ClusterThreshold = cms.double( 5.0 ),
-      MaxSequentialHoles = cms.uint32( 0 ),
-      MaxSequentialBad = cms.uint32( 1 ),
-      MaxAdjacentBad = cms.uint32( 0 ),
-      RemoveApvShots = cms.bool( True ),
-      clusterChargeCut = cms.PSet(  refToPSet_ = cms.string( "HLTSiStripClusterChargeCutNone" ) ),
-      ConditionsLabel = cms.string( "" )
+    Clusterizer = cms.PSet(
+        Algorithm = cms.string('ThreeThresholdAlgorithm'),
+        ChannelThreshold = cms.double(2.0),
+        ClusterThreshold = cms.double(5.0),
+        ConditionsLabel = cms.string(''),
+        MaxAdjacentBad = cms.uint32(0),
+        MaxClusterSize = cms.uint32(8),
+        MaxSequentialBad = cms.uint32(1),
+        MaxSequentialHoles = cms.uint32(0),
+        RemoveApvShots = cms.bool(True),
+        SeedThreshold = cms.double(3.0),
+        clusterChargeCut = cms.PSet(
+            refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone')
+        ),
+        setDetId = cms.bool(True)
     ),
-    DigiProducersList = cms.VInputTag( 'hltSiStripZeroSuppression:ZeroSuppressed','hltSiStripZeroSuppression:VirginRaw','hltSiStripZeroSuppression:ProcessedRaw','hltSiStripZeroSuppression:ScopeMode' )
+    ConditionsLabel = cms.string(''),
+    DoAPVEmulatorCheck = cms.bool(False),
+    HybridZeroSuppressed = cms.bool(False),
+    LegacyUnpacker = cms.bool(False),
+    ProductLabel = cms.InputTag("rawDataCollector"),
+    onDemand = cms.bool(False)
     )
-    process.hltSiStripRawToClustersFacility = cms.EDProducer( "SiStripClusterizerFromRaw",
-    ProductLabel = cms.InputTag( "rawDataCollector" ),
-    ConditionsLabel = cms.string( "" ),
-    onDemand = cms.bool( False ),
-    DoAPVEmulatorCheck = cms.bool( False ),
-    LegacyUnpacker = cms.bool( False ),
-    HybridZeroSuppressed = cms.bool( False ),
-    Clusterizer = cms.PSet( 
-      ConditionsLabel = cms.string( "" ),
-      MaxClusterSize = cms.uint32( 32 ),
-      ClusterThreshold = cms.double( 5.0 ),
-      SeedThreshold = cms.double( 3.0 ),
-      Algorithm = cms.string( "ThreeThresholdAlgorithm" ),
-      ChannelThreshold = cms.double( 2.0 ),
-      MaxAdjacentBad = cms.uint32( 0 ),
-      setDetId = cms.bool( True ),
-      MaxSequentialHoles = cms.uint32( 0 ),
-      RemoveApvShots = cms.bool( True ),
-      clusterChargeCut = cms.PSet(  refToPSet_ = cms.string( "HLTSiStripClusterChargeCutNone" ) ),
-      MaxSequentialBad = cms.uint32( 1 )
-    ),
-    Algorithms = cms.PSet( 
-      Use10bitsTruncation = cms.bool( False ),
-      CommonModeNoiseSubtractionMode = cms.string( "Median" ),
-      useCMMeanMap = cms.bool( False ),
-      TruncateInSuppressor = cms.bool( True ),
-      doAPVRestore = cms.bool( False ),
-      SiStripFedZeroSuppressionMode = cms.uint32( 4 ),
-      PedestalSubtractionFedMode = cms.bool( True )
-    )
-    )   
     process.hltSiStripMatchedRecHitsFull = cms.EDProducer( "SiStripRecHitConverter",
     ClusterProducer = cms.InputTag( "hltSiStripRawToClustersFacility" ),
     rphiRecHits = cms.string( "rphiRecHit" ),
@@ -624,12 +310,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         backend = cms.untracked.string('')
       )
     )
-    #if hasattr(process, 'hltSiPixelRecHitsGPU'):
-    #    del process.hltSiPixelRecHitsGPU
-    #if hasattr(process, 'hltSiPixelRecHitsFromGPU'):
-    #    del process.hltSiPixelRecHitsFromGPU
-    #if hasattr(process, 'hltSiPixelRecHitsSoAFromGPU'):
-    #    del process.hltSiPixelRecHitsSoAFromGPU
     process.hltSiPixelRecHits = cms.EDProducer('SiPixelRecHitFromSoAAlpakaPhase1',
         pixelRecHitSrc = cms.InputTag('hltSiPixelOnlyRecHitsSoA'),
         src = cms.InputTag('hltSiPixelClusters'),
@@ -641,18 +321,28 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     process.HLTDoLocalPixelTask = cms.ConditionalTask(
         process.hltOnlineBeamSpotDevice,
         process.hltSiPixelClustersSoA,
-        process.hltSiPixelClusters,   # was: hltSiPixelClusters
-        process.hltSiPixelClustersCache,          # really needed ??
-        process.hltSiPixelDigiErrors, # was: hltSiPixelDigis
+        process.hltSiPixelClusters,   
+        process.hltSiPixelClustersCache,          
+        process.hltSiPixelDigiErrors, 
         process.hltSiStripRawToClustersFacility,
         process.hltSiStripMatchedRecHitsFull,
         process.hltSiPixelOnlyRecHitsSoA,
         process.hltSiPixelRecHitsSoA,
-        process.hltSiPixelRecHits,    # was: hltSiPixelRecHits
+        process.hltSiPixelRecHits, 
     )
-
-    process.HLTDoLocalPixelSequence = cms.Sequence( process.HLTDoLocalPixelTask)
-
+    process.HLTDoLocalPixelSequence = cms.Sequence(
+        process.hltOnlineBeamSpotDevice+
+        process.hltSiPixelClustersSoA+
+        process.hltSiPixelClusters+                                                                                                                               
+        process.hltSiPixelClustersCache+                                                                                                                                       
+        process.hltSiPixelDigiErrors+                                                                                                                                        
+        process.hltSiStripRawToClustersFacility+
+        process.hltSiStripMatchedRecHitsFull+
+        process.hltSiPixelOnlyRecHitsSoA+
+        process.hltSiPixelRecHitsSoA+
+        process.hltSiPixelRecHits                                                                                                                                      
+    )
+            
     ###
     ### SerialSync version of Pixel Local Reconstruction
     ###
@@ -696,50 +386,20 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         process.hltSiPixelRecHitsSoASerialSync,
         process.hltSiPixelRecHitsSerialSync
     )
+    if not hasattr(process, 'HLTDoLocalPixelSequenceSerialSync'):
+        return process
     process.HLTDoLocalPixelSequenceSerialSync = cms.Sequence( process.HLTDoLocalPixelCPUSerialTask)
-    #if hasattr(process, 'HLTDoLocalPixelCPUOnlyTask'):
-    #    del process.HLTDoLocalPixelCPUOnlyTask
-
-    #if hasattr(process, 'hltMeasurementTrackerEventCPUOnly'):
-    #    process.hltMeasurementTrackerEventCPUOnly.pixelClusterProducer = "hltSiPixelClustersSerialSync"
-    #    process.hltMeasurementTrackerEventCPUOnly.inactivePixelDetectorLabels = ["hltSiPixelDigiErrorsSerialSync"]
-    #    process.hltMeasurementTrackerEventCPUOnly.badPixelFEDChannelCollectionLabels = ["hltSiPixelDigiErrorsSerialSync"]
-
-    #if hasattr(process, 'hltDoubletRecoveryClustersRefRemovalCPUOnly'):
-    #    process.hltDoubletRecoveryClustersRefRemovalCPUOnly.pixelClusters = "hltSiPixelClustersSerialSync"
-
-    #if hasattr(process, 'hltDoubletRecoveryPFlowPixelClusterCheckCPUOnly'):
-    #    process.hltDoubletRecoveryPFlowPixelClusterCheckCPUOnly.PixelClusterCollectionLabel = "hltSiPixelClustersSerialSync"
-
-    #if hasattr(process, 'hltDoubletRecoveryPixelLayersAndRegionsCPUOnly'):
-    #    process.hltDoubletRecoveryPixelLayersAndRegionsCPUOnly.inactivePixelDetectorLabels = ['hltSiPixelDigiErrorsSerialSync']
-    #    process.hltDoubletRecoveryPixelLayersAndRegionsCPUOnly.badPixelFEDChannelCollectionLabels = ['hltSiPixelDigiErrorsSerialSync']
-    #    process.hltDoubletRecoveryPixelLayersAndRegionsCPUOnly.BPix.HitProducer = "hltSiPixelRecHitsSerialSync"
-    #    process.hltDoubletRecoveryPixelLayersAndRegionsCPUOnly.FPix.HitProducer = "hltSiPixelRecHitsSerialSync"
-
-    #if hasattr(process, 'hltIter3IterL3FromL1MuonClustersRefRemovalCPUOnly'):
-    #    process.hltIter3IterL3FromL1MuonClustersRefRemovalCPUOnly.pixelClusters = "hltSiPixelClustersSerialSync"
-
-    #if hasattr(process, 'hltIter3IterL3FromL1MuonPixelClusterCheckCPUOnly'):
-    #    process.hltIter3IterL3FromL1MuonPixelClusterCheckCPUOnly.PixelClusterCollectionLabel = "hltSiPixelClustersSerialSync"
-
-    #if hasattr(process, 'hltIter3IterL3FromL1MuonPixelLayersAndRegionsCPUOnly'):
-    #    process.hltIter3IterL3FromL1MuonPixelLayersAndRegionsCPUOnly.inactivePixelDetectorLabels = ['hltSiPixelDigiErrorsSerialSync']
-    #    process.hltIter3IterL3FromL1MuonPixelLayersAndRegionsCPUOnly.badPixelFEDChannelCollectionLabels = ['hltSiPixelDigiErrorsSerialSync']
-    #    process.hltIter3IterL3FromL1MuonPixelLayersAndRegionsCPUOnly.BPix.HitProducer = "hltSiPixelRecHitsSerialSync"
-    #    process.hltIter3IterL3FromL1MuonPixelLayersAndRegionsCPUOnly.FPix.HitProducer = "hltSiPixelRecHitsSerialSync"
-
-    #for modLabel in [
-    #    'hltDoubletRecoveryPixelLayersAndRegions',
-    #    'hltFullIter6PixelTrackingRegionSeedLayersBPPRef',
-    #    'hltIter3IterL3FromL1MuonPixelLayersAndRegions',
-    #    'hltMeasurementTrackerEvent',
-    #]:
-    #    if hasattr(process, modLabel):
-    #        mod = getattr(process, modLabel)
-    #        mod.inactivePixelDetectorLabels = ['hltSiPixelDigiErrors']
-    #        mod.badPixelFEDChannelCollectionLabels = ['hltSiPixelDigiErrors']
-
+    process.HLTDoLocalPixelSequenceSerialSync = cms.Sequence(
+        process.hltOnlineBeamSpotDeviceSerialSync+
+        process.hltSiPixelClustersSoASerialSync+
+        process.hltSiPixelClustersSerialSync+
+        process.hltSiPixelDigiErrorsSerialSync+
+        process.hltSiStripRawToClustersFacility+
+        process.hltSiStripMatchedRecHitsFull+
+        process.hltSiPixelOnlyRecHitsSoACPUSerial+
+        process.hltSiPixelRecHitsSoASerialSync+
+        process.hltSiPixelRecHitsSerialSync
+        )
     return process
 
 
@@ -749,12 +409,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
 
     if not hasattr(process, 'HLTRecoPixelTracksSequence'):
         return process
-    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
-        if hasattr(producer, "CPE"):
-            delattr(producer, "CPE")
-        if not hasattr(producer, 'frameSoA'):
-            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
-            
+                
     for producer in producers_by_type(process, "TrackListMerger"):
         current_producers = producer.TrackProducers
         if (
@@ -788,32 +443,6 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
     if hasattr(process, "hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync"):
         del process.hltDoubletRecoveryPFlowTrackSelectionHighPuritySerialSync
                     
-    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
-        #print("entered the producers loop")
-        if hasattr(producer, "CPE"):
-            print("found CPE stuff")
-            #delattr(producer, "CPE")
-        if not hasattr(producer, 'frameSoA'):
-            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
-
-    if not hasattr(process, 'HLTRecoPixelTracksSequence'):
-        return process
-    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
-        #print("entered the producers loop")
-        if hasattr(producer, "CPE"):
-            print("found CPE stuff")
-            #delattr(producer, "CPE")
-        if not hasattr(producer, 'frameSoA'):
-            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
-
-    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
-        #print("entered the producers loop")
-        if hasattr(producer, "CPE"):
-            print("found CPE stuff")
-            #delattr(producer, "CPE")
-        if not hasattr(producer, 'frameSoA'):
-            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
-
     # alpaka EDProducer
     # consumes
     #  - TrackingRecHitsSoACollection<TrackerTraits>
@@ -838,6 +467,15 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
         hardCurvCut = cms.double(0.0328407225),
         dcaCutInnerTriplet = cms.double(0.15),
         dcaCutOuterTriplet = cms.double(0.25),
+        CAThetaCutBarrelPixelBarrelStrip = cms.double(0.002),
+        CAThetaCutBarrelPixelForwardStrip = cms.double(0.003),
+        CAThetaCutBarrelStripForwardStrip = cms.double(0.003),
+        CAThetaCutBarrelStrip = cms.double(0.002),
+        CAThetaCutDefault = cms.double(0.003),
+        dcaCutInnerTripletPixelStrip = cms.double(0.15),
+        dcaCutOuterTripletPixelStrip = cms.double(0.25),
+        dcaCutTripletStrip = cms.double(0.25),
+        dcaCutTripletDefault = cms.double(0.25),
         earlyFishbone = cms.bool(True),
         lateFishbone = cms.bool(False),
         fillStatistics = cms.bool(False),
@@ -878,7 +516,7 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
 #     522, 730, 730, 522, 730, 626, 626, 522, 522, 522, 626, 522, 1200, 1200, 626, 730, 626, 626, 522, 5000, 5000, 5000, 5000, 0, 5000, 0, 0, 0, 0, 5000, 5000, 5000, 5000, 0, 0, 5000, 5000, 0, 5000, 0, 5000, 5000, 5000, 5000, 5000, 0, 5000, 626, 0, 0, 0, 0, 522, 5000, 5000, 5000, 5000, 0, 0, 0, 0, 5000, 5000, 5000, 5000, 0, 5000, 5000, 0 ,
                                                #),
 phiCuts = cms.vint32(
-     522, 730, 730, 522, 730, 626, 626, 522, 522, 522, 626, 522, 1200, 1200, 626, 730, 626, 626, 522, 1800, 1800, 1800, 1800, 0, 1800, 0, 0, 0, 0, 1800, 1800, 1800, 1800, 0, 0, 1800, 1800, 0, 1800, 0, 1800, 1800, 1800, 1800, 1800, 0, 1800, 626, 0, 0, 0, 0, 522, 1800, 1800, 1800, 1800, 0, 0, 0, 0, 1800, 1800, 1800, 1800, 0, 1800, 1800, 0 ,
+     522, 730, 730, 522, 730, 626, 626, 522, 522, 522, 626, 522, 1200, 1200, 626, 730, 626, 626, 522, 2000, 2000, 2000, 2000, 0, 2000, 0, 0, 0, 0, 2000, 2000, 2000, 2000, 0, 0, 2000, 2000, 0, 2000, 0, 2000, 2000, 2000, 2000, 2000, 0, 2000, 626, 0, 0, 0, 0, 522, 2000, 2000, 2000, 2000, 0, 0, 0, 0, 2000, 2000, 2000, 2000, 0, 2000, 00, 0 ,
 ),
 
 
@@ -920,17 +558,16 @@ phiCuts = cms.vint32(
         StripCPE = cms.string('hltESPStripCPEfromTrackAngle'),
         appendToDataLabel = cms.string('')
     )
-    
-            
+                
+    process.HLTRecoPixelTracksTask = cms.ConditionalTask(
+        process.hltPixelTracksSoA,
+        process.hltPixelTracks,
+    )
+
     process.hltPixelTracksSerialSync = process.hltPixelTracks.clone(
         pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsSerialSync"),
         hitModuleStartSrc = cms.InputTag("hltSiPixelRecHitsSoASerialSync"),     
         trackSrc = cms.InputTag("hltPixelTracksSoASerialSync")
-    )
-
-    process.HLTRecoPixelTracksTask = cms.ConditionalTask(
-        process.hltPixelTracksSoA,
-        process.hltPixelTracks,
     )
 
     process.HLTRecoPixelTracksCPUSerialTask = cms.ConditionalTask(
@@ -940,54 +577,11 @@ phiCuts = cms.vint32(
     process.HLTRecoPixelTracksSequence = cms.Sequence( process.HLTRecoPixelTracksTask )
     process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
 
-    process.hltPixelTracksSerialSync = process.hltPixelTracks.clone(
-        pixelRecHitLegacySrc = cms.InputTag("hltSiPixelRecHitsSerialSync"),
-        hitModuleStartSrc = cms.InputTag("hltSiPixelRecHitsSoASerialSync"),     
-        trackSrc = cms.InputTag("hltPixelTracksSoASerialSync")
-    )
-
-    process.HLTRecoPixelTracksTask = cms.ConditionalTask(
-        process.hltPixelTracksSoA,
-        process.hltPixelTracks,
-    )
-
-    process.HLTRecoPixelTracksCPUSerialTask = cms.ConditionalTask(
-        process.hltPixelTracksSoASerialSync,
-        process.hltPixelTracksSerialSync,
-    )
-    process.HLTRecoPixelTracksSequence = cms.Sequence( process.HLTRecoPixelTracksTask )
-
-    process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence( process.HLTRecoPixelTracksCPUSerialTask )
+    process.HLTRecoPixelTracksSequence = cms.Sequence(process.hltPixelTracksSoA+process.hltPixelTracks)
+    if hasattr(process, 'hltPixelTracksSerialSync'):
+        process.HLTRecoPixelTracksCPUSerialSequence = cms.Sequence(process.hltPixelTracksSoASerialSync+process.hltPixelTracksSerialSync)
 
     return process
-
-def customizeHLTAlpakaDeleteCPE(process):
-    for producer in producers_by_type(process, "CAHitNtupletAlpakaPhase1@alpaka"):
-        print("entered the producers loop")
-        if hasattr(producer, "CPE"):
-            print("found CPE stuff")
-            #delattr(producer, "CPE")
-        if not hasattr(producer, 'frameSoA'):
-            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
-
-    for producer in producers_by_type(process, "alpaka_serial_sync::CAHitNtupletAlpakaPhase1"):
-        print("entered the producers loop")
-        if hasattr(producer, "CPE"):
-            print("found CPE stuff")
-            #delattr(producer, "CPE")
-        if not hasattr(producer, 'frameSoA'):
-            setattr(producer, 'frameSoA', cms.string('FrameSoAPhase1'))
-
-    process.frameSoAESProducerPhase1Strip = cms.ESProducer('FrameSoAESProducerPhase1@alpaka',
-      ComponentName = cms.string('FrameSoAPhase1'),
-      appendToDataLabel = cms.string(''),
-      alpaka = cms.untracked.PSet(
-        backend = cms.untracked.string('')
-      )
-    )
-
-    return process
-
 
 def customizeHLTforAlpakaPixelRecoVertexing(process):
     '''Customisation to introduce the Pixel-Vertex Reconstruction in Alpaka
@@ -1051,37 +645,24 @@ def customizeHLTforAlpakaPixelRecoVertexing(process):
         del process.hltPixelVerticesGPU
 
     ## failsafe for fake menus
-    if not hasattr(process, 'hltTrimmedPixelVertices'):
-        return process
-
-    
-    process.HLTRecopixelvertexingTask = cms.ConditionalTask(
-        process.HLTRecoPixelTracksTask,
-        process.hltPixelVerticesSoA,
-        process.hltPixelVertices,
-        process.hltTrimmedPixelVertices
-    )
-    process.HLTRecopixelvertexingCPUSerialTask = cms.ConditionalTask(
-        process.HLTRecoPixelTracksCPUSerialTask,
-        process.hltPixelVerticesSoASerialSync,
-        process.hltPixelVerticesSerialSync,
-        process.hltTrimmedPixelVerticesSerialSync
-    )
-    process.HLTRecopixelvertexingSequence = cms.Sequence( process.HLTRecopixelvertexingTask )
-
-    process.HLTRecopixelvertexingSequenceSerialSync = cms.Sequence( process.HLTRecopixelvertexingCPUSerialTask )
+    if hasattr(process, 'hltTrimmedPixelVertices'):
+        process.HLTRecopixelvertexingTask = cms.ConditionalTask(
+            process.HLTRecoPixelTracksTask,
+            process.hltPixelVerticesSoA,
+            process.hltPixelVertices,
+            process.hltTrimmedPixelVertices
+        )
+        process.HLTRecopixelvertexingSequence = cms.Sequence( process.HLTRecopixelvertexingTask )
+    if hasattr(process, 'hltTrimmedPixelVerticesSerialSync'):
+        process.HLTRecopixelvertexingCPUSerialTask = cms.ConditionalTask(
+            process.HLTRecoPixelTracksCPUSerialTask,
+            process.hltPixelVerticesSoASerialSync,
+            process.hltPixelVerticesSerialSync,
+            process.hltTrimmedPixelVerticesSerialSync
+        )
+        process.HLTRecopixelvertexingSequenceSerialSync = cms.Sequence( process.HLTRecopixelvertexingCPUSerialTask )
 
     return process
-
-    #if hasattr(process, 'HLTRecopixelvertexingCPUOnlyTask'):
-    #    del process.HLTRecopixelvertexingCPUOnlyTask
-
-    #process.hltTrimmedPixelVerticesCPUOnly.src = 'hltPixelVerticesSerialSync'
-    #process.hltParticleFlowCPUOnly.vertexCollection = 'hltPixelVerticesSerialSync'
-    #process.hltAK4PFJetsCPUOnly.srcPVs = 'hltPixelVerticesSerialSync'
-
-    return process
-
 
 def customizeHLTforAlpakaPixelReco(process):
     '''Customisation to introduce the Pixel Local+Track+Vertex Reconstruction in Alpaka
@@ -1093,214 +674,6 @@ def customizeHLTforAlpakaPixelReco(process):
 
     return process
 
-
-## ECAL HLT in Alpaka
-def customizeHLTforAlpakaEcalLocalReco(process):
-
-    if not hasattr(process, 'hltEcalDigisGPU'):
-        return process
-
-    for prod in producers_by_type(process, 'EcalRawToDigiPortable@alpaka'):
-        return process
-
-    # remove existing ECAL GPU-related ES modules
-    for foo in [foo for foo in process.es_producers_() if ('ecal' in foo and 'GPU' in foo)]:
-        process.__delattr__(foo)
-
-    for foo in [foo for foo in process.es_sources_() if ('ecal' in foo and 'GPU' in foo)]:
-        process.__delattr__(foo)
-
-    # redefine ECAL local reconstruction sequence
-    process.hltEcalDigisPortableSoA = cms.EDProducer("EcalRawToDigiPortable@alpaka",
-        FEDs = process.hltEcalDigisGPU.FEDs,
-        InputLabel = process.hltEcalDigisGPU.InputLabel,
-        digisLabelEB = process.hltEcalDigisGPU.digisLabelEB,
-        digisLabelEE = process.hltEcalDigisGPU.digisLabelEE,
-        maxChannelsEB = process.hltEcalDigisGPU.maxChannelsEB,
-        maxChannelsEE = process.hltEcalDigisGPU.maxChannelsEE,
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    from EventFilter.EcalRawToDigi.ecalElectronicsMappingHostESProducer_cfi import ecalElectronicsMappingHostESProducer as _ecalElectronicsMappingHostESProducer
-    process.ecalElectronicsMappingHostESProducer = _ecalElectronicsMappingHostESProducer.clone()
-
-    process.hltEcalDigis = cms.EDProducer("EcalDigisFromPortableProducer",
-        digisInLabelEB = cms.InputTag('hltEcalDigisPortableSoA', 'ebDigis'),
-        digisInLabelEE = cms.InputTag('hltEcalDigisPortableSoA', 'eeDigis'),
-        digisOutLabelEB = cms.string("ebDigis"),
-        digisOutLabelEE = cms.string("eeDigis"),
-        produceDummyIntegrityCollections = cms.bool(False)
-    )
-
-    process.hltEcalUncalibRecHitPortableSoA = cms.EDProducer("EcalUncalibRecHitProducerPortable@alpaka",
-        EBtimeConstantTerm = process.hltEcalUncalibRecHitGPU.EBtimeConstantTerm,
-        EBtimeFitLimits_Lower = process.hltEcalUncalibRecHitGPU.EBtimeFitLimits_Lower,
-        EBtimeFitLimits_Upper = process.hltEcalUncalibRecHitGPU.EBtimeFitLimits_Upper,
-        EBtimeNconst = process.hltEcalUncalibRecHitGPU.EBtimeNconst,
-        EEtimeConstantTerm = process.hltEcalUncalibRecHitGPU.EEtimeConstantTerm,
-        EEtimeFitLimits_Lower = process.hltEcalUncalibRecHitGPU.EEtimeFitLimits_Lower,
-        EEtimeFitLimits_Upper = process.hltEcalUncalibRecHitGPU.EEtimeFitLimits_Upper,
-        EEtimeNconst = process.hltEcalUncalibRecHitGPU.EEtimeNconst,
-        amplitudeThresholdEB = process.hltEcalUncalibRecHitGPU.amplitudeThresholdEB,
-        amplitudeThresholdEE = process.hltEcalUncalibRecHitGPU.amplitudeThresholdEE,
-        digisLabelEB = cms.InputTag("hltEcalDigisPortableSoA", "ebDigis"),
-        digisLabelEE = cms.InputTag("hltEcalDigisPortableSoA", "eeDigis"),
-        kernelMinimizeThreads = process.hltEcalUncalibRecHitGPU.kernelMinimizeThreads,
-        outOfTimeThresholdGain12mEB = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain12mEB,
-        outOfTimeThresholdGain12mEE = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain12mEE,
-        outOfTimeThresholdGain12pEB = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain12pEB,
-        outOfTimeThresholdGain12pEE = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain12pEE,
-        outOfTimeThresholdGain61mEB = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain61mEB,
-        outOfTimeThresholdGain61mEE = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain61mEE,
-        outOfTimeThresholdGain61pEB = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain61pEB,
-        outOfTimeThresholdGain61pEE = process.hltEcalUncalibRecHitGPU.outOfTimeThresholdGain61pEE,
-        recHitsLabelEB = process.hltEcalUncalibRecHitGPU.recHitsLabelEB,
-        recHitsLabelEE = process.hltEcalUncalibRecHitGPU.recHitsLabelEE,
-        shouldRunTimingComputation = process.hltEcalUncalibRecHitGPU.shouldRunTimingComputation,
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    if hasattr(process, 'hltEcalUncalibRecHitGPU'):
-        del process.hltEcalUncalibRecHitGPU
-
-    process.ecalMultifitParametersSource = cms.ESSource("EmptyESSource",
-        firstValid = cms.vuint32(1),
-        iovIsRunNotTime = cms.bool(True),
-        recordName = cms.string('EcalMultifitParametersRcd')
-    )
-
-    from RecoLocalCalo.EcalRecProducers.ecalMultifitConditionsHostESProducer_cfi import ecalMultifitConditionsHostESProducer as _ecalMultifitConditionsHostESProducer
-    process.ecalMultifitConditionsHostESProducer = _ecalMultifitConditionsHostESProducer.clone()
-
-    from RecoLocalCalo.EcalRecProducers.ecalMultifitParametersHostESProducer_cfi import ecalMultifitParametersHostESProducer as _ecalMultifitParametersHostESProducer
-    process.ecalMultifitParametersHostESProducer = _ecalMultifitParametersHostESProducer.clone()
-
-    process.hltEcalUncalibRecHit = cms.EDProducer("EcalUncalibRecHitSoAToLegacy",
-        isPhase2 = process.hltEcalUncalibRecHitFromSoA.isPhase2,
-        recHitsLabelCPUEB = process.hltEcalUncalibRecHitFromSoA.recHitsLabelCPUEB,
-        recHitsLabelCPUEE = process.hltEcalUncalibRecHitFromSoA.recHitsLabelCPUEE,
-        uncalibRecHitsPortableEB = cms.InputTag("hltEcalUncalibRecHitPortableSoA", "EcalUncalibRecHitsEB"),
-        uncalibRecHitsPortableEE = cms.InputTag("hltEcalUncalibRecHitPortableSoA", "EcalUncalibRecHitsEE")
-    )
-
-    if hasattr(process, 'hltEcalUncalibRecHitSoA'):
-        delattr(process, 'hltEcalUncalibRecHitSoA')
-
-    process.hltEcalDetIdToBeRecovered = cms.EDProducer("EcalDetIdToBeRecoveredProducer",
-        integrityBlockSizeErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityBlockSizeErrors'),
-        integrityTTIdErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityTTIdErrors'),
-
-        ebIntegrityGainErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityGainErrors'),
-        eeIntegrityGainErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityGainErrors'),
-
-        ebIntegrityGainSwitchErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityGainSwitchErrors'),
-        eeIntegrityGainSwitchErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityGainSwitchErrors'),
-
-        ebIntegrityChIdErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityChIdErrors'),
-        eeIntegrityChIdErrors = cms.InputTag('hltEcalDigisLegacy', 'EcalIntegrityChIdErrors'),
-
-        ebSrFlagCollection = cms.InputTag("hltEcalDigisLegacy"),
-        eeSrFlagCollection = cms.InputTag("hltEcalDigisLegacy"),
-
-        ebDetIdToBeRecovered = cms.string("ebDetId"),
-        eeDetIdToBeRecovered = cms.string("eeDetId"),
-
-        ebFEToBeRecovered = cms.string("ebFE"),
-        eeFEToBeRecovered = cms.string("eeFE"),
-    )
-
-    process.hltEcalRecHit.triggerPrimitiveDigiCollection = 'hltEcalDigisLegacy:EcalTriggerPrimitives'
-
-    process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence = cms.Sequence(
-        process.hltEcalDigisLegacy +
-        process.hltEcalDigisPortableSoA +
-        process.hltEcalDigis +          # conversion of PortableSoA to legacy format
-        process.hltEcalUncalibRecHitPortableSoA +
-        process.hltEcalUncalibRecHit +  # conversion of PortableSoA to legacy format
-        process.hltEcalDetIdToBeRecovered +
-        process.hltEcalRecHit
-    )
-
-    process.HLTPreshowerSequence = cms.Sequence(process.hltEcalPreshowerDigis + process.hltEcalPreshowerRecHit)
-
-    process.HLTDoFullUnpackingEgammaEcalSequence = cms.Sequence(
-        process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence +
-        process.HLTPreshowerSequence
-    )
-
-    process.HLTDoFullUnpackingEgammaEcalMFSequence = cms.Sequence(process.HLTDoFullUnpackingEgammaEcalSequence)
-
-    process.hltEcalDigisCPUSerialSoA = makeSerialClone(process.hltEcalDigisPortableSoA)
-
-    process.hltEcalDigisCPUSerial = process.hltEcalDigis.clone(
-        digisInLabelEB = 'hltEcalDigisCPUSerialSoA:ebDigis',
-        digisInLabelEE = 'hltEcalDigisCPUSerialSoA:eeDigis',
-    )
-
-    process.hltEcalUncalibRecHitCPUSerialSoA = makeSerialClone(process.hltEcalUncalibRecHitPortableSoA,
-        digisLabelEB = "hltEcalDigisCPUSerialSoA:ebDigis",
-        digisLabelEE = "hltEcalDigisCPUSerialSoA:eeDigis",
-    )
-
-    process.hltEcalUncalibRecHitCPUSerial = process.hltEcalUncalibRecHit.clone(
-        uncalibRecHitsPortableEB = "hltEcalUncalibRecHitCPUSerialSoA:EcalUncalibRecHitsEB",
-        uncalibRecHitsPortableEE = "hltEcalUncalibRecHitCPUSerialSoA:EcalUncalibRecHitsEE",
-    )
-
-    process.hltEcalRecHitCPUOnly = process.hltEcalRecHit.clone(
-        EBuncalibRecHitCollection = 'hltEcalUncalibRecHitCPUSerial:EcalUncalibRecHitsEB',
-        EEuncalibRecHitCollection = 'hltEcalUncalibRecHitCPUSerial:EcalUncalibRecHitsEE',
-    )
-
-    process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerCPUOnlySequence = cms.Sequence(
-        process.hltEcalDigisLegacy +
-        process.hltEcalDigisCPUSerialSoA +
-        process.hltEcalDigisCPUSerial + # conversion of CPUSerialSoA to legacy format
-        process.hltEcalUncalibRecHitCPUSerialSoA +
-        process.hltEcalUncalibRecHitCPUSerial + # conversion of CPUSerialSoA to legacy format
-        process.hltEcalDetIdToBeRecovered +
-        process.hltEcalRecHitCPUOnly
-    )
-
-    for prod in producers_by_type(process, 'HLTRechitsToDigis'):
-        prod.srFlagsIn = 'hltEcalDigisLegacy'
-
-    for prod in producers_by_type(process, 'CorrectedECALPFClusterProducer'):
-        try:
-            prod.energyCorrector.ebSrFlagLabel = 'hltEcalDigisLegacy'
-            prod.energyCorrector.eeSrFlagLabel = 'hltEcalDigisLegacy'
-        except:
-            pass
-
-    for pathNameMatch in ['DQM_EcalReconstruction_v', 'DQM_HIEcalReconstruction_v']:
-        dqmEcalRecoPathName = None
-        for pathName in process.paths_():
-            if pathName.startswith(pathNameMatch):
-                dqmEcalRecoPath = getattr(process, pathName)
-                dqmEcalRecoPath.insert(dqmEcalRecoPath.index(process.HLTEndSequence), getattr(process, 'HLTDoFullUnpackingEgammaEcalWithoutPreshowerCPUOnlySequence'))
-                for delmod in ['hltEcalConsumerCPU', 'hltEcalConsumerGPU']:
-                    if hasattr(process, delmod):
-                        process.__delattr__(delmod)
-
-    for hltOutModMatch in ['hltOutputDQMGPUvsCPU', 'hltOutputHIDQMGPUvsCPU']:
-        if hasattr(process, hltOutModMatch):
-            outMod = getattr(process, hltOutModMatch)
-            outCmds_new = [foo for foo in outMod.outputCommands if 'Ecal' not in foo]
-            outCmds_new += [
-                'keep *_hltEcalDigis_*_*',
-                'keep *_hltEcalDigisCPUSerial_*_*',
-                'keep *_hltEcalUncalibRecHit_*_*',
-                'keep *_hltEcalUncalibRecHitCPUSerial_*_*',
-            ]
-            outMod.outputCommands = outCmds_new[:]
-
-    return process
 
 def customizeHLTforAlpakaStatus(process):
 
@@ -1416,11 +789,9 @@ def customizeHLTforAlpakaRename(process):
 
 
 def customizeHLTforAlpakaStripNoDoubletRecovery(process):
-    process.load('Configuration.StandardSequences.Accelerators_cff')
-    #process = customizeHLTforAlpakaStatus(process)
+    print("applying AlpakaCustomizer")
+    process = customizeHLTforAlpakaStatus(process)
     process = customizeHLTforAlpakaPixelReco(process)
-    #process = customizeHLTforAlpakaEcalLocalReco(process)
-    #process = customizeHLTforAlpakaParticleFlowClustering(process)
-    #process = customizeHLTforAlpakaRename(process)
+    process = customizeHLTforAlpakaRename(process)
 
     return process

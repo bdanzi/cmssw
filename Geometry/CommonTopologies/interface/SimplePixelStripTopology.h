@@ -308,8 +308,8 @@ namespace pixelTopology {
     static constexpr uint32_t maxNumOfActiveDoublets = maxNumberOfDoublets / 8;
     static constexpr uint32_t maxNumberOfQuadruplets = maxNumberOfTuples;//*4
     static constexpr uint32_t maxDepth = 12;//12
-    static constexpr int minYsizeB1 = 24;
-    static constexpr int minYsizeB2 = 16;
+    static constexpr int minYsizeB1 = 1;
+    static constexpr int minYsizeB2 = 1;
     static constexpr uint32_t const *layerStart = phase1PixelStripTopology::layerStart.data();
     
     static constexpr float const *minz = phase1PixelStripTopology::minz.data();

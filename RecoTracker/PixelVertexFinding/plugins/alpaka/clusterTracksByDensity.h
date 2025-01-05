@@ -63,7 +63,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
     ALPAKA_ASSERT_ACC(nn);
     ALPAKA_ASSERT_ACC(iv);
 
-    using Hist = cms::alpakatools::HistoContainer<uint8_t, 256, 17280, 8, uint16_t>;
+    using Hist = cms::alpakatools::HistoContainer<uint8_t, 256, 16000, 8, uint16_t>;
     auto& hist = alpaka::declareSharedVar<Hist, __COUNTER__>(acc);
     auto& hws = alpaka::declareSharedVar<Hist::Counter[32], __COUNTER__>(acc);
 
