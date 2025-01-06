@@ -31,7 +31,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
                                                              float chi2max  // max normalized distance to cluster
   ) {
     constexpr bool verbose = false;
-
     if constexpr (verbose) {
       if (cms::alpakatools::once_per_block(acc))
         printf("params %d %f %f %f\n", minT, eps, errmax, chi2max);

@@ -1,4 +1,3 @@
-#include "FWCore/Framework/interface/MakerMacros.h"
 #include "Validation/RPCRecHits/interface/RPCRecHitValid.h"
 
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -637,4 +636,5 @@ void RPCRecHitValid::analyze(const edm::Event &event, const edm::EventSetup &eve
   h_eventCount->Fill(2);
 }
 
+#include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(RPCRecHitValid);
