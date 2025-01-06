@@ -182,9 +182,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       auto r1 = otherCell.inner_r(hh);
       auto z1 = otherCell.inner_z(hh);
-      //auto isBarrel = otherCell.outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex;
-      //bool isOT = otherCell.outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
-      //bool isOTdca = otherCell.inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
       // TODO tune CA cuts below (theta and dca)
       // Distinguish caThetaCuts for different cases
       float caThetaCut;
@@ -354,49 +351,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
               acc, hh, cells, cellTracks, foundNtuplets, apc, quality, tmpNtuplet, minHitsPerNtuplet, startAt0);
         }
         if (last) {  // if long enough save...
-          unsigned int pixelhits = 0;
-	  unsigned int striphits = 0;
-	  bool counted[TrackerTraits::numberOfPixelModules] = {false};
-	  for (auto c : tmpNtuplet) {
-	    int innerIndex = static_cast<int>(cells[c].inner_detIndex(hh));
-	    int outerIndex = static_cast<int>(cells[c].outer_detIndex(hh));
-	    bool isPixel = innerIndex < TrackerTraits::numberOfPixelModules;
-	    bool isPixelOuter = outerIndex < TrackerTraits::numberOfPixelModules;
-	    if (isPixel && !counted[innerIndex]){
-            pixelhits += 1; 
-            counted[innerIndex] = true; 
-	    }
-	    if (cells[c].outerNeighbors().empty() && isPixelOuter && !counted[outerIndex]) {
-            pixelhits += 1; 
-            counted[outerIndex] = true;
-	    }
-	    if (cells[c].outerNeighbors().empty() && !isPixelOuter) {
-            striphits += 1;
-	    if(!isPixel)
-	      {striphits += 1; }
-	      
-	    }
-	  }
-
-          /*for (auto c : tmpNtuplet) {
-                //auto isBarrel = cells[c].inner_detIndex(hh) < TrackerTraits::last_barrel_detIndex ;
-                //auto isEndCaps = cells[c].inner_detIndex(hh) > TrackerTraits::last_barrel_detIndex && cells[c].inner_detIndex(hh) < TrackerTraits::numberOfPixelModules;
-                //bool isOT = cells[c].inner_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
-                bool isPixel = cells[c].inner_detIndex(hh) < TrackerTraits::numberOfPixelModules;
-                //auto isBarrelOuter = cells[c].outer_detIndex(hh) < TrackerTraits::last_barrel_detIndex ;
-                //auto isEndCapsOuter = cells[c].outer_detIndex(hh) > TrackerTraits::last_barrel_detIndex && cells[c].outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
-                //bool isOTOuter = cells[c].outer_detIndex(hh) >= TrackerTraits::numberOfPixelModules;
-                bool isPixelOuter = cells[c].outer_detIndex(hh) < TrackerTraits::numberOfPixelModules;
-                
-              if(isPixel){
-                pixelhits = pixelhits + 1;
-                if (cells[c].outerNeighbors().empty()){
-                   if(isPixelOuter){
-                    pixelhits = pixelhits + 1;
-                   }
-                }
-              }*/
-          if ((unsigned int)(tmpNtuplet.size()) >= minHitsPerNtuplet - 1){  //|| (pixelhits>=2)) {
+          if ((unsigned int)(tmpNtuplet.size()) >= minHitsPerNtuplet - 1){
 #ifdef ONLY_TRIPLETS_IN_HOLE
             // triplets accepted only pointing to the hole
             if (tmpNtuplet.size() >= 3 || (startAt0 && hole4(hh, cells[tmpNtuplet[0]])) ||
@@ -419,26 +374,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
               auto it = foundNtuplets.bulkFill(acc, apc, hits, nh + 1);
 	      
               if (it >= 0) {  // if negative is overflow....
-		/*printf("-----------------------------------------------------\n");
-		printf  ("Start new ntuplet having size %u\n",tmpNtuplet.size()+1);
-		printf("Found Ntuplets id: %u\n",it);
-		for (auto c : tmpNtuplet) {
-		   int innerIndex = cells[c].inner_detIndex(hh);
-		  int outerIndex = cells[c].outer_detIndex(hh);
-		  float innerX = cells[c].inner_x(hh);
-		  float outerX = cells[c].outer_x(hh);
-		  printf("Inner_detIndex: %d , Outer_detIndex: %d  \n", innerIndex, outerIndex);
-		  // Stampa i dettagli di ciascuna cella                                                                                                                                                                
-		  printf("Inner_detIndex: %d Inner_x %.2f, Outer_detIndex: %d Outer_x %.2f \n", innerIndex, innerX, outerIndex, outerX);
-		  }
-		printf("NPixelHits per tmpNtuplet size %u: %u, NStripHits per tmpNtuplet: %u\n", tmpNtuplet.size()+1, pixelhits, striphits);
-		printf("-----------------------------------------------------\n"); */
-		
                 for (auto c : tmpNtuplet)
                   cells[c].addTrack(acc, it, cellTracks);
                 quality[it] = bad;  // initialize to bad
               }
-	     
 	      else{
 		//printf("Going into overflow from bulkFill");
 	      }

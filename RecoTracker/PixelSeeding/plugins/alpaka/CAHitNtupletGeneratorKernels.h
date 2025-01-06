@@ -71,7 +71,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       /// Is is a starting layer pair?
       ALPAKA_FN_ACC ALPAKA_FN_INLINE bool startingLayerPair(int16_t pid) const {
         if constexpr (std::is_same_v<TrackerTraits, pixelTopology::Phase1Strip>) {
-         return (pid < 12 || pid == 47 || pid == 52 || pid == 43  || pid == 41 || pid == 68 || pid == 18 || pid == 67);
+         return (pid < 12 || pid == 37 || pid == 38 || pid == 34  || pid == 32 || pid == 18 || pid == 48);
         }
         else{
           return minHitsPerNtuplet_ > 3 ? pid < 3 : pid < 8 || pid > 12;
@@ -82,7 +82,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       ALPAKA_FN_ACC ALPAKA_FN_INLINE bool startAt0(int16_t pid) const {
         if constexpr (std::is_same_v<TrackerTraits, pixelTopology::Phase1Strip>) {
         assert((pixelTopology::Phase1Strip::layerPairs[pid * 2] == 0) ==
-               (pid < 3 || pid == 8 || pid == 10 || pid == 11 || pid == 43 ));  // to be 100% sure it's working, may be removed
+               (pid < 3 || pid == 8 || pid == 10 || pid == 11 || pid == 34 ));  // to be 100% sure it's working, may be removed
         return pixelTopology::Phase1Strip::layerPairs[pid * 2] == 0;
         }
         else{
