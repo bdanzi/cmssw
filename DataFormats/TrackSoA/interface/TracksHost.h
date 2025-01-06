@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <alpaka/alpaka.hpp>
 #include "Geometry/CommonTopologies/interface/SimplePixelTopology.h"
+#include "Geometry/CommonTopologies/interface/SimplePixelStripTopology.h"
 #include "DataFormats/TrackSoA/interface/TracksSoA.h"
 #include "DataFormats/TrackSoA/interface/TrackDefinitions.h"
 #include "DataFormats/Portable/interface/PortableHostCollection.h"
@@ -36,6 +37,7 @@ namespace pixelTrack {
   using TracksHostPhase1 = TracksHost<pixelTopology::Phase1>;
   using TracksHostPhase2 = TracksHost<pixelTopology::Phase2>;
   using TracksHostHIonPhase1 = TracksHost<pixelTopology::HIonPhase1>;
+  using TracksHostPhase1Strip = TracksHost<pixelTopology::Phase1Strip>;
 
 }  // namespace pixelTrack
 
