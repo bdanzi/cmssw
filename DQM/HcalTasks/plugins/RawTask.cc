@@ -245,7 +245,7 @@ RawTask::RawTask(edm::ParameterSet const& ps)
   //	TODO: Include for Online Calibration Channels marked as bad
   //	a comment below is left on purpose!
   //_cBadQualityvsBX.fill(bx, creport->badQualityDigis());
-  
+
   int Nbadq = creport->badQualityDigis();
   if (lumiCache->EvtCntLS == 1)
     _NBadQEvent = 0;  // Reset at the beginning of each new LS
@@ -430,6 +430,8 @@ std::shared_ptr<hcaldqm::Cache> RawTask::globalBeginLuminosityBlock(edm::Luminos
       for (uint32_t iflag = 0; iflag < _vflags.size(); iflag++)
         _cSummaryvsLS_FED.setBinContent(eid, _currentLS, int(iflag), int(flag::fNCDAQ));
       _cSummaryvsLS.setBinContent(eid, _currentLS, int(flag::fNCDAQ));
+      if (!hcaldqm::utilities::isFEDHO(eid) && fed != 1136)
+        _cBadQ_FEDvsLSmod10.setBinContent(eid, _currentLS % 10, int(flag::fNCDAQ));
       continue;
     }
 

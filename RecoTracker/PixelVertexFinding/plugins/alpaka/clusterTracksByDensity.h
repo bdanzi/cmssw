@@ -35,7 +35,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
                          float chi2max  // max normalized distance to cluster
   ) {
     using namespace vertexFinder;
-    constexpr bool verbose = false;  // in principle the compiler should optmize out if false
+    constexpr bool verbose = true;  // in principle the compiler should optmize out if false
     const uint32_t threadIdxLocal(alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[0u]);
 
     if constexpr (verbose) {

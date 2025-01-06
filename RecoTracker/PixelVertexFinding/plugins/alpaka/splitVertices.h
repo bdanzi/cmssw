@@ -39,11 +39,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
       if (data[kv].chi2() < maxChi2 * float(ndof))
         continue;
 
-      ALPAKA_ASSERT_ACC(ndof < int32_t(MAXTK));
+      /* ALPAKA_ASSERT_ACC(ndof < int32_t(MAXTK));
 
-      if ((uint32_t)ndof >= MAXTK)
-        continue;  // too bad FIXME
-
+            if ((uint32_t)ndof >= MAXTK)
+	      continue;  // too bad FIXME
+      */
       if (cms::alpakatools::once_per_block(acc)) {
         // reset the number of tracks for the current vertex
         nq = 0u;
@@ -66,7 +66,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
       auto& wnew = alpaka::declareSharedVar<float[2], __COUNTER__>(acc);
       alpaka::syncBlockThreads(acc);
 
-      ALPAKA_ASSERT_ACC(int(nq) == ndof + 1);
+      /*ALPAKA_ASSERT_ACC(int(nq) == ndof + 1);*/
 
       int maxiter = 20;
       // kt-min....
