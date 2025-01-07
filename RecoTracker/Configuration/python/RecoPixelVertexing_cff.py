@@ -109,6 +109,12 @@ pixelVerticesAlpaka = _pixelVerticesAlpakaPhase1.clone()
 phase2_tracker.toReplaceWith(pixelVerticesAlpaka,_pixelVerticesAlpakaPhase2.clone())
 (pp_on_AA & ~phase2_tracker).toReplaceWith(pixelVerticesAlpaka,_pixelVerticesAlpakaHIonPhase1.clone(doSplitting = False))
 
+# strip tracks
+from RecoTracker.PixelVertexFinding.pixelVertexProducerAlpakaPhase1Strip_cfi import pixelVertexProducerAlpakaPhase1Strip as _pixelVertexProducerAlpakaPhase1Strip
+from Configuration.ProcessModifiers.stripNtupletFit_cff import stripNtupletFit
+
+(alpaka & stripNtupletFit & ~phase2_tracker).toReplaceWith(pixelVerticesAlpaka, _pixelVertexProducerAlpakaPhase1Strip.clone())
+
 from RecoTracker.PixelVertexFinding.pixelVertexFromSoAAlpaka_cfi import pixelVertexFromSoAAlpaka as _pixelVertexFromSoAAlpaka
 alpaka.toReplaceWith(pixelVertices, _pixelVertexFromSoAAlpaka.clone())
 
@@ -132,3 +138,6 @@ recopixelvertexingTask = cms.Task(
     pixelVerticesTask
 )
 recopixelvertexing = cms.Sequence(recopixelvertexingTask)
+
+
+
