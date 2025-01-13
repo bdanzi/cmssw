@@ -1,5 +1,5 @@
-#ifndef Geometry_CommonTopologies_SimplePixelStripTopology_h
-#define Geometry_CommonTopologies_SimplePixelStripTopology_h
+#ifndef Geometry_CommonTopologies_SimpleSeedingLayersTopology_h
+#define Geometry_CommonTopologies_SimpleSeedingLayersTopology_h
 #include <iostream>
 #include "Geometry/CommonTopologies/interface/SimplePixelTopology.h"
 namespace phase1PixelStripTopology {
@@ -301,4 +301,4 @@ namespace pixelTopology {
 
 }  // namespace pixelTopology
 
-#endif  // Geometry_CommonTopologies_SimplePixelStripTopology_h
+#endif  // Geometry_CommonTopologies_SimpleSeedingLayersTopology_h
