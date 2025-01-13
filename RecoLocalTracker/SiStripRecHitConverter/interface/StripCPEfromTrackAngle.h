@@ -4,7 +4,6 @@
 #include "RecoLocalTracker/SiStripRecHitConverter/interface/StripCPE.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-
 class StripCPEfromTrackAngle : public StripCPE {
 private:
   using StripCPE::localParameters;
