@@ -4,7 +4,6 @@
 #include "TTree.h"
 #include "TFile.h"
 
-
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -70,6 +69,7 @@ struct ExtraSelector {
 
     return true;
   }
+
 private:
   bool tipOk(const T& t);
 };
@@ -90,11 +90,11 @@ bool ExtraSelector<reco::Track>::tipOk(const reco::Track& t) {
 template <>
 bool ExtraSelector<TrackingParticle>::tipOk(const TrackingParticle& tp) {
   auto tip2 = tp.vertex().perp2();
-  if (tip2 < minTip*minTip) {
+  if (tip2 < minTip * minTip) {
     // std::clog << "Discarding track because the tip " << sqrt(tip2) << " is smaller than " << minTip << std::endl;
     return false;
   }
-  if (tip2 > maxTip*maxTip) {
+  if (tip2 > maxTip * maxTip) {
     // std::clog << "Discarding track because the tip " << sqrt(tip2) << " is larger than " << maxTip << std::endl;
     return false;
   }
@@ -121,13 +121,13 @@ private:
   TTree* output_tree_;
   std::vector<edm::InputTag> trackLabels_;
   edm::EDGetTokenT<ClusterTPAssociation> tpMap_;
-//   edm::EDGetTokenT<std::vector<PileupSummaryInfo>>  infoPileUp_;
+  //   edm::EDGetTokenT<std::vector<PileupSummaryInfo>>  infoPileUp_;
   std::vector<edm::EDGetTokenT<edm::View<reco::Track>>> trackTokens_;
   edm::EDGetTokenT<reco::TrackToTrackingParticleAssociator> trackAssociatorToken_;
   edm::EDGetTokenT<TrackingParticleCollection> trackingParticleToken_;
 
-//   const double sharingFraction_;
-//   const double sharingFractionForTriplets_;
+  //   const double sharingFraction_;
+  //   const double sharingFractionForTriplets_;
 
   // static RecoTrackSelectorBase makeTrackSelector(const edm::ParameterSet& pset);
 };
@@ -183,11 +183,13 @@ ExtraSelector<T> makeSelector(const edm::ParameterSet& pset) {
 LessSimpleValidation::LessSimpleValidation(const edm::ParameterSet& iConfig)
     : trackLabels_(iConfig.getParameter<std::vector<edm::InputTag>>("trackLabels")),
       // tpMap_(consumes(iConfig.getParameter<edm::InputTag>("tpMap"))),
-    //   infoPileUp_(consumes(iConfig.getParameter< edm::InputTag >("infoPileUp"))),
-      trackAssociatorToken_(consumes<reco::TrackToTrackingParticleAssociator>(iConfig.getUntrackedParameter<edm::InputTag>("trackAssociator"))),
-      trackingParticleToken_(consumes<TrackingParticleCollection>(iConfig.getParameter< edm::InputTag >("trackingParticles")))
-    //   sharingFraction_(iConfig.getUntrackedParameter<double>("sharingFraction")),
-    //   sharingFractionForTriplets_(iConfig.getUntrackedParameter<double>("sharingFractionForTriplets"))
+      //   infoPileUp_(consumes(iConfig.getParameter< edm::InputTag >("infoPileUp"))),
+      trackAssociatorToken_(consumes<reco::TrackToTrackingParticleAssociator>(
+          iConfig.getUntrackedParameter<edm::InputTag>("trackAssociator"))),
+      trackingParticleToken_(
+          consumes<TrackingParticleCollection>(iConfig.getParameter<edm::InputTag>("trackingParticles")))
+//   sharingFraction_(iConfig.getUntrackedParameter<double>("sharingFraction")),
+//   sharingFractionForTriplets_(iConfig.getUntrackedParameter<double>("sharingFractionForTriplets"))
 {
   for (auto& itag : trackLabels_) {
     trackTokens_.push_back(consumes<edm::View<reco::Track>>(itag));
@@ -210,7 +212,7 @@ LessSimpleValidation::LessSimpleValidation(const edm::ParameterSet& iConfig)
   auto&& regionSets = iConfig.getParameter<std::vector<edm::ParameterSet>>("regions");
   tpSelectors.reserve(regionSets.size());
 
-  for (auto& regionPSet: regionSets) {
+  for (auto& regionPSet : regionSets) {
     tpSelectors.push_back(makeSelector<TrackingParticle>(regionPSet));
     trackSelectors.push_back(makeSelector<reco::Track>(regionPSet));
     region_labels.push_back(regionPSet.getParameter<std::string>("label"));
@@ -265,15 +267,14 @@ LessSimpleValidation::~LessSimpleValidation() {
 // ------------ method called for each event  ------------
 void LessSimpleValidation::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
-   
 
-//   auto const& tpClust = iEvent.get(tpMap_);
+  //   auto const& tpClust = iEvent.get(tpMap_);
   auto const& associatorByHits = iEvent.get(trackAssociatorToken_);
-  
+
   TrackingParticleRefVector tpCollection;
   edm::Handle<TrackingParticleCollection> TPCollectionH;
   iEvent.getByToken(trackingParticleToken_, TPCollectionH);
-//   auto const& tp = iEvent.get(trackingParticleToken_);
+  //   auto const& tp = iEvent.get(trackingParticleToken_);
 
   for (size_t i = 0, size = TPCollectionH->size(); i < size; ++i) {
     auto tp = TrackingParticleRef(TPCollectionH, i);
@@ -281,13 +282,11 @@ void LessSimpleValidation::analyze(const edm::Event& iEvent, const edm::EventSet
   }
 
   std::vector<RegionInfo> local_regions(regions.size());
-  for (const auto& trackToken : trackTokens_) 
-  {
-
+  for (const auto& trackToken : trackTokens_) {
     edm::Handle<edm::View<reco::Track>> tracksHandle;
     iEvent.getByToken(trackToken, tracksHandle);
     const edm::View<reco::Track>& tracks = *tracksHandle;
-    
+
     edm::RefToBaseVector<reco::Track> trackRefs;
     for (edm::View<reco::Track>::size_type i = 0; i < tracks.size(); ++i) {
       auto trackRef = tracks.refAt(i);
@@ -301,26 +300,37 @@ void LessSimpleValidation::analyze(const edm::Event& iEvent, const edm::EventSet
     local_regions.resize(regions.size());
 
     for (const auto& track : trackRefs) {
-      for (int iReg = 0; iReg < (int)regions.size(); iReg++) if (trackSelectors[iReg](*track)) regions[iReg].rt++;
+      for (int iReg = 0; iReg < (int)regions.size(); iReg++)
+        if (trackSelectors[iReg](*track))
+          regions[iReg].rt++;
       auto foundTP = recSimColl.find(track);
       if (foundTP != recSimColl.end()) {
         const auto& tp = foundTP->val;
         if (!tp.empty()) {
-          for (int iReg = 0; iReg < (int)regions.size(); iReg++) if (trackSelectors[iReg](*track)) regions[iReg].at++;
+          for (int iReg = 0; iReg < (int)regions.size(); iReg++)
+            if (trackSelectors[iReg](*track))
+              regions[iReg].at++;
         }
         if (simRecColl.find(tp[0].first) != simRecColl.end()) {
           if (simRecColl[tp[0].first].size() > 1) {
-            for (int iReg = 0; iReg < (int)regions.size(); iReg++) if (trackSelectors[iReg](*track)) regions[iReg].dt++;
+            for (int iReg = 0; iReg < (int)regions.size(); iReg++)
+              if (trackSelectors[iReg](*track))
+                regions[iReg].dt++;
           }
         }
       }
     }
     for (const TrackingParticleRef& tpr : tpCollection) {
-      if (not tpSelector(*tpr)) continue;
-      for (int iReg = 0; iReg < (int)regions.size(); iReg++) if (tpSelectors[iReg](*tpr)) regions[iReg].st++;
+      if (not tpSelector(*tpr))
+        continue;
+      for (int iReg = 0; iReg < (int)regions.size(); iReg++)
+        if (tpSelectors[iReg](*tpr))
+          regions[iReg].st++;
       auto foundTrack = simRecColl.find(tpr);
       if (foundTrack != simRecColl.end()) {
-        for (int iReg = 0; iReg < (int)regions.size(); iReg++) if (tpSelectors[iReg](*tpr)) regions[iReg].ast++;
+        for (int iReg = 0; iReg < (int)regions.size(); iReg++)
+          if (tpSelectors[iReg](*tpr))
+            regions[iReg].ast++;
       }
     }
 

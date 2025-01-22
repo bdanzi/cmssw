@@ -7,124 +7,12 @@ from HeterogeneousCore.AlpakaCore.functions import *
 from HLTrigger.Configuration.common import *
 
 def customizeHLTforAlpakaPixelRecoLocal(process):
-    '''Customisation to introduce the Local Pixel Reconstruction in Alpaka
+    '''Customisation to introduce the Local Pixel and Strip Reconstruction in Alpaka
     '''
 
     if not hasattr(process, 'HLTDoLocalPixelSequence'):
         return process
 
-    process.hltESPSiPixelCablingSoA = cms.ESProducer('SiPixelCablingSoAESProducer@alpaka',
-        CablingMapLabel = cms.string(''),
-        UseQualityInfo = cms.bool(False),
-        appendToDataLabel = cms.string(''),
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltESPSiPixelGainCalibrationForHLTSoA = cms.ESProducer('SiPixelGainCalibrationForHLTSoAESProducer@alpaka',
-        appendToDataLabel = cms.string(''),
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    process.hltESPPixelCPEFastParamsPhase1 = cms.ESProducer('PixelCPEFastParamsESProducerAlpakaPhase1@alpaka',
-        appendToDataLabel = cms.string(''),
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    if hasattr(process, 'hltESPPixelCPEFast'):
-        del process.hltESPPixelCPEFast
-
-    # alpaka EDProducer
-    # consumes
-    #  - reco::BeamSpot
-    # produces
-    #  - BeamSpotDevice
-    process.hltOnlineBeamSpotDevice = cms.EDProducer('BeamSpotDeviceProducer@alpaka',
-        src = cms.InputTag('hltOnlineBeamSpot'),
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    if hasattr(process, 'hltOnlineBeamSpotToGPU'):
-        # hltOnlineBeamSpotToGPU is currently still used in HIon menu,
-        # remove it only if the relevant ConditionalTask of the HIon menu is not present
-        # (this check mainly applies to the HLT combined table)
-        if not (hasattr(process, 'HLTDoLocalPixelPPOnAATask') and process.HLTDoLocalPixelPPOnAATask.contains(process.hltOnlineBeamSpotToGPU)):
-            del process.hltOnlineBeamSpotToGPU
-
-    # alpaka EDProducer
-    # consumes
-    #  - FEDRawDataCollection
-    # produces (* optional)
-    #  - SiPixelClustersSoA
-    #  - SiPixelDigisSoACollection
-    #  - SiPixelDigiErrorsSoACollection *
-    #  - SiPixelFormatterErrors *
-    process.hltSiPixelClustersSoA = cms.EDProducer('SiPixelRawToClusterPhase1@alpaka',
-        IncludeErrors = cms.bool(True),
-        UseQualityInfo = cms.bool(False),
-        clusterThreshold_layer1 = cms.int32(4000),
-        clusterThreshold_otherLayers = cms.int32(4000),
-        VCaltoElectronGain      = cms.double(1),  # all gains=1, pedestals=0
-        VCaltoElectronGain_L1   = cms.double(1),
-        VCaltoElectronOffset    = cms.double(0),
-        VCaltoElectronOffset_L1 = cms.double(0),
-        InputLabel = cms.InputTag('rawDataCollector'),
-        Regions = cms.PSet(),
-        CablingMapLabel = cms.string(''),
-        # autoselect the alpaka backend
-        alpaka = cms.untracked.PSet(
-            backend = cms.untracked.string('')
-        )
-    )
-
-    if hasattr(process, 'hltSiPixelClustersGPU'):
-        del process.hltSiPixelClustersGPU
-
-    process.hltSiPixelClusters = cms.EDProducer('SiPixelDigisClustersFromSoAAlpakaPhase1',
-        src = cms.InputTag('hltSiPixelClustersSoA'),
-        clusterThreshold_layer1 = cms.int32(4000),
-        clusterThreshold_otherLayers = cms.int32(4000),
-        produceDigis = cms.bool(False),
-        storeDigis = cms.bool(False)
-    )
-
-    # used only in the PPRef menu for the legacy pixel track reconstruction
-    process.hltSiPixelClustersCache = cms.EDProducer('SiPixelClusterShapeCacheProducer',
-        src = cms.InputTag('hltSiPixelClusters'),
-        onDemand = cms.bool(False)
-    )
-
-    # legacy EDProducer
-    # consumes
-    #  - SiPixelDigiErrorsHost
-    #  - SiPixelFormatterErrors
-    # produces
-    #  - edm::DetSetVector<SiPixelRawDataError>
-    #  - DetIdCollection
-    #  - DetIdCollection, 'UserErrorModules'
-    #  - edmNew::DetSetVector<PixelFEDChannel>
-    process.hltSiPixelDigiErrors = cms.EDProducer('SiPixelDigiErrorsFromSoAAlpaka',
-        digiErrorSoASrc = cms.InputTag('hltSiPixelClustersSoA'),
-        fmtErrorsSoASrc = cms.InputTag('hltSiPixelClustersSoA'),
-        CablingMapLabel = cms.string(''),
-        UsePhase1 = cms.bool(True),
-        ErrorList = cms.vint32(29),
-        UserErrorList = cms.vint32(40)
-    )
-    # alpaka EDProducer
-    # consumes
-    #  - BeamSpotDevice
-    #  - SiPixelClustersSoA
-    #  - SiPixelDigisSoACollection
-    # produces
-    #  - TrackingRecHitsSoACollection<TrackerTraits>
     process.hltSiStripRawToClustersFacility = cms.EDProducer("SiStripClusterizerFromRaw",
     Algorithms = cms.PSet(
         CommonModeNoiseSubtractionMode = cms.string('Median'),
@@ -204,7 +92,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         process.hltOnlineBeamSpotDevice,
         process.hltSiPixelClustersSoA,
         process.hltSiPixelClusters,   
-        process.hltSiPixelClustersCache,          
         process.hltSiPixelDigiErrors, 
         process.hltSiStripRawToClustersFacility,
         process.hltSiStripMatchedRecHitsFull,
@@ -216,7 +103,6 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         process.hltOnlineBeamSpotDevice+
         process.hltSiPixelClustersSoA+
         process.hltSiPixelClusters+                                                                                                                     
-        process.hltSiPixelClustersCache+                                                                                                               
         process.hltSiPixelDigiErrors+                                                                                                                   
         process.hltSiStripRawToClustersFacility+
         process.hltSiStripMatchedRecHitsFull+
@@ -228,6 +114,7 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
     ###
     ### SerialSync version of Pixel Local Reconstruction
     ###
+    
     process.hltOnlineBeamSpotDeviceSerialSync = makeSerialClone(process.hltOnlineBeamSpotDevice)
 
     process.hltSiPixelClustersSoASerialSync = makeSerialClone(process.hltSiPixelClustersSoA)
@@ -240,7 +127,7 @@ def customizeHLTforAlpakaPixelRecoLocal(process):
         digiErrorSoASrc = 'hltSiPixelClustersSoASerialSync',
         fmtErrorsSoASrc = 'hltSiPixelClustersSoASerialSync',
     )
-    
+
     process.hltSiPixelOnlyRecHitsSoACPUSerial = makeSerialClone(process.hltSiPixelOnlyRecHitsSoA,
         beamSpot = 'hltOnlineBeamSpotDeviceSerialSync',
         src = 'hltSiPixelClustersSoASerialSync'
@@ -390,8 +277,8 @@ def customizeHLTforAlpakaPixelRecoTracking(process):
           quadrupletMaxTip = cms.double(0.5),
           quadrupletMaxZip = cms.double(12)
         ),
-phiCuts = cms.vint32(
-     522, 730, 730, 522, 730, 626, 626, 522, 522, 522, 626, 522, 1200, 1200, 626, 730, 626, 626, 522, 2000, 2000, 2000, 2000,  2000, 2000, 2000, 2000, 2000, 2000, 2000,  2000,  2000, 626,  522, 2000, 2000, 2000, 2000),
+    phiCuts = cms.vint32(
+     522, 730, 730, 522, 730, 626, 626, 522, 522, 522, 626, 522, 1200, 1200, 626, 730, 626, 626, 522, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000,  2000,  2000, 626,  522, 2000, 2000, 2000, 2000),
 
         # autoselect the alpaka backend
         alpaka = cms.untracked.PSet(
@@ -453,14 +340,7 @@ phiCuts = cms.vint32(
 def customizeHLTforAlpakaPixelRecoVertexing(process):
     '''Customisation to introduce the Pixel-Vertex Reconstruction in Alpaka
     '''
-
-    #if not hasattr(process, 'HLTRecopixelvertexingSequence'):
-    #    return process
-#
-    ## do not apply the customisation if the menu is already using the alpaka pixel reconstruction
-    #for prod in producers_by_type(process, 'PixelVertexProducerAlpakaPhase1Strip@alpaka'):
-    #    return process
-
+    
     # alpaka EDProducer
     # consumes
     #  - TkSoADevice
@@ -654,7 +534,7 @@ def customizeHLTforAlpakaRename(process):
     return process
 
 
-def customizeHLTforAlpakaStripNoDoubletRecoveryIncreseDoublets(process):
+def customizeHLTforAlpakaStripNoDoubletRecovery(process):
     print("applying AlpakaCustomizer")
     process = customizeHLTforAlpakaStatus(process)
     process = customizeHLTforAlpakaPixelReco(process)
