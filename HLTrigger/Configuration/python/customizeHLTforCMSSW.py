@@ -163,7 +163,6 @@ def configureFrameSoAESProducers(process):
     topology_to_es_producer = {
         'Phase1': ('frameSoAESProducerPhase1', 'FrameSoAPhase1', 'FrameSoAESProducerPhase1@alpaka'),
         'HIonPhase1': ('frameSoAESProducerHIonPhase1', 'FrameSoAPhase1HIonPhase1', 'FrameSoAESProducerHIonPhase1@alpaka'),
-        'Phase2': ('frameSoAESProducerPhase2', 'FrameSoAPhase2', 'FrameSoAESProducerPhase2@alpaka'),
         'Phase1Strip': ('frameSoAESProducerPhase1Strip', 'FrameSoAPhase1Strip', 'FrameSoAESProducerPhase1Strip@alpaka'),
     }
 
