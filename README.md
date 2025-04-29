@@ -27,13 +27,13 @@ git cherry-pick ea18903cbc83d27778d600ec5d9c141d7623b733
 scram build -j 12
 ```
 
-### 3. mkFit json changes needed needed:
+### 2. mkFit json changes needed needed:
 ```bash
 # "m_requires_seed_hit_sorting": true in RecoTracker/MkFit/data/mkfit-phase2-initialStep.json
 emacs -nw RecoTracker/MkFit/data/mkfit-phase2-initialStep.json 
 ```
 
-### 4. HLT step
+### 3. HLT step
 ```bash
 # Larger dataset (TTBar PU 500 events) in /home/users/bdanzi/Phase2/CMSSW_15_1_0_pre1/src/output_Phase2_L1T.root
 cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
@@ -49,7 +49,7 @@ cmsDriver.py Phase2 -s L1P2GT,HLT:75e33 --processName=HLTX \
 -n 100 --nThreads 8\
 ```
 
-### 5. DQM and VALIDATION step
+### 4. DQM and VALIDATION step
 ```bash
 cmsDriver.py DQM -s VALIDATION:hltMultiTrackValidation \
 --conditions auto:phase2_realistic_T33 \
@@ -64,7 +64,7 @@ cmsDriver.py DQM -s VALIDATION:hltMultiTrackValidation \
 --procModifiers alpaka,singleIterPatatrack,trackingLST,seedingLST
 ```
 
-### 6. HARVEST step
+### 5. HARVEST step
 ```bash
 cmsDriver.py HARVEST -s HARVESTING:@trackingOnlyValidation+@trackingOnlyDQM+postProcessorHLTtrackingSequence \
 --filein file:DQM.root \
