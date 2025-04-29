@@ -57,7 +57,7 @@ cmsDriver.py DQM -s VALIDATION:hltMultiTrackValidation \
 --era Phase2C17I13M9 \
 --datatier DQMIO \
 --eventcontent DQM \
---filein file:Phase2_L1P2GT_HLT.root \
+--filein file:output_Phase2_L1T_LSTSeeds_Mkfit.root \
 --hltProcess HLTX \
 --fileout DQM.root \
 -n 100 --nThreads 8 \
