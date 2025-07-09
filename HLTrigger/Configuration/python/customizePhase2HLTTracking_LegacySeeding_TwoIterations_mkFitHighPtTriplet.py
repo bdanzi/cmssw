@@ -1,13 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
-def customizePhase2HLTMkFitInitialStepTracks(process):
+def customizePhase2hltHighPtTripletStepTracks(process):
     
     sequence_found = any(
-    "hltInitialStepSeeds" in str(path) for path in process.paths.values()
+    "hltHighPtTripletStepSeeds" in str(path) for path in process.paths.values()
     )
 
     if not sequence_found:
-        print("[WARNING] hltInitialStepSequence non available in any path presente. Skipping customizer...")
+        print("[WARNING] hltHighPtTripletStepSequence non available in any path presente. Skipping customizer...")
         return process
 
     process.mkFitSiPixelHits = cms.EDProducer("MkFitSiPixelHitConverter",
@@ -43,30 +43,30 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
         useStripStripQualityDB = cms.bool(False)
     )
 
-    process.hltMkFitGeometryESProducer = cms.ESProducer("MkFitGeometryESProducer",
+    process.mkFitGeometryESProducer = cms.ESProducer("MkFitGeometryESProducer",
         appendToDataLabel = cms.string('')
     )
 
-    process.hltInitialStepTrackCandidatesMkFitConfig = cms.ESProducer("MkFitIterationConfigESProducer",
-        ComponentName = cms.string('hltInitialStepTrackCandidatesMkFitConfig'),
+    process.hltHighPtTripletStepTrackCandidatesMkFitConfig = cms.ESProducer("MkFitIterationConfigESProducer",
+        ComponentName = cms.string('hltHighPtTripletStepTrackCandidatesMkFitConfig'),
         appendToDataLabel = cms.string(''),
         config = cms.FileInPath('RecoTracker/MkFit/data/mkfit-phase2-initialStep.json'),
         maxClusterSize = cms.uint32(8),
         minPt = cms.double(0.9)
     )
 
-    process.hltInitialStepTrackCandidatesMkFitSeeds = cms.EDProducer("MkFitSeedConverter",
+    process.hltHighPtTripletStepTrackCandidatesMkFitSeeds = cms.EDProducer("MkFitSeedConverter",
         maxNSeeds = cms.uint32(500000),
         mightGet = cms.optional.untracked.vstring,
-        seeds = cms.InputTag("hltInitialStepTrajectorySeedsLST"),
+        seeds = cms.InputTag("hltHighPtTripletStepSeeds"),
         ttrhBuilder = cms.ESInputTag("","WithTrackAngle")
     )
 
-    process.hltInitialStepTrackCandidatesMkFit = cms.EDProducer("MkFitProducer",
+    process.hltHighPtTripletStepTrackCandidatesMkFit = cms.EDProducer("MkFitProducer",
         backwardFitInCMSSW = cms.bool(False),
         buildingRoutine = cms.string('cloneEngine'),
         clustersToSkip = cms.InputTag(""),
-        config = cms.ESInputTag("","hltInitialStepTrackCandidatesMkFitConfig"),
+        config = cms.ESInputTag("","hltHighPtTripletStepTrackCandidatesMkFitConfig"),
         eventOfHits = cms.InputTag("mkFitEventOfHits"),
         limitConcurrency = cms.untracked.bool(False),
         mightGet = cms.optional.untracked.vstring,
@@ -77,11 +77,11 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
         pixelHits = cms.InputTag("mkFitSiPixelHits"),
         removeDuplicates = cms.bool(True),
         seedCleaning = cms.bool(True),
-        seeds = cms.InputTag("hltInitialStepTrackCandidatesMkFitSeeds"),
+        seeds = cms.InputTag("hltHighPtTripletStepTrackCandidatesMkFitSeeds"),
         stripHits = cms.InputTag("mkFitSiPhase2Hits")
     )
 
-    process.hltInitialStepTrackCandidates = cms.EDProducer("MkFitOutputConverter",
+    process.hltHighPtTripletStepTrackCandidates = cms.EDProducer("MkFitOutputConverter",
         batchSize = cms.int32(16),
         candMVASel = cms.bool(False),
         candWP = cms.double(0),
@@ -89,7 +89,7 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
         mightGet = cms.optional.untracked.vstring,
         mkFitEventOfHits = cms.InputTag("mkFitEventOfHits"),
         mkFitPixelHits = cms.InputTag("mkFitSiPixelHits"),
-        mkFitSeeds = cms.InputTag("hltInitialStepTrackCandidatesMkFitSeeds"),
+        mkFitSeeds = cms.InputTag("hltHighPtTripletStepTrackCandidatesMkFitSeeds"),
         mkFitStripHits = cms.InputTag("mkFitSiPhase2Hits"),
         propagatorAlong = cms.ESInputTag("","PropagatorWithMaterial"),
         propagatorOpposite = cms.ESInputTag("","PropagatorWithMaterialOpposite"),
@@ -99,26 +99,17 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
         qualityMaxZ = cms.double(280),
         qualityMinTheta = cms.double(0.01),
         qualitySignPt = cms.bool(True),
-        seeds = cms.InputTag("hltInitialStepTrajectorySeedsLST"),
+        seeds = cms.InputTag("hltHighPtTripletStepSeeds"),
         tfDnnLabel = cms.string('trackSelectionTf'),
-        tracks = cms.InputTag("hltInitialStepTrackCandidatesMkFit"),
+        tracks = cms.InputTag("hltHighPtTripletStepTrackCandidatesMkFit"),
         ttrhBuilder = cms.ESInputTag("","WithTrackAngle")
     )
 
-    idx = process.HLTInitialStepSequence.index(process.hltInitialStepTrajectorySeedsLST)
+    process.HLTHighPtTripletStepSequence= cms.Sequence(process.hltHighPtTripletStepSeeds+process.mkFitSiPixelHits+process.mkFitSiPhase2Hits+process.mkFitEventOfHits+process.hltHighPtTripletStepTrackCandidatesMkFitSeeds+process.hltHighPtTripletStepTrackCandidatesMkFit+process.hltHighPtTripletStepTrackCandidates+process.hltHighPtTripletStepTracks+process.hltHighPtTripletStepTrackCutClassifier+process.hltHighPtTripletStepTrackSelectionHighPurity)
 
-    modules = [
-    process.mkFitSiPixelHits,
-    process.mkFitSiPhase2Hits,
-    process.mkFitEventOfHits,
-    process.hltInitialStepTrackCandidatesMkFitSeeds,
-    process.hltInitialStepTrackCandidatesMkFit,
-    ]
 
-    for i, m in enumerate(modules):
-        process.HLTInitialStepSequence.insert(idx + 1 + i, m)
+#    process.HLTItLocalRecoSequence = cms.Sequence(process.hltSiPhase2Clusters+process.hltSiPhase2RecHits+process.hltSiPixelClusters+process.hltSiPixelClusterShapeCache+process.hltSiPixelRecHits)
 
-    #process.hltGeneralTracks.TrackProducers = cms.VInputTag("hltInitialStepTrackSelectionHighPurity")
     return process
 
 
