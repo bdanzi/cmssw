@@ -44,6 +44,8 @@ def customizePhase2hltHighPtTripletStepTracks(process):
     if not sequence_found:
         print("[WARNING] hltHighPtTripletStepClusters non available in any path presente. Skipping customizer...")
         return process
+    import RecoTracker.MkFit.mkFitGeometryESProducer_cfi as mkFitGeometryESProducer_cfi
+    process.load("RecoTracker.MkFit.mkFitGeometryESProducer_cfi")
     process.mkFitSiPixelHits = cms.EDProducer("MkFitSiPixelHitConverter",
         hits = cms.InputTag("hltSiPixelRecHits"),
             clusters = cms.InputTag("hltSiPixelClusters"),
@@ -73,9 +75,12 @@ def customizePhase2hltHighPtTripletStepTracks(process):
         usePixelQualityDB = cms.bool(True),
         useStripStripQualityDB = cms.bool(False)
     )
+    
+    """
     process.mkFitGeometryESProducer = cms.ESProducer("MkFitGeometryESProducer",
         appendToDataLabel = cms.string('')
     )
+    """
     process.hltHighPtTripletStepTrackCandidatesMkFitConfig = cms.ESProducer("MkFitIterationConfigESProducer",
         ComponentName = cms.string('hltHighPtTripletStepTrackCandidatesMkFitConfig'),
         appendToDataLabel = cms.string(''),

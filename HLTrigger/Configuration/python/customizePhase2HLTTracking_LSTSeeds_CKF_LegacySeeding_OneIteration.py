@@ -31,6 +31,7 @@ def customizeSeedTracks(process):
         process.HLTInitialStepSequence += (
         process.hltInitialStepSeedTracks
     )
+    
     return process
 
 
@@ -45,7 +46,8 @@ def customizePhase2hltHighPtTripletStepTracks(process):
     if not sequence_found:
         print("[WARNING] hltHighPtTripletStepClusters non available in any path presente. Skipping customizer...")
         return process
-
+    import RecoTracker.MkFit.mkFitGeometryESProducer_cfi as mkFitGeometryESProducer_cfi
+    process.load("RecoTracker.MkFit.mkFitGeometryESProducer_cfi")
     process.hltHighPtTripletStepTrackCandidatespLSTCLST = cms.EDProducer("CkfTrackCandidateMaker",
             MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
             NavigationSchool = cms.string('SimpleNavigationSchool'),
