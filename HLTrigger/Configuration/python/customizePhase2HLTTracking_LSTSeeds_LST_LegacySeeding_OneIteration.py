@@ -44,7 +44,8 @@ def customizePhase2hltHighPtTripletStepTracks(process):
     if not sequence_found:
         print("[WARNING] hltHighPtTripletStepClusters non available in any path presente. Skipping customizer...")
         return process
-
+    import RecoTracker.MkFit.mkFitGeometryESProducer_cfi as mkFitGeometryESProducer_cfi
+    process.load("RecoTracker.MkFit.mkFitGeometryESProducer_cfi")
     process.hltGeneralTracks = cms.EDProducer("TrackListMerger",                                                                                     Epsilon = cms.double(-0.001),
       FoundHitBonus = cms.double(5.0),
       LostHitPenalty = cms.double(5.0),
