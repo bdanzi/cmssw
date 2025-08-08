@@ -2406,7 +2406,6 @@ void TrackingNtuple::clearVariables() {
   vtx_fake.clear();
   vtx_valid.clear();
   vtx_trkIdx.clear();
-
   // Tracking vertices
   simvtx_event.clear();
   simvtx_bunchCrossing.clear();
@@ -3447,11 +3446,10 @@ void TrackingNtuple::fillSeeds(const edm::Event& iEvent,
     if (seedTracks.size() != seedStopInfos.size()) {
       edm::EDConsumerBase::Labels labels2;
       labelsForToken(seedStopInfoToken, labels2);
-
       throw cms::Exception("LogicError") << "Got " << seedTracks.size() << " seeds, but " << seedStopInfos.size()
-                                         << " seed stopping infos for collections " << labels.module << ", "
-                                         << labels2.module;
-    }
+                                     << " seed stopping infos for collections " << labels.module << ", "
+                                     << labels2.module;
+      }
 
     std::vector<std::pair<uint64_t, StripMaskContainer const*>> stripMasks;
     stripMasks.reserve(stripUseMaskTokens_.size());
@@ -3963,7 +3961,7 @@ void TrackingNtuple::fillTracks(const edm::RefToBaseVector<reco::Track>& tracks,
             << itTrack->seedRef().id()
             << ", but that seed collection is not given as an input. The following collections were given as an input "
             << make_ProductIDMapPrinter(seedCollToOffset);
-      }
+	    }
 
       const auto seedIndex = offset->second + itTrack->seedRef().key();
       trk_seedIdx.push_back(seedIndex);
@@ -4256,7 +4254,7 @@ void TrackingNtuple::fillCandidates(const edm::Handle<TrackCandidateCollection>&
             << "Track candidate refers to seed collection " << aCand.seedRef().id()
             << ", but that seed collection is not given as an input. The following collections were given as an input "
             << make_ProductIDMapPrinter(seedCollToOffset);
-      }
+	    }
 
       const auto seedIndex = offset->second + aCand.seedRef().key();
       tcand_seedIdx.push_back(seedIndex);
@@ -4605,7 +4603,8 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
                                  edm::InputTag("seedTrackstobTecStepSeeds"),
                                  edm::InputTag("seedTracksjetCoreRegionalStepSeeds"),
                                  edm::InputTag("seedTracksmuonSeededSeedsInOut"),
-                                 edm::InputTag("seedTracksmuonSeededSeedsOutIn")});
+                                 edm::InputTag("seedTracksmuonSeededSeedsOutIn")
+                                });
   desc.addUntracked<std::vector<edm::InputTag>>(
       "trackCandidates",
       std::vector<edm::InputTag>{edm::InputTag("initialStepTrackCandidates"),
@@ -4617,7 +4616,8 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
                                  edm::InputTag("tobTecStepTrackCandidates"),
                                  edm::InputTag("jetCoreRegionalStepTrackCandidates"),
                                  edm::InputTag("muonSeededTrackCandidatesInOut"),
-                                 edm::InputTag("muonSeededTrackCandidatesOutIn")});
+                                 edm::InputTag("muonSeededTrackCandidatesOutIn")
+                                  });
   desc.addUntracked<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
   desc.addUntracked<std::vector<std::string>>("trackMVAs", std::vector<std::string>{{"generalTracks"}});
 
@@ -4631,8 +4631,8 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
     ps.addUntrackedParameter<edm::InputTag>("src", {reco::Track::algoName(algo) + "Clusters"});
     cMasks.push_back(ps);
   };
-  addMask(reco::Track::detachedQuadStep);
   addMask(reco::Track::highPtTripletStep);
+  addMask(reco::Track::detachedQuadStep);
   addMask(reco::Track::detachedTripletStep);
   addMask(reco::Track::lowPtQuadStep);
   addMask(reco::Track::lowPtTripletStep);
@@ -4666,14 +4666,14 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
                                    edm::InputTag("trackingParticleNumberOfLayersProducer", "stripStereoLayers"));
   desc.addUntracked<std::string>("TTRHBuilder", "WithTrackAngle")
       ->setComment("currently not used: keep for possible future use");
-  desc.addUntracked<bool>("includeSeeds", false);
+  desc.addUntracked<bool>("includeSeeds", true);
   desc.addUntracked<bool>("includeTrackCandidates", false);
-  desc.addUntracked<bool>("addSeedCurvCov", false);
-  desc.addUntracked<bool>("includeAllHits", false);
+  desc.addUntracked<bool>("addSeedCurvCov", true);
+  desc.addUntracked<bool>("includeAllHits", true);
   desc.addUntracked<bool>("includeOnTrackHitData", false);
   desc.addUntracked<bool>("includeMVA", true);
   desc.addUntracked<bool>("includeTrackingParticles", true);
-  desc.addUntracked<bool>("includeOOT", false);
+  desc.addUntracked<bool>("includeOOT", true);
   desc.addUntracked<bool>("keepEleSimHits", false);
   desc.addUntracked<bool>("saveSimHitsP3", false);
   desc.addUntracked<bool>("simHitBySignificance", false);

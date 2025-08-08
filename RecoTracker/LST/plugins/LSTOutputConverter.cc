@@ -207,7 +207,7 @@ void LSTOutputConverter::produce(edm::Event& iEvent, const edm::EventSetup& iSet
           seed = seeds[0];
 
         auto trajectorySeed = (seeds.empty() ? seed : seeds[0]);
-        outputTS.emplace_back(trajectorySeed);
+	if (lstTC_trackCandidateType[i] != LSTOutput::LSTTCType::T5) outputTS.emplace_back(trajectorySeed);
         auto const& ss = trajectorySeed.startingState();
         LogDebug("LSTOutputConverter") << "Created a seed with " << seed.nHits() << " " << ss.detId() << " " << ss.pt()
                                        << " " << ss.parameters().vector() << " " << ss.error(0);
