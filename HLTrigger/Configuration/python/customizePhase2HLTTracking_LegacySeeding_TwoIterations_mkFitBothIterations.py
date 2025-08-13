@@ -56,7 +56,24 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
     if not sequence_found:
         print("[WARNING] hltInitialStepSequence non available in any path presente. Skipping customizer...")
         return process
+    if hasattr(process, "hltMkFitGeometryESProducer"):
+        delattr(process, "hltMkFitGeometryESProducer")
 
+    process.hltInitialStepSeeds = cms.EDProducer("SeedGeneratorFromProtoTracksEDProducer",
+    InputCollection = cms.InputTag("hltPhase2PixelTracks"),
+    InputVertexCollection = cms.InputTag(""),
+    SeedCreatorPSet = cms.PSet(
+        refToPSet_ = cms.string('seedFromProtoTracks')
+    ),
+    TTRHBuilder = cms.string('WithTrackAngle'),
+    includeFourthHit = cms.bool(False),
+    originHalfLength = cms.double(0.3),
+    originRadius = cms.double(0.1),
+    useEventsWithNoVertex = cms.bool(True),
+    usePV = cms.bool(False),
+    useProtoTrackKinematics = cms.bool(False)
+    )
+    
     process.mkFitSiPixelHits = cms.EDProducer("MkFitSiPixelHitConverter",
         hits = cms.InputTag("hltSiPixelRecHits"),
         clusters = cms.InputTag("hltSiPixelClusters"),
@@ -99,7 +116,7 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
         appendToDataLabel = cms.string(''),
         config = cms.FileInPath('RecoTracker/MkFit/data/mkfit-phase2-initialStep.json'),
         maxClusterSize = cms.uint32(8),
-        minPt = cms.double(0.8)
+        minPt = cms.double(0.9)
     )
 
     process.hltInitialStepTrackCandidatesMkFitSeeds = cms.EDProducer("MkFitSeedConverter",
@@ -132,8 +149,8 @@ def customizePhase2HLTMkFitInitialStepTracks(process):
         batchSize = cms.int32(16),
         candMVASel = cms.bool(False),
         candCutSel = cms.bool(True),
-        candMinNHitsCut = cms.int32(4),
-        candMinPtCut = cms.double(0.8),
+        candMinNHitsCut = cms.int32(3),
+        candMinPtCut = cms.double(0.7),
         candWP = cms.double(0),
         doErrorRescale = cms.bool(True),
         mightGet = cms.optional.untracked.vstring,
@@ -194,7 +211,7 @@ def customizePhase2hltHighPtTripletStepTracks(process):
         appendToDataLabel = cms.string(''),
         config = cms.FileInPath('RecoTracker/MkFit/data/mkfit-phase2-highPtTripletStep.json'),
         maxClusterSize = cms.uint32(8),
-        minPt = cms.double(0.8)
+        minPt = cms.double(0.9)
     )
 
     process.hltHighPtTripletStepTrackCandidatesMkFitSeeds = cms.EDProducer("MkFitSeedConverter",
@@ -228,7 +245,7 @@ def customizePhase2hltHighPtTripletStepTracks(process):
         candMVASel = cms.bool(False),
         candCutSel = cms.bool(True),
         candMinNHitsCut = cms.int32(4),
-        candMinPtCut = cms.double(0.8),
+        candMinPtCut = cms.double(0.9),
         candWP = cms.double(0),
         doErrorRescale = cms.bool(True),
         mightGet = cms.optional.untracked.vstring,

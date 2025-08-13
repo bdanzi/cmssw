@@ -12,7 +12,8 @@ def customizePhase2hltHighPtTripletStepTracks(process):
 
     import RecoTracker.MkFit.mkFitGeometryESProducer_cfi as mkFitGeometryESProducer_cfi
     process.load("RecoTracker.MkFit.mkFitGeometryESProducer_cfi")
-    
+    if hasattr(process, "hltMkFitGeometryESProducer"):
+        delattr(process, "hltMkFitGeometryESProducer")
     process.mkFitSiPixelHits = cms.EDProducer("MkFitSiPixelHitConverter",
         hits = cms.InputTag("hltSiPixelRecHits"),
         clusters = cms.InputTag("hltSiPixelClusters"),
@@ -51,7 +52,7 @@ def customizePhase2hltHighPtTripletStepTracks(process):
         appendToDataLabel = cms.string(''),
         config = cms.FileInPath('RecoTracker/MkFit/data/mkfit-phase2-highPtTripletStep.json'),
         maxClusterSize = cms.uint32(8),
-        minPt = cms.double(0.8)
+        minPt = cms.double(0.9)
     )
 
     process.hltHighPtTripletStepTrackCandidatesMkFitSeeds = cms.EDProducer("MkFitSeedConverter",
@@ -84,7 +85,7 @@ def customizePhase2hltHighPtTripletStepTracks(process):
         batchSize = cms.int32(16),
         candCutSel = cms.bool(True),
         candMinNHitsCut = cms.int32(4),
-        candMinPtCut = cms.double(0.8),
+        candMinPtCut = cms.double(0.9),
         candMVASel = cms.bool(False),
         candWP = cms.double(0),
         doErrorRescale = cms.bool(True),

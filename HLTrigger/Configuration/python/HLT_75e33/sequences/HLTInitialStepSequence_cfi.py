@@ -73,9 +73,8 @@ from ..modules.hltInitialStepTrackCandidatesMkFit_cfi import *
 _HLTInitialStepSequenceSingleIterPatatrackLSTSeedingMkFitBuilding = cms.Sequence(
      hltInitialStepSeeds
     +hltInitialStepSeedTracksLST
-    +hltPixelSeedInputLST
-    +hltSiPhase2RecHits # Probably need to move elsewhere in the final setup                                                                                                               
-    +hltPhase2OTHitsInputLST # Probably need to move elsewhere in the final setup                                                                                                          
+    +hltSiPhase2RecHits # Probably need to move elsewhere in the final setup
+    +hltInputLST
     +hltLST
     +hltInitialStepTrajectorySeedsLST
     +hltMkFitSiPixelHits
