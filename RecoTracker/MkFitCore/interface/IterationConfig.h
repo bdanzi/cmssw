@@ -145,7 +145,9 @@ namespace mkfit {
     float sc_dzmax_el = 0.030;
 
     // duplicate cleaning params with good defaults (all configurable)
-    float dc_fracSharedHits = 0.19;
+    float dc_fracSharedHits_central = 0.19;
+    float dc_fracSharedHits_obarrel = 0.19;
+    float dc_fracSharedHits_forward = 0.19;
     float dc_drth_central = 0.001;
     float dc_drth_obarrel = 0.001;
     float dc_drth_forward = 0.001;
@@ -218,8 +220,10 @@ namespace mkfit {
       m_track_algorithm = trk_alg;
     }
 
-    void set_dupl_params(float sharedFrac, float drthCentral, float drthObarrel, float drthForward) {
-      dc_fracSharedHits = sharedFrac;
+    void set_dupl_params(float sharedFrac_central, float sharedFrac_obarrel, float sharedFrac_forward,float drthCentral, float drthObarrel, float drthForward) {
+      dc_fracSharedHits_central = sharedFrac_central;
+      dc_fracSharedHits_obarrel = sharedFrac_obarrel;
+      dc_fracSharedHits_forward = sharedFrac_forward;
       dc_drth_central = drthCentral;
       dc_drth_obarrel = drthObarrel;
       dc_drth_forward = drthForward;

@@ -7,7 +7,7 @@
 #include "RecoTracker/MkFitCore/interface/TrackStructures.h"
 
 #include "RecoTracker/MkFitCore/interface/binnor.h"
-
+#define DEBUG
 namespace mkfit {
 
   namespace StdSeq {
@@ -439,7 +439,9 @@ namespace mkfit {
     //=========================================================================
 
     void clean_duplicates_sharedhits(TrackVec &tracks, const IterationConfig &itconf) {
-      const float fraction = itconf.dc_fracSharedHits;
+      const float fraction_central = itconf.dc_fracSharedHits_central;
+      float fraction = fraction_central;
+
       const auto ntracks = tracks.size();
 
       std::vector<float> ctheta(ntracks);
@@ -503,7 +505,9 @@ namespace mkfit {
     }
 
     void clean_duplicates_sharedhits_pixelseed(TrackVec &tracks, const IterationConfig &itconf) {
-      const float fraction = itconf.dc_fracSharedHits;
+      const float fraction_central = itconf.dc_fracSharedHits_central;
+      const float fraction_obarrel = itconf.dc_fracSharedHits_obarrel;
+      const float fraction_forward = itconf.dc_fracSharedHits_forward;
       const float drth_central = itconf.dc_drth_central;
       const float drth_obarrel = itconf.dc_drth_obarrel;
       const float drth_forward = itconf.dc_drth_forward;
@@ -521,6 +525,14 @@ namespace mkfit {
         phi1 = trk.momPhi();
         invpt1 = trk.invpT();
         ctheta1 = ctheta[itrack];
+	float fraction = fraction_central;
+          if (std::abs(ctheta1) > Config::maxcth_fw)
+            fraction = fraction_forward;
+          else if (std::abs(ctheta1) > Config::maxcth_ob)
+            fraction = fraction_obarrel;
+	#ifdef DEBUG
+	  std::cout << "fraction = " << fraction << std::endl;
+	#endif
         for (auto jtrack = itrack + 1; jtrack < ntracks; jtrack++) {
           auto &track2 = tracks[jtrack];
           if (trk.label() == track2.label())
@@ -535,7 +547,6 @@ namespace mkfit {
 
           if (dphi > Config::maxdphi)
             continue;
-
           float maxdRSquared = drth_central * drth_central;
           if (std::abs(ctheta1) > Config::maxcth_fw)
             maxdRSquared = drth_forward * drth_forward;
