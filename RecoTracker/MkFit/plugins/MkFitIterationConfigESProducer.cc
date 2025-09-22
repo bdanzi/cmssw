@@ -27,6 +27,25 @@ private:
   const float dc_drth_central_;
   const float dc_drth_obarrel_;
   const float dc_drth_forward_;
+  const float sc_ptthr_hpt_; 
+  
+  const float sc_dzmax_bh_; 
+  const float sc_drmax_bh_; 
+  const float sc_dzmax_obh_; 
+  const float sc_drmax_obh_;
+  const float sc_dzmax_iobh_;
+  const float sc_drmax_iobh_;
+  const float sc_dzmax_eh_; 
+  const float sc_drmax_eh_; 
+  const float sc_dzmax_bl_; 
+  const float sc_drmax_bl_; 
+  const float sc_dzmax_obl_; 
+  const float sc_drmax_obl_;
+  const float sc_dzmax_iobl_;
+  const float sc_drmax_iobl_;
+  const float sc_dzmax_el_; 
+  const float sc_drmax_el_; 
+  
 };
 
 MkFitIterationConfigESProducer::MkFitIterationConfigESProducer(const edm::ParameterSet &iConfig)
@@ -39,7 +58,25 @@ MkFitIterationConfigESProducer::MkFitIterationConfigESProducer(const edm::Parame
       dc_fracSharedHits_forward_{(float)iConfig.getParameter<double>("dc_fracSharedHits_forward")},
       dc_drth_central_{(float)iConfig.getParameter<double>("dc_drth_central")},
       dc_drth_obarrel_{(float)iConfig.getParameter<double>("dc_drth_obarrel")},
-      dc_drth_forward_{(float)iConfig.getParameter<double>("dc_drth_forward")} {}
+      dc_drth_forward_{(float)iConfig.getParameter<double>("dc_drth_forward")},
+      sc_ptthr_hpt_{(float)iConfig.getParameter<double>("sc_ptthr_hpt")},
+      sc_dzmax_bh_{(float)iConfig.getParameter<double>("sc_dzmax_bh")},
+      sc_drmax_bh_{(float)iConfig.getParameter<double>("sc_drmax_bh")},
+      sc_dzmax_obh_{(float)iConfig.getParameter<double>("sc_dzmax_obh")},
+      sc_drmax_obh_{(float)iConfig.getParameter<double>("sc_drmax_obh")},
+      sc_dzmax_iobh_{(float)iConfig.getParameter<double>("sc_dzmax_iobh")},
+      sc_drmax_iobh_{(float)iConfig.getParameter<double>("sc_drmax_iobh")},
+      sc_dzmax_eh_{(float)iConfig.getParameter<double>("sc_dzmax_eh")},
+      sc_drmax_eh_{(float)iConfig.getParameter<double>("sc_drmax_eh")},
+      sc_dzmax_bl_{(float)iConfig.getParameter<double>("sc_dzmax_bl")},
+      sc_drmax_bl_{(float)iConfig.getParameter<double>("sc_drmax_bl")},
+      sc_dzmax_obl_{(float)iConfig.getParameter<double>("sc_dzmax_obl")},
+      sc_drmax_obl_{(float)iConfig.getParameter<double>("sc_drmax_obl")},
+      sc_dzmax_iobl_{(float)iConfig.getParameter<double>("sc_dzmax_iobl")},
+      sc_drmax_iobl_{(float)iConfig.getParameter<double>("sc_drmax_iobl")},
+      sc_dzmax_el_{(float)iConfig.getParameter<double>("sc_dzmax_el")},
+      sc_drmax_el_{(float)iConfig.getParameter<double>("sc_drmax_el")} {}
+
 
 void MkFitIterationConfigESProducer::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
   edm::ParameterSetDescription desc;
@@ -54,6 +91,24 @@ void MkFitIterationConfigESProducer::fillDescriptions(edm::ConfigurationDescript
   desc.add<double>("dc_drth_central",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))<1.99 (abs(eta)<1.44)");
   desc.add<double>("dc_drth_obarrel",0.002)->setComment("dR cut used to identify duplicate candidates if 1.99<std::abs(cotan(theta))<6.05 (1.44<abs(eta)<2.5)");
   desc.add<double>("dc_drth_forward",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
+  desc.add<double>("sc_ptthr_hpt", 2.0)->setComment("pT threshold applied for high-pT candidates");
+  desc.add<double>("sc_drmax_bh", 0.01)->setComment("Maximum dR matching window for barrel high-pT candidates");
+  desc.add<double>("sc_dzmax_bh", 0.005)->setComment("Maximum dZ matching window for barrel high-pT candidates");
+  desc.add<double>("sc_drmax_obh", 0.01)->setComment("Maximum dR matching window for outer barrel high-pT candidates");
+  desc.add<double>("sc_dzmax_obh", 0.005)->setComment("Maximum dZ matching window for outer barrel high-pT candidates");
+  desc.add<double>("sc_drmax_iobh", 0.01)->setComment("Maximum dR matching window for outer barrel high-pT candidates");
+  desc.add<double>("sc_dzmax_iobh", 0.005)->setComment("Maximum dZ matching window for outer barrel high-pT candidates");
+  desc.add<double>("sc_drmax_eh", 0.02)->setComment("Maximum dR matching window for endcap high-pT candidates");
+  desc.add<double>("sc_dzmax_eh", 0.02)->setComment("Maximum dZ matching window for endcap high-pT candidates");
+  desc.add<double>("sc_drmax_bl", 0.01)->setComment("Maximum dR matching window for barrel low-pT candidates");
+  desc.add<double>("sc_dzmax_bl", 0.005)->setComment("Maximum dZ matching window for barrel low-pT candidates");
+  desc.add<double>("sc_drmax_iobl", 0.01)->setComment("Maximum dR matching window for outer barrel low-pT candidates");
+  desc.add<double>("sc_dzmax_iobl", 0.005)->setComment("Maximum dZ matching window for outer barrel low-pT candidates");
+  desc.add<double>("sc_drmax_obl", 0.01)->setComment("Maximum dR matching window for outer barrel low-pT candidates");
+  desc.add<double>("sc_dzmax_obl", 0.005)->setComment("Maximum dZ matching window for outer barrel low-pT candidates");
+  desc.add<double>("sc_drmax_el", 0.03)->setComment("Maximum dR matching window for endcap low-pT candidates");
+  desc.add<double>("sc_dzmax_el", 0.03)->setComment("Maximum dZ matching window for endcap low-pT candidates");
+
   descriptions.addWithDefaultLabel(desc);
 }
 
@@ -71,6 +126,24 @@ std::unique_ptr<mkfit::IterationConfig> MkFitIterationConfigESProducer::produce(
   it_conf->dc_drth_central = dc_drth_central_;
   it_conf->dc_drth_obarrel = dc_drth_obarrel_;
   it_conf->dc_drth_forward = dc_drth_forward_;
+  it_conf->sc_ptthr_hpt = sc_ptthr_hpt_;
+  it_conf->sc_dzmax_bh = sc_dzmax_bh_;
+  it_conf->sc_drmax_bh =  sc_drmax_bh_;
+  it_conf->sc_dzmax_obh =  sc_dzmax_obh_;
+  it_conf->sc_drmax_obh =  sc_drmax_obh_;
+  it_conf->sc_dzmax_iobh =  sc_dzmax_iobh_;
+  it_conf->sc_drmax_iobh =  sc_drmax_iobh_;
+  it_conf->sc_dzmax_eh =  sc_dzmax_eh_;
+  it_conf->sc_drmax_eh =  sc_drmax_eh_;
+  it_conf->sc_dzmax_bl =  sc_dzmax_bl_;
+  it_conf->sc_drmax_bl =  sc_drmax_bl_;
+  it_conf->sc_dzmax_obl =  sc_dzmax_obl_;
+  it_conf->sc_drmax_obl = sc_drmax_obl_;
+  it_conf->sc_dzmax_iobl =  sc_dzmax_iobl_;
+  it_conf->sc_drmax_iobl = sc_drmax_iobl_;
+  it_conf->sc_dzmax_el =  sc_dzmax_el_;
+  it_conf->sc_drmax_el =  sc_drmax_el_;
+
   it_conf->setupStandardFunctionsFromNames();
   return it_conf;
 }

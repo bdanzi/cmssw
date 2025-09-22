@@ -97,6 +97,9 @@ namespace mkfit {
     // config on seed cleaning
     constexpr float track1GeVradius = 87.6;  // = 1/(c*B)
     constexpr float c_etamax_brl = 0.9;
+    constexpr float c_etamax_brl_phase2 = 1.44;
+    constexpr float c_etamax_iobrl = 2.2;
+    constexpr float c_etamax_obrl = 2.6;
     constexpr float c_dpt_common = 0.25;
     constexpr float c_dzmax_brl = 0.005;
     constexpr float c_drmax_brl = 0.010;

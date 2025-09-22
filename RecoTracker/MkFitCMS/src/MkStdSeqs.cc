@@ -335,10 +335,298 @@ namespace mkfit {
       return seeds.size();
     }
 
+    int clean_cms_seedtracks_iter_phase2(TrackVec &seeds, const IterationConfig &itrcfg, const BeamSpot &bspot) {
+      using Algo = TrackBase::TrackAlgorithm;
+
+      const float etamax_brl = Config::c_etamax_brl_phase2; //eta 1.44
+      const float etamax_iobrl = Config::c_etamax_iobrl; //eta 2.2
+      const float etamax_obrl = Config::c_etamax_obrl; //eta 2.6
+      const float dpt_common = Config::c_dpt_common;//0.25
+
+      const float dzmax_bh = itrcfg.sc_dzmax_bh;
+      const float drmax_bh = itrcfg.sc_drmax_bh;
+      const float dzmax_obh = itrcfg.sc_dzmax_obh;
+      const float drmax_obh = itrcfg.sc_drmax_obh;
+      const float dzmax_iobh = itrcfg.sc_dzmax_iobh;
+      const float drmax_iobh = itrcfg.sc_drmax_iobh;
+      const float dzmax_eh = itrcfg.sc_dzmax_eh;
+      const float drmax_eh = itrcfg.sc_drmax_eh;
+      const float dzmax_bl = itrcfg.sc_dzmax_bl;
+      const float drmax_bl = itrcfg.sc_drmax_bl;
+      const float dzmax_obl = itrcfg.sc_dzmax_obl;
+      const float drmax_obl = itrcfg.sc_drmax_obl;
+      const float dzmax_iobl = itrcfg.sc_dzmax_iobl;
+      const float drmax_iobl = itrcfg.sc_drmax_iobl;
+      const float dzmax_el = itrcfg.sc_dzmax_el;
+      const float drmax_el = itrcfg.sc_drmax_el;
+
+      const float ptmin_hpt = itrcfg.sc_ptthr_hpt;//0.2
+
+      const float dzmax2_inv_bh = 1.f / (dzmax_bh * dzmax_bh);
+      const float drmax2_inv_bh = 1.f / (drmax_bh * drmax_bh);
+      const float dzmax2_inv_obh = 1.f / (dzmax_obh * dzmax_obh);
+      const float drmax2_inv_obh = 1.f / (drmax_obh * drmax_obh);
+      const float dzmax2_inv_iobh = 1.f / (dzmax_iobh * dzmax_iobh);
+      const float drmax2_inv_iobh = 1.f / (drmax_iobh * drmax_iobh);
+      const float dzmax2_inv_eh = 1.f / (dzmax_eh * dzmax_eh);
+      const float drmax2_inv_eh = 1.f / (drmax_eh * drmax_eh);
+      const float dzmax2_inv_bl = 1.f / (dzmax_bl * dzmax_bl);
+      const float drmax2_inv_bl = 1.f / (drmax_bl * drmax_bl);
+      const float dzmax2_inv_obl = 1.f / (dzmax_obl * dzmax_obl);
+      const float drmax2_inv_obl = 1.f / (drmax_obl * drmax_obl);
+      const float dzmax2_inv_iobl = 1.f / (dzmax_iobl * dzmax_iobl);
+      const float drmax2_inv_iobl = 1.f / (drmax_iobl * drmax_iobl);
+      const float dzmax2_inv_el = 1.f / (dzmax_el * dzmax_el);
+      const float drmax2_inv_el = 1.f / (drmax_el * drmax_el);
+
+      // Merge hits from overlapping seeds?
+      // For now always true, we require extra hits after seed,
+      // except for lowPtQuadStep, where we only merge hits for seeds at low pT and large pseudo-rapidity
+      const bool merge_hits = true;  // itrcfg.merge_seed_hits_during_cleaning();
+      const float ptmax_merge_lowPtQuad = 0.2;
+      const float etamin_merge_lowPtQuad = 1.5;
+
+      if (seeds.empty())
+        return 0;
+
+      const int ns = seeds.size();
+#ifdef DEBUG
+      std::cout << "before seed cleaning " << seeds.size() << std::endl;
+#endif
+      TrackVec cleanSeedTracks;
+      cleanSeedTracks.reserve(ns);
+      std::vector<bool> writetrack(ns, true);
+
+      const float invR1GeV = 1.f / Config::track1GeVradius;
+
+      std::vector<int> nHits(ns);
+      std::vector<int> charge(ns);
+      std::vector<float> oldPhi(ns);
+      std::vector<float> pos2(ns);
+      std::vector<float> eta(ns);
+      std::vector<float> ctheta(ns);
+      std::vector<float> invptq(ns);
+      std::vector<float> pt(ns);
+      std::vector<float> x(ns);
+      std::vector<float> y(ns);
+      std::vector<float> z(ns);
+      std::vector<float> d0(ns);
+      int i1, i2;  //for the sorting
+
+      axis_pow2_u1<float, unsigned short, 16, 8> ax_phi(-Const::PI, Const::PI);
+      axis<float, unsigned short, 8, 8> ax_eta(-3.0, 3.0, 30u);
+      binnor<unsigned int, decltype(ax_phi), decltype(ax_eta), 24, 8> phi_eta_binnor(ax_phi, ax_eta);
+
+      phi_eta_binnor.begin_registration(ns);
+
+      for (int ts = 0; ts < ns; ts++) {
+        const Track &tk = seeds[ts];
+        nHits[ts] = tk.nFoundHits();
+        charge[ts] = tk.charge();
+        oldPhi[ts] = tk.momPhi();
+        pos2[ts] = std::pow(tk.x(), 2) + std::pow(tk.y(), 2);
+        eta[ts] = tk.momEta();
+        ctheta[ts] = 1.f / std::tan(tk.theta());
+        invptq[ts] = tk.charge() * tk.invpT();
+        pt[ts] = tk.pT();
+        x[ts] = tk.x();
+        y[ts] = tk.y();
+        z[ts] = tk.z();
+        d0[ts] = tk.d0BeamSpot(bspot.x, bspot.y);
+
+        phi_eta_binnor.register_entry_safe(oldPhi[ts], eta[ts]);
+        // If one is sure values are *within* axis ranges: b.register_entry(oldPhi[ts], eta[ts]);
+      }
+
+      phi_eta_binnor.finalize_registration();
+
+      for (int sorted_ts = 0; sorted_ts < ns; sorted_ts++) {
+        int ts = phi_eta_binnor.m_ranks[sorted_ts];
+
+        if (not writetrack[ts])
+          continue;  // Note: this speed up prevents transitive masking (possibly marginal gain).
+
+        const float oldPhi1 = oldPhi[ts];
+        const float pos2_first = pos2[ts];
+        const float eta1 = eta[ts];
+        const float pt1 = pt[ts];
+        const float invptq_first = invptq[ts];
+
+        // To study some more details -- need EventOfHits for this
+        int n_ovlp_hits_added = 0;
+
+        auto phi_rng = ax_phi.from_R_rdr_to_N_bins(oldPhi[ts], 0.08f);
+        auto eta_rng = ax_eta.from_R_rdr_to_N_bins(eta[ts], .1f);
+
+        for (auto i_phi = phi_rng.begin; i_phi != phi_rng.end; i_phi = ax_phi.next_N_bin(i_phi)) {
+          for (auto i_eta = eta_rng.begin; i_eta != eta_rng.end; i_eta = ax_eta.next_N_bin(i_eta)) {
+            const auto cbin = phi_eta_binnor.get_content(i_phi, i_eta);
+            for (auto i = cbin.first; i < cbin.end(); ++i) {
+              int tss = phi_eta_binnor.m_ranks[i];
+
+              if (not writetrack[ts])
+                continue;
+              if (not writetrack[tss])
+                continue;
+              if (tss == ts)
+                continue;
+
+              const float pt2 = pt[tss];
+
+              // Always require charge consistency. If different charge is assigned, do not remove seed-track
+              if (charge[tss] != charge[ts])
+                continue;
+
+              const float thisDPt = std::abs(pt2 - pt1);
+              // Require pT consistency between seeds. If dpT is large, do not remove seed-track.
+              if (thisDPt > dpt_common * pt1)
+                continue;
+
+              const float eta2 = eta[tss];
+              const float deta2 = std::pow(eta1 - eta2, 2);
+
+              const float oldPhi2 = oldPhi[tss];
+
+              const float pos2_second = pos2[tss];
+              const float thisDXYSign05 = pos2_second > pos2_first ? -0.5f : 0.5f;
+
+              const float thisDXY = thisDXYSign05 * sqrt(std::pow(x[ts] - x[tss], 2) + std::pow(y[ts] - y[tss], 2));
+
+              const float invptq_second = invptq[tss];
+
+              const float newPhi1 = oldPhi1 - thisDXY * invR1GeV * invptq_first;
+              const float newPhi2 = oldPhi2 + thisDXY * invR1GeV * invptq_second;
+
+              const float dphi = cdist(std::abs(newPhi1 - newPhi2));
+
+              const float dr2 = deta2 + dphi * dphi;
+
+              const float thisDZ = z[ts] - z[tss] - thisDXY * (ctheta[ts] + ctheta[tss]);
+              const float dz2 = thisDZ * thisDZ;
+
+              // Reject tracks within dR-dz elliptical window.
+              // Adaptive thresholds, based on observation that duplicates are more abundant at large pseudo-rapidity and low track pT
+              bool overlapping = false;
+              if (std::abs(eta1) < etamax_brl) {
+                if (pt1 > ptmin_hpt) {
+                  if (dz2 * dzmax2_inv_bh + dr2 * drmax2_inv_bh < 1.0f)
+                    overlapping = true;
+                } else {
+                  if (dz2 * dzmax2_inv_bl + dr2 * drmax2_inv_bl < 1.0f)
+                    overlapping = true;
+                }
+              } else if (std::abs(eta1)> etamax_brl  && std::abs(eta1) < etamax_iobrl) {
+                if (pt1 > ptmin_hpt) {
+                  if (dz2 * dzmax2_inv_iobh + dr2 * drmax2_inv_iobh < 1.0f)
+                    overlapping = true;
+                } else {
+                  if (dz2 * dzmax2_inv_iobl + dr2 * drmax2_inv_iobl < 1.0f)
+                    overlapping = true;
+                }
+              } else if (std::abs(eta1)> etamax_iobrl && std::abs(eta1) < etamax_obrl) {
+                if (pt1 > ptmin_hpt) {
+                  if (dz2 * dzmax2_inv_obh + dr2 * drmax2_inv_obh < 1.0f)
+                    overlapping = true;
+                } else {
+                  if (dz2 * dzmax2_inv_obl + dr2 * drmax2_inv_obl < 1.0f)
+                    overlapping = true;
+                }
+	        } else {
+                if (pt1 > ptmin_hpt) {
+                    if (dz2 * dzmax2_inv_eh + dr2 * drmax2_inv_eh < 1.0f)
+                      overlapping = true;
+                  } else {
+                    if (dz2 * dzmax2_inv_el + dr2 * drmax2_inv_el < 1.0f)
+                      overlapping = true;
+                  }
+              }
+
+              if (overlapping) {
+                //Mark tss as a duplicate
+                i1 = ts;
+                i2 = tss;
+                if (d0[tss] > d0[ts])
+                  writetrack[tss] = false;
+                else {
+                  writetrack[ts] = false;
+                  i2 = ts;
+                  i1 = tss;
+                }
+                // Add hits from tk2 to the seed we are keeping.
+                // NOTE: We have a limit in Track::Status for the number of seed hits.
+                //       There is a check at entry and after adding of a new hit.
+                Track &tk = seeds[i1];
+                if (merge_hits && tk.nTotalHits() < Track::Status::kMaxSeedHits &&
+                    (Algo(itrcfg.m_track_algorithm) != Algo::lowPtQuadStep ||
+                     (pt1 < ptmax_merge_lowPtQuad && std::abs(eta1) > etamin_merge_lowPtQuad))) {
+                  const Track &tk2 = seeds[i2];
+                  //We are not actually fitting to the extra hits; use chi2 of 0
+                  float fakeChi2 = 0.0;
+
+                  for (int j = 0; j < tk2.nTotalHits(); ++j) {
+                    int hitidx = tk2.getHitIdx(j);
+                    int hitlyr = tk2.getHitLyr(j);
+                    if (hitidx >= 0) {
+                      bool unique = true;
+                      for (int i = 0; i < tk.nTotalHits(); ++i) {
+                        if ((hitidx == tk.getHitIdx(i)) && (hitlyr == tk.getHitLyr(i))) {
+                          unique = false;
+                          break;
+                        }
+                      }
+                      if (unique) {
+                        tk.addHitIdx(tk2.getHitIdx(j), tk2.getHitLyr(j), fakeChi2);
+                        ++n_ovlp_hits_added;
+                        if (tk.nTotalHits() >= Track::Status::kMaxSeedHits)
+                          break;
+                      }
+                    }
+                  }
+                }
+                if (n_ovlp_hits_added > 0)
+                  tk.sortHitsByLayer();
+              }
+            }  //end of inner loop over tss
+          }  //eta bin
+        }  //phi bin
+
+        if (writetrack[ts]) {
+          cleanSeedTracks.emplace_back(seeds[ts]);
+        }
+      }
+
+      seeds.swap(cleanSeedTracks);
+
+#ifdef DEBUG
+      {
+        const int ns2 = seeds.size();
+        printf("Number of CMS seeds before %d --> after %d cleaning\n", ns, ns2);
+
+        for (int it = 0; it < ns2; it++) {
+          const Track &ss = seeds[it];
+          printf("  %3i q=%+i pT=%7.3f eta=% 7.3f nHits=%i label=% i\n",
+                 it,
+                 ss.charge(),
+                 ss.pT(),
+                 ss.momEta(),
+                 ss.nFoundHits(),
+                 ss.label());
+        }
+      }
+#endif
+
+#ifdef DEBUG
+      std::cout << "AFTER seed cleaning " << seeds.size() << std::endl;
+#endif
+
+      return seeds.size();
+    }
+
     namespace {
       CMS_SA_ALLOW struct register_seed_cleaners {
         register_seed_cleaners() {
           IterationConfig::register_seed_cleaner("phase1:default", clean_cms_seedtracks_iter);
+	  IterationConfig::register_seed_cleaner("phase2:default", clean_cms_seedtracks_iter_phase2);
         }
       } rsc_instance;
     }  // namespace

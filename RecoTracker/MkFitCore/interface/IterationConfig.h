@@ -135,14 +135,23 @@ namespace mkfit {
 
     // seed cleaning params with good defaults (all configurable)
     float sc_ptthr_hpt = 2.0;
-    float sc_drmax_bh = 0.010;
-    float sc_dzmax_bh = 0.005;
-    float sc_drmax_eh = 0.020;
-    float sc_dzmax_eh = 0.020;
-    float sc_drmax_bl = 0.010;
-    float sc_dzmax_bl = 0.005;
-    float sc_drmax_el = 0.030;
-    float sc_dzmax_el = 0.030;
+    float sc_drmax_bh  = 0.010;
+    float sc_dzmax_bh  = 0.005;
+    float sc_drmax_iobh = 0.020;
+    float sc_dzmax_iobh = 0.020;
+    float sc_drmax_obh = 0.020;
+    float sc_dzmax_obh = 0.020;
+    float sc_drmax_eh  = 0.020;
+    float sc_dzmax_eh  = 0.020;
+    float sc_drmax_bl  = 0.010;
+    float sc_dzmax_bl  = 0.005;
+    float sc_drmax_obl = 0.030;
+    float sc_dzmax_obl = 0.030;
+    float sc_drmax_iobl = 0.030;
+    float sc_dzmax_iobl = 0.030;
+    float sc_drmax_el  = 0.030;
+    float sc_dzmax_el  = 0.030;
+
 
     // duplicate cleaning params with good defaults (all configurable)
     float dc_fracSharedHits_central = 0.19;
