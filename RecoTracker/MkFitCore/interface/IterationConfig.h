@@ -137,29 +137,37 @@ namespace mkfit {
     float sc_ptthr_hpt = 2.0;
     float sc_drmax_bh  = 0.010;
     float sc_dzmax_bh  = 0.005;
-    float sc_drmax_iobh = 0.020;
-    float sc_dzmax_iobh = 0.020;
-    float sc_drmax_obh = 0.020;
-    float sc_dzmax_obh = 0.020;
+    float sc_drmax_fbh = 0.020;
+    float sc_dzmax_fbh = 0.020;
+    float sc_drmax_extbh = 0.020;
+    float sc_dzmax_extbh = 0.020;
+    float sc_drmax_extfh = 0.020;
+    float sc_dzmax_extfh = 0.020;
     float sc_drmax_eh  = 0.020;
     float sc_dzmax_eh  = 0.020;
     float sc_drmax_bl  = 0.010;
     float sc_dzmax_bl  = 0.005;
-    float sc_drmax_obl = 0.030;
-    float sc_dzmax_obl = 0.030;
-    float sc_drmax_iobl = 0.030;
-    float sc_dzmax_iobl = 0.030;
+    float sc_drmax_extbl = 0.030;
+    float sc_dzmax_extbl = 0.030;
+    float sc_drmax_fbl = 0.030;
+    float sc_dzmax_fbl = 0.030;
     float sc_drmax_el  = 0.030;
     float sc_dzmax_el  = 0.030;
+    float sc_drmax_extfl  = 0.030;
+    float sc_dzmax_extfl  = 0.030;
 
 
     // duplicate cleaning params with good defaults (all configurable)
     float dc_fracSharedHits_central = 0.19;
     float dc_fracSharedHits_obarrel = 0.19;
+    float dc_fracSharedHits_forwbarrel = 0.19;
     float dc_fracSharedHits_forward = 0.19;
+    float dc_fracSharedHits_extforward = 0.19;
     float dc_drth_central = 0.001;
     float dc_drth_obarrel = 0.001;
+    float dc_drth_forwbarrel = 0.001;
     float dc_drth_forward = 0.001;
+    float dc_drth_extforward = 0.001;
 
     // Iteration parameters (could be a ptr)
     IterationParams m_params;

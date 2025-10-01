@@ -7,7 +7,7 @@
 #include "RecoTracker/MkFitCore/interface/TrackStructures.h"
 
 #include "RecoTracker/MkFitCore/interface/binnor.h"
-#define DEBUG
+//#define DEBUG
 namespace mkfit {
 
   namespace StdSeq {
@@ -338,47 +338,55 @@ namespace mkfit {
     int clean_cms_seedtracks_iter_phase2(TrackVec &seeds, const IterationConfig &itrcfg, const BeamSpot &bspot) {
       using Algo = TrackBase::TrackAlgorithm;
 
-      const float etamax_brl = Config::c_etamax_brl_phase2; //eta 1.44
-      const float etamax_iobrl = Config::c_etamax_iobrl; //eta 2.2
-      const float etamax_obrl = Config::c_etamax_obrl; //eta 2.6
+      const float etamax_brl = Config::c_etamax_brl_phase2; //eta 0.6
+      const float etamax_extbrl = Config::c_etamax_extbrl_phase2; //eta 1.44
+      const float etamax_fbrl = Config::c_etamax_brlforward_phase2; //eta 2.4
+      const float etamax_forward = Config::c_etamax_forward_phase2;
       const float dpt_common = Config::c_dpt_common;//0.25
 
       const float dzmax_bh = itrcfg.sc_dzmax_bh;
       const float drmax_bh = itrcfg.sc_drmax_bh;
-      const float dzmax_obh = itrcfg.sc_dzmax_obh;
-      const float drmax_obh = itrcfg.sc_drmax_obh;
-      const float dzmax_iobh = itrcfg.sc_dzmax_iobh;
-      const float drmax_iobh = itrcfg.sc_drmax_iobh;
+      const float dzmax_extbh = itrcfg.sc_dzmax_extbh;
+      const float drmax_extbh = itrcfg.sc_drmax_extbh;
+      const float dzmax_fbh = itrcfg.sc_dzmax_fbh;
+      const float drmax_fbh = itrcfg.sc_drmax_fbh;
       const float dzmax_eh = itrcfg.sc_dzmax_eh;
       const float drmax_eh = itrcfg.sc_drmax_eh;
+      const float dzmax_extfh = itrcfg.sc_dzmax_extfh;
+      const float drmax_extfh = itrcfg.sc_drmax_extfh;
       const float dzmax_bl = itrcfg.sc_dzmax_bl;
       const float drmax_bl = itrcfg.sc_drmax_bl;
-      const float dzmax_obl = itrcfg.sc_dzmax_obl;
-      const float drmax_obl = itrcfg.sc_drmax_obl;
-      const float dzmax_iobl = itrcfg.sc_dzmax_iobl;
-      const float drmax_iobl = itrcfg.sc_drmax_iobl;
+      const float dzmax_extbl = itrcfg.sc_dzmax_extbl;
+      const float drmax_extbl = itrcfg.sc_drmax_extbl;
+      const float dzmax_fbl = itrcfg.sc_dzmax_fbl;
+      const float drmax_fbl = itrcfg.sc_drmax_fbl;
       const float dzmax_el = itrcfg.sc_dzmax_el;
       const float drmax_el = itrcfg.sc_drmax_el;
+      const float dzmax_extfl = itrcfg.sc_dzmax_extfl;
+      const float drmax_extfl = itrcfg.sc_drmax_extfl;
 
       const float ptmin_hpt = itrcfg.sc_ptthr_hpt;//0.2
 
       const float dzmax2_inv_bh = 1.f / (dzmax_bh * dzmax_bh);
       const float drmax2_inv_bh = 1.f / (drmax_bh * drmax_bh);
-      const float dzmax2_inv_obh = 1.f / (dzmax_obh * dzmax_obh);
-      const float drmax2_inv_obh = 1.f / (drmax_obh * drmax_obh);
-      const float dzmax2_inv_iobh = 1.f / (dzmax_iobh * dzmax_iobh);
-      const float drmax2_inv_iobh = 1.f / (drmax_iobh * drmax_iobh);
+      const float dzmax2_inv_extbh = 1.f / (dzmax_extbh * dzmax_extbh);
+      const float drmax2_inv_extbh = 1.f / (drmax_extbh * drmax_extbh);
+      const float dzmax2_inv_fbh = 1.f / (dzmax_fbh * dzmax_fbh);
+      const float drmax2_inv_fbh = 1.f / (drmax_fbh * drmax_fbh);
       const float dzmax2_inv_eh = 1.f / (dzmax_eh * dzmax_eh);
       const float drmax2_inv_eh = 1.f / (drmax_eh * drmax_eh);
+      const float dzmax2_inv_extfh = 1.f / (dzmax_extfh * dzmax_extfh);
+      const float drmax2_inv_extfh = 1.f / (drmax_extfh * drmax_extfh);
       const float dzmax2_inv_bl = 1.f / (dzmax_bl * dzmax_bl);
       const float drmax2_inv_bl = 1.f / (drmax_bl * drmax_bl);
-      const float dzmax2_inv_obl = 1.f / (dzmax_obl * dzmax_obl);
-      const float drmax2_inv_obl = 1.f / (drmax_obl * drmax_obl);
-      const float dzmax2_inv_iobl = 1.f / (dzmax_iobl * dzmax_iobl);
-      const float drmax2_inv_iobl = 1.f / (drmax_iobl * drmax_iobl);
+      const float dzmax2_inv_extbl = 1.f / (dzmax_extbl * dzmax_extbl);
+      const float drmax2_inv_extbl = 1.f / (drmax_extbl * drmax_extbl);
+      const float dzmax2_inv_fbl = 1.f / (dzmax_fbl * dzmax_fbl);
+      const float drmax2_inv_fbl = 1.f / (drmax_fbl * drmax_fbl);
       const float dzmax2_inv_el = 1.f / (dzmax_el * dzmax_el);
       const float drmax2_inv_el = 1.f / (drmax_el * drmax_el);
-
+      const float dzmax2_inv_extfl = 1.f / (dzmax_extfl * dzmax_extfl);
+      const float drmax2_inv_extfl = 1.f / (drmax_extfl * drmax_extfl);
       // Merge hits from overlapping seeds?
       // For now always true, we require extra hits after seed,
       // except for lowPtQuadStep, where we only merge hits for seeds at low pT and large pseudo-rapidity
@@ -391,7 +399,7 @@ namespace mkfit {
 
       const int ns = seeds.size();
 #ifdef DEBUG
-      std::cout << "before seed cleaning " << seeds.size() << std::endl;
+      std::cout << "before seed cleaning (Phase2) " << seeds.size() << std::endl;
 #endif
       TrackVec cleanSeedTracks;
       cleanSeedTracks.reserve(ns);
@@ -515,31 +523,40 @@ namespace mkfit {
                   if (dz2 * dzmax2_inv_bl + dr2 * drmax2_inv_bl < 1.0f)
                     overlapping = true;
                 }
-              } else if (std::abs(eta1)> etamax_brl  && std::abs(eta1) < etamax_iobrl) {
+              } else if (std::abs(eta1)> etamax_brl  && std::abs(eta1) < etamax_extbrl) {
                 if (pt1 > ptmin_hpt) {
-                  if (dz2 * dzmax2_inv_iobh + dr2 * drmax2_inv_iobh < 1.0f)
+                  if (dz2 * dzmax2_inv_extbh + dr2 * drmax2_inv_extbh < 1.0f)
                     overlapping = true;
-                } else {
-                  if (dz2 * dzmax2_inv_iobl + dr2 * drmax2_inv_iobl < 1.0f)
+		} else {
+		  if (dz2 * dzmax2_inv_extbl + dr2 * drmax2_inv_extbl < 1.0f)
                     overlapping = true;
                 }
-              } else if (std::abs(eta1)> etamax_iobrl && std::abs(eta1) < etamax_obrl) {
+              } else if (std::abs(eta1)> etamax_extbrl  && std::abs(eta1) < etamax_fbrl){
                 if (pt1 > ptmin_hpt) {
-                  if (dz2 * dzmax2_inv_obh + dr2 * drmax2_inv_obh < 1.0f)
+                  if (dz2 * dzmax2_inv_fbh + dr2 * drmax2_inv_fbh < 1.0f)
                     overlapping = true;
                 } else {
-                  if (dz2 * dzmax2_inv_obl + dr2 * drmax2_inv_obl < 1.0f)
+                  if (dz2 * dzmax2_inv_fbl + dr2 * drmax2_inv_fbl < 1.0f)
                     overlapping = true;
                 }
-	        } else {
+	      } else if (std::abs(eta1)> etamax_fbrl && std::abs(eta1) < etamax_forward) {
                 if (pt1 > ptmin_hpt) {
-                    if (dz2 * dzmax2_inv_eh + dr2 * drmax2_inv_eh < 1.0f)
-                      overlapping = true;
-                  } else {
-                    if (dz2 * dzmax2_inv_el + dr2 * drmax2_inv_el < 1.0f)
-                      overlapping = true;
-                  }
-              }
+		  if (dz2 * dzmax2_inv_eh + dr2 * drmax2_inv_eh < 1.0f)
+		    overlapping = true;
+		} else {
+		  if (dz2 * dzmax2_inv_el + dr2 * drmax2_inv_el < 1.0f)
+		    overlapping = true;
+		}
+	      } else {
+		if (pt1 > ptmin_hpt) {
+		  if (dz2 * dzmax2_inv_extfh + dr2 * drmax2_inv_extfh < 1.0f)
+		    overlapping = true;
+		} else {
+		  if (dz2 * dzmax2_inv_extfl + dr2 * drmax2_inv_extfl < 1.0f)
+		    overlapping = true;
+                }
+	      }
+	    
 
               if (overlapping) {
                 //Mark tss as a duplicate
@@ -793,9 +810,7 @@ namespace mkfit {
     }
 
     void clean_duplicates_sharedhits_pixelseed(TrackVec &tracks, const IterationConfig &itconf) {
-      const float fraction_central = itconf.dc_fracSharedHits_central;
-      const float fraction_obarrel = itconf.dc_fracSharedHits_obarrel;
-      const float fraction_forward = itconf.dc_fracSharedHits_forward;
+      const float fraction = itconf.dc_fracSharedHits_central;
       const float drth_central = itconf.dc_drth_central;
       const float drth_obarrel = itconf.dc_drth_obarrel;
       const float drth_forward = itconf.dc_drth_forward;
@@ -813,11 +828,113 @@ namespace mkfit {
         phi1 = trk.momPhi();
         invpt1 = trk.invpT();
         ctheta1 = ctheta[itrack];
-	float fraction = fraction_central;
+        for (auto jtrack = itrack + 1; jtrack < ntracks; jtrack++) {
+          auto &track2 = tracks[jtrack];
+          if (trk.label() == track2.label())
+            continue;
+
+          dctheta = std::abs(ctheta[jtrack] - ctheta1);
+
+          if (dctheta > Config::maxdcth)
+            continue;
+
+          dphi = std::abs(squashPhiMinimal(phi1 - track2.momPhi()));
+
+          if (dphi > Config::maxdphi)
+            continue;
+
+          float maxdRSquared = drth_central * drth_central;
           if (std::abs(ctheta1) > Config::maxcth_fw)
-            fraction = fraction_forward;
+            maxdRSquared = drth_forward * drth_forward;
           else if (std::abs(ctheta1) > Config::maxcth_ob)
-            fraction = fraction_obarrel;
+            maxdRSquared = drth_obarrel * drth_obarrel;
+          dr2 = dphi * dphi + dctheta * dctheta;
+          if (dr2 < maxdRSquared) {
+            //Keep track with best score
+            if (trk.score() > track2.score())
+              track2.setDuplicateValue(true);
+            else
+              trk.setDuplicateValue(true);
+            continue;
+          }
+
+          if (std::abs(track2.invpT() - invpt1) > Config::maxd1pt)
+            continue;
+
+          auto sharedCount = 0;
+          auto sharedFirst = 0;
+          const auto minFoundHits = std::min(trk.nFoundHits(), track2.nFoundHits());
+
+          for (int i = 0; i < trk.nTotalHits(); ++i) {
+            if (trk.getHitIdx(i) < 0)
+              continue;
+            const int a = trk.getHitLyr(i);
+            const int b = trk.getHitIdx(i);
+            for (int j = 0; j < track2.nTotalHits(); ++j) {
+              if (track2.getHitIdx(j) < 0)
+                continue;
+              const int c = track2.getHitLyr(j);
+              const int d = track2.getHitIdx(j);
+
+              //this is to count once shared matched hits (may be done more properly...)
+              if (a == c && b == d)
+                sharedCount += 1;
+              if (j == 0 && i == 0 && a == c && b == d)
+                sharedFirst += 1;
+
+              if ((sharedCount - sharedFirst) >= ((minFoundHits - sharedFirst) * fraction))
+                continue;
+            }
+            if ((sharedCount - sharedFirst) >= ((minFoundHits - sharedFirst) * fraction))
+              continue;
+          }
+
+          //selection here - 11percent fraction of shared hits to label a duplicate
+          if ((sharedCount - sharedFirst) >= ((minFoundHits - sharedFirst) * fraction)) {
+            if (trk.score() > track2.score())
+              track2.setDuplicateValue(true);
+            else
+              trk.setDuplicateValue(true);
+          }
+        }
+      }  //end loop one over tracks
+
+      remove_duplicates(tracks);
+    }
+    void clean_duplicates_sharedhits_pixelseed_phase2(TrackVec &tracks, const IterationConfig &itconf) {
+      const float fraction_central = itconf.dc_fracSharedHits_central;
+      const float fraction_obarrel = itconf.dc_fracSharedHits_obarrel;
+      const float fraction_forwbarrel = itconf.dc_fracSharedHits_forwbarrel;
+      const float fraction_forward = itconf.dc_fracSharedHits_forward;
+      const float fraction_extforward = itconf.dc_fracSharedHits_extforward;
+      const float drth_central = itconf.dc_drth_central;
+      const float drth_obarrel = itconf.dc_drth_obarrel;
+      const float drth_forwbarrel = itconf.dc_drth_forwbarrel;
+      const float drth_forward = itconf.dc_drth_forward;
+      const float drth_extforward = itconf.dc_drth_extforward;
+      const auto ntracks = tracks.size();
+
+      std::vector<float> ctheta(ntracks);
+      for (auto itrack = 0U; itrack < ntracks; itrack++) {
+        auto &trk = tracks[itrack];
+        ctheta[itrack] = 1.f / std::tan(trk.theta());
+      }
+
+      float phi1, invpt1, dctheta, ctheta1, dphi, dr2;
+      for (auto itrack = 0U; itrack < ntracks; itrack++) {
+        auto &trk = tracks[itrack];
+        phi1 = trk.momPhi();
+        invpt1 = trk.invpT();
+        ctheta1 = ctheta[itrack];
+	float fraction = fraction_central;
+	if (std::abs(ctheta1) > Config::c_etamax_forward_phase2)
+            fraction = fraction_extforward;
+          else if (std::abs(ctheta1) > Config::c_etamax_brlforward_phase2 && std::abs(ctheta1) < Config::c_etamax_forward_phase2)
+            fraction = fraction_forward;
+	  else if (std::abs(ctheta1) > Config::c_etamax_extbrl_phase2 && std::abs(ctheta1) < Config::c_etamax_brlforward_phase2)
+	    fraction = fraction_forwbarrel;
+	  else if (std::abs(ctheta1) > Config::c_etamax_brl_phase2 && std::abs(ctheta1) < Config::c_etamax_extbrl_phase2)
+	    fraction = fraction_obarrel;
 	#ifdef DEBUG
 	  std::cout << "fraction = " << fraction << std::endl;
 	#endif
@@ -836,9 +953,13 @@ namespace mkfit {
           if (dphi > Config::maxdphi)
             continue;
           float maxdRSquared = drth_central * drth_central;
-          if (std::abs(ctheta1) > Config::maxcth_fw)
-            maxdRSquared = drth_forward * drth_forward;
-          else if (std::abs(ctheta1) > Config::maxcth_ob)
+	  if (std::abs(ctheta1) > Config::c_etamax_forward_phase2)
+            maxdRSquared = drth_extforward * drth_extforward;
+          else if (std::abs(ctheta1) > Config::c_etamax_brlforward_phase2 && std::abs(ctheta1) < Config::c_etamax_forward_phase2)
+	    maxdRSquared = drth_forward * drth_forward;
+          else if (std::abs(ctheta1) > Config::c_etamax_extbrl_phase2 && std::abs(ctheta1) < Config::c_etamax_brlforward_phase2)
+            maxdRSquared = drth_forwbarrel * drth_forwbarrel;
+          else if (std::abs(ctheta1) > Config::c_etamax_brl_phase2 && std::abs(ctheta1) < Config::c_etamax_extbrl_phase2)
             maxdRSquared = drth_obarrel * drth_obarrel;
           dr2 = dphi * dphi + dctheta * dctheta;
           if (dr2 < maxdRSquared) {
@@ -902,6 +1023,8 @@ namespace mkfit {
                                                       clean_duplicates_sharedhits);
           IterationConfig::register_duplicate_cleaner("phase1:clean_duplicates_sharedhits_pixelseed",
                                                       clean_duplicates_sharedhits_pixelseed);
+	  IterationConfig::register_duplicate_cleaner("phase2:clean_duplicates_sharedhits_pixelseed",
+                                                      clean_duplicates_sharedhits_pixelseed_phase2);
         }
       } rdc_instance;
     }  // namespace

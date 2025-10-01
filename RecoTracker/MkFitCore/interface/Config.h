@@ -97,17 +97,18 @@ namespace mkfit {
     // config on seed cleaning
     constexpr float track1GeVradius = 87.6;  // = 1/(c*B)
     constexpr float c_etamax_brl = 0.9;
-    constexpr float c_etamax_brl_phase2 = 1.44;
-    constexpr float c_etamax_iobrl = 2.2;
-    constexpr float c_etamax_obrl = 2.6;
+    constexpr float c_etamax_brl_phase2 = 0.6;
+    constexpr float c_etamax_extbrl_phase2 = 1.44;
+    constexpr float c_etamax_brlforward_phase2 = 2.4;
+    constexpr float c_etamax_forward_phase2 = 2.8;
     constexpr float c_dpt_common = 0.25;
-    constexpr float c_dzmax_brl = 0.005;
+    constexpr float sc_dzmax_bh = 0.005;
     constexpr float c_drmax_brl = 0.010;
     constexpr float c_ptmin_hpt = 2.0;
     constexpr float c_dzmax_hpt = 0.010;
     constexpr float c_drmax_hpt = 0.010;
-    constexpr float c_dzmax_els = 0.015;
-    constexpr float c_drmax_els = 0.015;
+    constexpr float c_dzmax_el = 0.015;
+    constexpr float c_drmax_el = 0.015;
 
     // config on duplicate removal
 #if defined(MKFIT_STANDALONE)

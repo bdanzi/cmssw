@@ -255,9 +255,9 @@ void SimpleTrackValidation::fillDescriptions(edm::ConfigurationDescriptions& des
   desc.add<double>("maxPhiTP", 3.2);
 
   // Default bins in eta for negative endcap, barrel, and positive endcap
-  desc.add<std::vector<double>>("etaBins", {-4, -1.5, 1.5, 4});
+  desc.add<std::vector<double>>("etaBins", {-4, -2.5, -1.44, 1.44, 2.5, 4});
   // Default bins in pt 0-3 GeV, 3-10 GeV, 10-100 GeV
-  desc.add<std::vector<double>>("ptBins", {0, 3, 10, 1000});
+  desc.add<std::vector<double>>("ptBins", {0, 1000});
 
   descriptions.addWithDefaultLabel(desc);
 }
