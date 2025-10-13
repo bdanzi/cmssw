@@ -3,7 +3,7 @@
 
 #include "TTree.h"
 #include "TFile.h"
-
+#include "TH2D.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -59,6 +59,13 @@ private:
   TH1D* h_st_pt;
   TH1D* h_dt_pt;
   TH1D* h_ast_pt;
+
+  // Histograms in eta vs pt bins
+  TH2D* h_st_eta_pt;
+  TH2D* h_ast_eta_pt;
+  TH2D* h_rt_eta_pt;
+  TH2D* h_at_eta_pt;
+  TH2D* h_dt_eta_pt;
 
   TrackingParticleSelector tpSelector;
   TTree* output_tree_;
@@ -136,6 +143,7 @@ void SimpleTrackValidation::analyze(const edm::Event& iEvent, const edm::EventSe
       rt++;
       h_rt_eta->Fill(track->eta());
       h_rt_pt->Fill(track->pt());
+      h_rt_eta_pt->Fill(track->eta(),track->pt());
       auto foundTP = recSimColl.find(track);
       if (foundTP != recSimColl.end()) {
         const auto& tp = foundTP->val;
@@ -143,12 +151,14 @@ void SimpleTrackValidation::analyze(const edm::Event& iEvent, const edm::EventSe
           at++;
           h_at_eta->Fill(track->eta());
           h_at_pt->Fill(track->pt());
+	  h_at_eta_pt->Fill(track->eta(),track->pt());
         }
         if (simRecColl.find(tp[0].first) != simRecColl.end()) {
           if (simRecColl[tp[0].first].size() > 1) {
             dt++;
             h_dt_eta->Fill(track->eta());
             h_dt_pt->Fill(track->pt());
+	    h_dt_eta_pt->Fill(track->eta(),track->pt());
           }
         }
       }
@@ -157,11 +167,13 @@ void SimpleTrackValidation::analyze(const edm::Event& iEvent, const edm::EventSe
       st++;
       h_st_eta->Fill(tpr->eta());
       h_st_pt->Fill(tpr->pt());
+      h_st_eta_pt->Fill(tpr->eta(),tpr->pt());
       auto foundTrack = simRecColl.find(tpr);
       if (foundTrack != simRecColl.end()) {
         ast++;
         h_ast_eta->Fill(tpr->eta());
         h_ast_pt->Fill(tpr->pt());
+	h_ast_eta_pt->Fill(tpr->eta(),tpr->pt());
       }
     }
 
@@ -226,6 +238,28 @@ void SimpleTrackValidation::beginJob() {
                                 n_bins_pt,
                                 v_bins_pt);
   h_dt_pt = output_dir_pt_.make<TH1D>("h_dt_pt", " ; Reco Track p_{T}; Number of duplicates", n_bins_pt, v_bins_pt);
+
+  TFileDirectory output_dir_eta_pt = fs->mkdir("SimpleTrackValidationEtaPtBins");
+
+  h_st_eta_pt = output_dir_eta_pt.make<TH2D>(
+					     "h_st_eta_pt", "Tracking Particle #eta vs p_{T};#eta;p_{T} [GeV]", 
+					     n_bins_eta, etaBins_.data(), n_bins_pt, ptBins_.data());
+  
+  h_ast_eta_pt = output_dir_eta_pt.make<TH2D>(
+					      "h_ast_eta_pt", "Tracking Particle associated #eta vs p_{T};#eta;p_{T} [GeV]",
+					      n_bins_eta, etaBins_.data(), n_bins_pt, ptBins_.data());
+  
+  h_rt_eta_pt = output_dir_eta_pt.make<TH2D>(
+					     "h_rt_eta_pt", "Reco Track #eta vs p_{T};#eta;p_{T} [GeV]",
+					     n_bins_eta, etaBins_.data(), n_bins_pt, ptBins_.data());
+  
+  h_at_eta_pt = output_dir_eta_pt.make<TH2D>(
+					     "h_at_eta_pt", "Reco Track associated #eta vs p_{T};#eta;p_{T} [GeV]",
+					     n_bins_eta, etaBins_.data(), n_bins_pt, ptBins_.data());
+  
+  h_dt_eta_pt = output_dir_eta_pt.make<TH2D>(
+					     "h_dt_eta_pt", "Reco Track duplicates #eta vs p_{T};#eta;p_{T} [GeV]",
+					     n_bins_eta, etaBins_.data(), n_bins_pt, ptBins_.data());
 }
 
 void SimpleTrackValidation::endJob() { output_tree_->Fill(); }
