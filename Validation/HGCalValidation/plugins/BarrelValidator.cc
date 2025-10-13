@@ -97,10 +97,12 @@ BarrelValidator::BarrelValidator(const edm::ParameterSet& pset)
   }
 
   for (auto& itag : associatorSim_) {
-    associatorMapRtSim.push_back(consumes<ticl::RecoToSimCollectionWithSimClusters>(itag));
+    associatorMapRtSim.push_back(
+        consumes<ticl::RecoToSimCollectionWithSimClustersT<reco::CaloClusterCollection>>(itag));
   }
   for (auto& itag : associatorSim_) {
-    associatorMapSimtR.push_back(consumes<ticl::SimToRecoCollectionWithSimClusters>(itag));
+    associatorMapSimtR.push_back(
+        consumes<ticl::SimToRecoCollectionWithSimClustersT<reco::CaloClusterCollection>>(itag));
   }
 
   barrelHitMap_ =
@@ -111,10 +113,10 @@ BarrelValidator::BarrelValidator(const edm::ParameterSet& pset)
   layerclusters_ = consumes<reco::CaloClusterCollection>(label_lcl);
 
   for (auto& itag : associator_) {
-    associatorMapRtS.push_back(consumes<ticl::RecoToSimCollection>(itag));
+    associatorMapRtS.push_back(consumes<ticl::RecoToSimCollectionT<reco::CaloClusterCollection>>(itag));
   }
   for (auto& itag : associator_) {
-    associatorMapStR.push_back(consumes<ticl::SimToRecoCollection>(itag));
+    associatorMapStR.push_back(consumes<ticl::SimToRecoCollectionT<reco::CaloClusterCollection>>(itag));
   }
 
   cpSelector = CaloParticleSelector(pset.getParameter<double>("ptMinCP"),
@@ -221,7 +223,7 @@ void BarrelValidator::cpParametersAndSelection(const Histograms& histograms,
                                                std::vector<size_t>& selected_cPeff,
                                                unsigned int layers,
                                                std::unordered_map<DetId, const unsigned int> const& barrelHitMap,
-                                               MultiVectorManager<reco::PFRecHit> const& barrelHits) const {
+                                               edm::MultiSpan<reco::PFRecHit> const& barrelHits) const {
   selected_cPeff.reserve(cPeff.size());
 
   size_t j = 0;
@@ -263,13 +265,13 @@ void BarrelValidator::dqmAnalyze(const edm::Event& event,
   tools_->setGeometry(*geom);
   histoProducerAlgo_->setRecHitTools(tools_);
 
-  std::vector<ticl::RecoToSimCollection> recSimColl;
-  std::vector<ticl::SimToRecoCollection> simRecColl;
+  std::vector<ticl::RecoToSimCollectionT<reco::CaloClusterCollection>> recSimColl;
+  std::vector<ticl::SimToRecoCollectionT<reco::CaloClusterCollection>> simRecColl;
   for (unsigned int i = 0; i < associatorMapRtS.size(); ++i) {
-    edm::Handle<ticl::SimToRecoCollection> simToRecoCollectionH;
+    edm::Handle<ticl::SimToRecoCollectionT<reco::CaloClusterCollection>> simToRecoCollectionH;
     event.getByToken(associatorMapStR[i], simToRecoCollectionH);
     simRecColl.push_back(*simToRecoCollectionH);
-    edm::Handle<ticl::RecoToSimCollection> recoToSimCollectionH;
+    edm::Handle<ticl::RecoToSimCollectionT<reco::CaloClusterCollection>> recoToSimCollectionH;
     event.getByToken(associatorMapRtS[i], recoToSimCollectionH);
     recSimColl.push_back(*recoToSimCollectionH);
   }
@@ -278,11 +280,11 @@ void BarrelValidator::dqmAnalyze(const edm::Event& event,
   event.getByToken(barrelHitMap_, barrelHitMapHandle);
   const std::unordered_map<DetId, const unsigned int>& barrelHitMap = *barrelHitMapHandle;
 
-  MultiVectorManager<reco::PFRecHit> barrelRechitManager;
+  edm::MultiSpan<reco::PFRecHit> barrelRechitSpan;
   for (const auto& token : barrel_hits_tokens_) {
     Handle<std::vector<reco::PFRecHit>> hitsHandle;
     event.getByToken(token, hitsHandle);
-    barrelRechitManager.addVector(*hitsHandle);
+    barrelRechitSpan.add(*hitsHandle);
   }
 
   //Some general info on layers etc.
@@ -301,13 +303,8 @@ void BarrelValidator::dqmAnalyze(const edm::Event& event,
   // HGCRecHit are given to select the SimHits which are also reconstructed
   LogTrace("BarrelValidator") << "\n# of CaloParticles: " << caloParticles.size() << "\n" << std::endl;
   std::vector<size_t> selected_cPeff;
-  cpParametersAndSelection(histograms,
-                           caloParticles,
-                           simVertices,
-                           selected_cPeff,
-                           totallayers_to_monitor_,
-                           barrelHitMap,
-                           barrelRechitManager);
+  cpParametersAndSelection(
+      histograms, caloParticles, simVertices, selected_cPeff, totallayers_to_monitor_, barrelHitMap, barrelRechitSpan);
 
   //get collections from the event
   //simClusters
@@ -345,13 +342,13 @@ void BarrelValidator::dqmAnalyze(const edm::Event& event,
     for (unsigned int ws = 0; ws < label_clustersmask.size(); ws++) {
       const auto& inputClusterMask = event.get(clustersMaskTokens_[ws]);
 
-      std::vector<ticl::RecoToSimCollectionWithSimClusters> recSimColl;
-      std::vector<ticl::SimToRecoCollectionWithSimClusters> simRecColl;
+      std::vector<ticl::RecoToSimCollectionWithSimClustersT<reco::CaloClusterCollection>> recSimColl;
+      std::vector<ticl::SimToRecoCollectionWithSimClustersT<reco::CaloClusterCollection>> simRecColl;
       for (unsigned int i = 0; i < associatorMapRtSim.size(); ++i) {
-        edm::Handle<ticl::SimToRecoCollectionWithSimClusters> simtorecoCollectionH;
+        edm::Handle<ticl::SimToRecoCollectionWithSimClustersT<reco::CaloClusterCollection>> simtorecoCollectionH;
         event.getByToken(associatorMapSimtR[i], simtorecoCollectionH);
         simRecColl.push_back(*simtorecoCollectionH);
-        edm::Handle<ticl::RecoToSimCollectionWithSimClusters> recotosimCollectionH;
+        edm::Handle<ticl::RecoToSimCollectionWithSimClustersT<reco::CaloClusterCollection>> recotosimCollectionH;
         event.getByToken(associatorMapRtSim[i], recotosimCollectionH);
         recSimColl.push_back(*recotosimCollectionH);
       }
@@ -368,7 +365,7 @@ void BarrelValidator::dqmAnalyze(const edm::Event& event,
                                                             totallayers_to_monitor_,
                                                             recSimColl[0],
                                                             simRecColl[0],
-                                                            barrelRechitManager);
+                                                            barrelRechitSpan);
 
       //General Info on simClusters
       LogTrace("BarrelValidator") << "\n# of SimClusters: " << nSimClusters
@@ -393,7 +390,7 @@ void BarrelValidator::dqmAnalyze(const edm::Event& event,
                                                     totallayers_to_monitor_,
                                                     recSimColl[0],
                                                     simRecColl[0],
-                                                    barrelRechitManager);
+                                                    barrelRechitSpan);
 
     for (unsigned int layerclusterIndex = 0; layerclusterIndex < clusters.size(); layerclusterIndex++) {
       histoProducerAlgo_->fill_cluster_histos(histograms.histoProducerAlgo, w, clusters[layerclusterIndex]);

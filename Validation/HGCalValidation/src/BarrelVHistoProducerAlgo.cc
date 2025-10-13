@@ -663,7 +663,7 @@ void BarrelVHistoProducerAlgo::fill_caloparticle_histos(
     std::vector<SimVertex> const& simVertices,
     unsigned int layers,
     std::unordered_map<DetId, const unsigned int> const& barrelHitMap,
-    MultiVectorManager<reco::PFRecHit> const& barrelHits) const {
+    edm::MultiSpan<reco::PFRecHit> const& barrelHits) const {
   const auto eta = getEta(caloParticle.eta());
   if (histograms.h_caloparticle_eta.count(pdgid)) {
     histograms.h_caloparticle_eta.at(pdgid)->Fill(eta);
@@ -831,9 +831,9 @@ void BarrelVHistoProducerAlgo::BarrelVHistoProducerAlgo::fill_simClusterAssociat
     const std::vector<float>& mask,
     std::unordered_map<DetId, const unsigned int> const& barrelHitMap,
     unsigned int layers,
-    const ticl::RecoToSimCollectionWithSimClusters& scsInLayerClusterMap,
-    const ticl::SimToRecoCollectionWithSimClusters& lcsInSimClusterMap,
-    MultiVectorManager<reco::PFRecHit> const& barrelHits) const {
+    const ticl::RecoToSimCollectionWithSimClustersT<reco::CaloClusterCollection>& scsInLayerClusterMap,
+    const ticl::SimToRecoCollectionWithSimClustersT<reco::CaloClusterCollection>& lcsInSimClusterMap,
+    edm::MultiSpan<reco::PFRecHit> const& barrelHits) const {
   //Each event to be treated as two events: an event in +ve endcap,
   //plus another event in -ve endcap. In this spirit there will be
   //a layer variable (layerid) that maps the layers in :
@@ -876,9 +876,9 @@ void BarrelVHistoProducerAlgo::layerClusters_to_CaloParticles(
     std::vector<size_t> const& cPSelectedIndices,
     std::unordered_map<DetId, const unsigned int> const& barrelHitMap,
     unsigned int layers,
-    const ticl::RecoToSimCollection& cpsInLayerClusterMap,
-    const ticl::SimToRecoCollection& cPOnLayerMap,
-    MultiVectorManager<reco::PFRecHit> const& barrelHits) const {
+    const ticl::RecoToSimCollectionT<reco::CaloClusterCollection>& cpsInLayerClusterMap,
+    const ticl::SimToRecoCollectionT<reco::CaloClusterCollection>& cPOnLayerMap,
+    edm::MultiSpan<reco::PFRecHit> const& barrelHits) const {
   const auto nLayerClusters = clusters.size();
 
   std::unordered_map<DetId, std::vector<BarrelVHistoProducerAlgo::detIdInfoInCluster>> detIdToCaloParticleId_Map;
@@ -1151,9 +1151,9 @@ void BarrelVHistoProducerAlgo::layerClusters_to_SimClusters(
     const std::vector<float>& mask,
     std::unordered_map<DetId, const unsigned int> const& barrelHitMap,
     unsigned int layers,
-    const ticl::RecoToSimCollectionWithSimClusters& scsInLayerClusterMap,
-    const ticl::SimToRecoCollectionWithSimClusters& lcsInSimClusterMap,
-    MultiVectorManager<reco::PFRecHit> const& barrelHits) const {
+    const ticl::RecoToSimCollectionWithSimClustersT<reco::CaloClusterCollection>& scsInLayerClusterMap,
+    const ticl::SimToRecoCollectionWithSimClustersT<reco::CaloClusterCollection>& lcsInSimClusterMap,
+    edm::MultiSpan<reco::PFRecHit> const& barrelHits) const {
   // Here fill the plots to compute the different metrics linked to
   // reco-level, namely fake-rate and merge-rate. In this loop should *not*
   // restrict only to the selected SimClusters.
@@ -1339,9 +1339,9 @@ void BarrelVHistoProducerAlgo::fill_generic_cluster_histos(
     std::vector<size_t> const& cPSelectedIndices,
     std::unordered_map<DetId, const unsigned int> const& barrelHitMap,
     unsigned int layers,
-    const ticl::RecoToSimCollection& cpsInLayerClusterMap,
-    const ticl::SimToRecoCollection& cPOnLayerMap,
-    MultiVectorManager<reco::PFRecHit> const& barrelHits) const {
+    const ticl::RecoToSimCollectionT<reco::CaloClusterCollection>& cpsInLayerClusterMap,
+    const ticl::SimToRecoCollectionT<reco::CaloClusterCollection>& cPOnLayerMap,
+    edm::MultiSpan<reco::PFRecHit> const& barrelHits) const {
   //To keep track of total num of layer clusters per layer
   //tnlcpl[layerid]
   std::vector<int> tnlcpl(1000, 0);  //tnlcpl.clear(); tnlcpl.reserve(1000);
@@ -1404,7 +1404,7 @@ void BarrelVHistoProducerAlgo::setRecHitTools(std::shared_ptr<hgcal::RecHitTools
 
 DetId BarrelVHistoProducerAlgo::findmaxhit(const reco::CaloCluster& cluster,
                                            std::unordered_map<DetId, const unsigned int> const& hitMap,
-                                           MultiVectorManager<reco::PFRecHit> const& hits) const {
+                                           edm::MultiSpan<reco::PFRecHit> const& hits) const {
   const auto& hits_and_fractions = cluster.hitsAndFractions();
 
   DetId themaxid;

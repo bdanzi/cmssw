@@ -23,6 +23,7 @@ from HLTrigger.NGTScouting.hltTaus_cfi import *
 from HLTrigger.NGTScouting.hltTracksters_cfi import *
 from HLTrigger.NGTScouting.hltTICLCandidates_cfi import *
 from HLTrigger.NGTScouting.hltTICLSuperClusters_cfi import *
+from HLTrigger.NGTScouting.hltLayerClusters_cfi import * 
 from HLTrigger.NGTScouting.hltSums_cfi import *
 from HLTrigger.NGTScouting.hltTriggerAcceptFilter_cfi import hltTriggerAcceptFilter,dstTriggerAcceptFilter
 
@@ -47,6 +48,7 @@ hltNanoProducer = cms.Sequence(
     #+ hltTriggerAcceptFilter
     + hltVertexTable
     + hltPixelTrackTable
+    + hltPixelVertexTable
     + hltGeneralTrackTable
     + hltEgammaPacker
     + hltPhotonTable
@@ -70,6 +72,7 @@ dstNanoProducer = cms.Sequence(
     + dstTriggerAcceptFilter
     + hltVertexTable
     + hltPixelTrackTable
+    + hltPixelVertexTable
     + hltGeneralTrackTable
     + hltEgammaPacker
     + hltPhotonTable
@@ -86,6 +89,11 @@ dstNanoProducer = cms.Sequence(
     + hltTauExtTable
     + METTable
     + HTTable
+)
+
+trackingExtraNanoProducer = cms.Sequence(
+    hltPixelTrackExtTable+
+    hltGeneralTrackExtTable
 )
 
 def hltNanoCustomize(process):
@@ -108,6 +116,11 @@ def hltNanoCustomize(process):
 def hltNanoValCustomize(process):
     if hasattr(process, "dstNanoProducer"):
 
-        process.dstNanoProducer += (process.hltTiclAssociationsTableSequence + process.hltSimTracksterSequence + process.hltSimTiclCandidateTable + process.hltSimTiclCandidateExtraTable )
+        process.dstNanoProducer += (process.hltTiclAssociationsTableSequence +
+                                    process.hltSimTracksterSequence +
+                                    process.hltSimTiclCandidateTable +
+                                    process.hltSimTiclCandidateExtraTable +
+                                    process.hltLayerClustersTableSequence  +
+                                    process.trackingExtraNanoProducer)
 
     return process
