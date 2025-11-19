@@ -31,6 +31,16 @@ private:
   const float dc_drth_forwbarrel_;
   const float dc_drth_forward_;
   const float dc_drth_extforward_;
+  const float dc_fracSharedHits_hcentral_;
+  const float dc_fracSharedHits_hobarrel_;
+  const float dc_fracSharedHits_hforwbarrel_;
+  const float dc_fracSharedHits_hforward_;
+  const float dc_fracSharedHits_hextforward_;
+  const float dc_drth_hcentral_;
+  const float dc_drth_hobarrel_;
+  const float dc_drth_hforwbarrel_;
+  const float dc_drth_hforward_;
+  const float dc_drth_hextforward_;
   const float sc_ptthr_hpt_; 
   
   const float sc_dzmax_bh_; 
@@ -71,6 +81,16 @@ MkFitIterationConfigESProducer::MkFitIterationConfigESProducer(const edm::Parame
       dc_drth_forwbarrel_{(float)iConfig.getParameter<double>("dc_drth_forwbarrel")},
       dc_drth_forward_{(float)iConfig.getParameter<double>("dc_drth_forward")},
       dc_drth_extforward_{(float)iConfig.getParameter<double>("dc_drth_extforward")},
+      dc_fracSharedHits_hcentral_{(float)iConfig.getParameter<double>("dc_fracSharedHits_hcentral")},
+      dc_fracSharedHits_hobarrel_{(float)iConfig.getParameter<double>("dc_fracSharedHits_hobarrel")},
+      dc_fracSharedHits_hforwbarrel_{(float)iConfig.getParameter<double>("dc_fracSharedHits_hforwbarrel")},
+      dc_fracSharedHits_hforward_{(float)iConfig.getParameter<double>("dc_fracSharedHits_hforward")},
+      dc_fracSharedHits_hextforward_{(float)iConfig.getParameter<double>("dc_fracSharedHits_hextforward")},
+      dc_drth_hcentral_{(float)iConfig.getParameter<double>("dc_drth_hcentral")},
+      dc_drth_hobarrel_{(float)iConfig.getParameter<double>("dc_drth_hobarrel")},
+      dc_drth_hforwbarrel_{(float)iConfig.getParameter<double>("dc_drth_hforwbarrel")},
+      dc_drth_hforward_{(float)iConfig.getParameter<double>("dc_drth_hforward")},
+      dc_drth_hextforward_{(float)iConfig.getParameter<double>("dc_drth_hextforward")},
       sc_ptthr_hpt_{(float)iConfig.getParameter<double>("sc_ptthr_hpt")},
       sc_dzmax_bh_{(float)iConfig.getParameter<double>("sc_dzmax_bh")},
       sc_drmax_bh_{(float)iConfig.getParameter<double>("sc_drmax_bh")},
@@ -111,6 +131,16 @@ void MkFitIterationConfigESProducer::fillDescriptions(edm::ConfigurationDescript
   desc.add<double>("dc_drth_forwbarrel",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
   desc.add<double>("dc_drth_forward",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
   desc.add<double>("dc_drth_extforward",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
+  desc.add<double>("dc_fracSharedHits_hcentral",0.24)->setComment("Duplicate cleaner fraction of shared Hits");
+  desc.add<double>("dc_fracSharedHits_hobarrel",0.24)->setComment("Duplicate cleaner fraction of shared Hits");
+  desc.add<double>("dc_fracSharedHits_hforwbarrel",0.24)->setComment("Duplicate cleaner fraction of shared Hits");
+  desc.add<double>("dc_fracSharedHits_hforward",0.24)->setComment("Duplicate cleaner fraction of shared Hits");
+  desc.add<double>("dc_fracSharedHits_hextforward",0.24)->setComment("Duplicate cleaner fraction of shared Hits");
+  desc.add<double>("dc_drth_hcentral",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))<1.99 (abs(eta)<1.44)");
+  desc.add<double>("dc_drth_hobarrel",0.002)->setComment("dR cut used to identify duplicate candidates if 1.99<std::abs(cotan(theta))<6.05 (1.44<abs(eta)<2.5)");
+  desc.add<double>("dc_drth_hforwbarrel",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
+  desc.add<double>("dc_drth_hforward",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
+  desc.add<double>("dc_drth_hextforward",0.002)->setComment("dR cut used to identify duplicate candidates if std::abs(cotan(theta))>6.05 (abs(eta)>2.5)");
   desc.add<double>("sc_ptthr_hpt", 2.0)->setComment("pT threshold applied for high-pT candidates");
   desc.add<double>("sc_drmax_bh", 0.01)->setComment("Maximum dR matching window for barrel high-pT candidates");
   desc.add<double>("sc_dzmax_bh", 0.005)->setComment("Maximum dZ matching window for barrel high-pT candidates");
@@ -155,6 +185,16 @@ std::unique_ptr<mkfit::IterationConfig> MkFitIterationConfigESProducer::produce(
   it_conf->dc_drth_forwbarrel = dc_drth_forwbarrel_;
   it_conf->dc_drth_forward = dc_drth_forward_;
   it_conf->dc_drth_extforward = dc_drth_extforward_;
+  it_conf->dc_fracSharedHits_hcentral = dc_fracSharedHits_hcentral_;
+  it_conf->dc_fracSharedHits_hobarrel = dc_fracSharedHits_hobarrel_;
+  it_conf->dc_fracSharedHits_hforward = dc_fracSharedHits_hforward_;
+  it_conf->dc_fracSharedHits_hforwbarrel = dc_fracSharedHits_hforwbarrel_;
+  it_conf->dc_fracSharedHits_hextforward = dc_fracSharedHits_hextforward_;
+  it_conf->dc_drth_hcentral = dc_drth_hcentral_;
+  it_conf->dc_drth_hobarrel = dc_drth_hobarrel_;
+  it_conf->dc_drth_hforwbarrel = dc_drth_hforwbarrel_;
+  it_conf->dc_drth_hforward = dc_drth_hforward_;
+  it_conf->dc_drth_hextforward = dc_drth_hextforward_;
   it_conf->sc_ptthr_hpt = sc_ptthr_hpt_;
   it_conf->sc_dzmax_bh = sc_dzmax_bh_;
   it_conf->sc_drmax_bh =  sc_drmax_bh_;

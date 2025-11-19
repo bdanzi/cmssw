@@ -912,6 +912,17 @@ namespace mkfit {
       const float drth_forwbarrel = itconf.dc_drth_forwbarrel;
       const float drth_forward = itconf.dc_drth_forward;
       const float drth_extforward = itconf.dc_drth_extforward;
+      const float fraction_central_high = itconf.dc_fracSharedHits_hcentral;
+      const float fraction_obarrel_high = itconf.dc_fracSharedHits_hobarrel;
+      const float fraction_forwbarrel_high = itconf.dc_fracSharedHits_hforwbarrel;
+      const float fraction_forward_high = itconf.dc_fracSharedHits_hforward;
+      const float fraction_extforward_high = itconf.dc_fracSharedHits_hextforward;
+      const float drth_central_high = itconf.dc_drth_hcentral;
+      const float drth_obarrel_high = itconf.dc_drth_hobarrel;
+      const float drth_forwbarrel_high = itconf.dc_drth_hforwbarrel;
+      const float drth_forward_high = itconf.dc_drth_hforward;
+      const float drth_extforward_high = itconf.dc_drth_hextforward;
+      const float ptmin_hpt = itconf.sc_ptthr_hpt;
       const auto ntracks = tracks.size();
 
       std::vector<float> ctheta(ntracks);
@@ -926,15 +937,16 @@ namespace mkfit {
         phi1 = trk.momPhi();
         invpt1 = trk.invpT();
         ctheta1 = ctheta[itrack];
-	float fraction = fraction_central;
+	bool isHighPt = (1.0f / std::abs(invpt1)) >= ptmin_hpt;
+	float fraction = isHighPt ? fraction_central_high : fraction_central;
 	if (std::abs(ctheta1) > Config::c_etamax_forward_phase2)
-            fraction = fraction_extforward;
+            fraction = isHighPt ? fraction_extforward_high : fraction_extforward;
           else if (std::abs(ctheta1) > Config::c_etamax_brlforward_phase2 && std::abs(ctheta1) < Config::c_etamax_forward_phase2)
-            fraction = fraction_forward;
+            fraction = isHighPt ? fraction_forward_high : fraction_forward;
 	  else if (std::abs(ctheta1) > Config::c_etamax_extbrl_phase2 && std::abs(ctheta1) < Config::c_etamax_brlforward_phase2)
-	    fraction = fraction_forwbarrel;
+	    fraction = isHighPt ? fraction_forwbarrel_high : fraction_forwbarrel;
 	  else if (std::abs(ctheta1) > Config::c_etamax_brl_phase2 && std::abs(ctheta1) < Config::c_etamax_extbrl_phase2)
-	    fraction = fraction_obarrel;
+	    fraction = isHighPt ? fraction_obarrel_high : fraction_obarrel;
 	#ifdef DEBUG
 	  std::cout << "fraction = " << fraction << std::endl;
 	#endif
@@ -952,15 +964,15 @@ namespace mkfit {
 
           if (dphi > Config::maxdphi)
             continue;
-          float maxdRSquared = drth_central * drth_central;
+          float maxdRSquared = isHighPt ? (drth_central_high * drth_central_high) : (drth_central*drth_central);
 	  if (std::abs(ctheta1) > Config::c_etamax_forward_phase2)
-            maxdRSquared = drth_extforward * drth_extforward;
+            maxdRSquared = isHighPt ? (drth_extforward_high * drth_extforward_high) : (drth_extforward * drth_extforward);
           else if (std::abs(ctheta1) > Config::c_etamax_brlforward_phase2 && std::abs(ctheta1) < Config::c_etamax_forward_phase2)
-	    maxdRSquared = drth_forward * drth_forward;
+	    maxdRSquared = isHighPt ? (drth_forward_high * drth_forward_high) : (drth_forward * drth_forward);
           else if (std::abs(ctheta1) > Config::c_etamax_extbrl_phase2 && std::abs(ctheta1) < Config::c_etamax_brlforward_phase2)
-            maxdRSquared = drth_forwbarrel * drth_forwbarrel;
+            maxdRSquared = isHighPt ? (drth_forwbarrel_high * drth_forwbarrel_high) : (drth_forwbarrel * drth_forwbarrel);
           else if (std::abs(ctheta1) > Config::c_etamax_brl_phase2 && std::abs(ctheta1) < Config::c_etamax_extbrl_phase2)
-            maxdRSquared = drth_obarrel * drth_obarrel;
+            maxdRSquared = isHighPt ? (drth_obarrel_high * drth_obarrel_high) : (drth_obarrel * drth_obarrel);
           dr2 = dphi * dphi + dctheta * dctheta;
           if (dr2 < maxdRSquared) {
             //Keep track with best score

@@ -168,6 +168,16 @@ namespace mkfit {
     float dc_drth_forwbarrel = 0.001;
     float dc_drth_forward = 0.001;
     float dc_drth_extforward = 0.001;
+    float dc_fracSharedHits_hcentral = 0.19;
+    float dc_fracSharedHits_hobarrel = 0.19;
+    float dc_fracSharedHits_hforwbarrel = 0.19;
+    float dc_fracSharedHits_hforward = 0.19;
+    float dc_fracSharedHits_hextforward = 0.19;
+    float dc_drth_hcentral = 0.001;
+    float dc_drth_hobarrel = 0.001;
+    float dc_drth_hforwbarrel = 0.001;
+    float dc_drth_hforward = 0.001;
+    float dc_drth_hextforward = 0.001;
 
     // Iteration parameters (could be a ptr)
     IterationParams m_params;
