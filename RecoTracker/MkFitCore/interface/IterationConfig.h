@@ -135,20 +135,49 @@ namespace mkfit {
 
     // seed cleaning params with good defaults (all configurable)
     float sc_ptthr_hpt = 2.0;
-    float sc_drmax_bh = 0.010;
-    float sc_dzmax_bh = 0.005;
-    float sc_drmax_eh = 0.020;
-    float sc_dzmax_eh = 0.020;
-    float sc_drmax_bl = 0.010;
-    float sc_dzmax_bl = 0.005;
-    float sc_drmax_el = 0.030;
-    float sc_dzmax_el = 0.030;
+    float sc_drmax_bh  = 0.010;
+    float sc_dzmax_bh  = 0.005;
+    float sc_drmax_fbh = 0.020;
+    float sc_dzmax_fbh = 0.020;
+    float sc_drmax_extbh = 0.020;
+    float sc_dzmax_extbh = 0.020;
+    float sc_drmax_extfh = 0.020;
+    float sc_dzmax_extfh = 0.020;
+    float sc_drmax_eh  = 0.020;
+    float sc_dzmax_eh  = 0.020;
+    float sc_drmax_bl  = 0.010;
+    float sc_dzmax_bl  = 0.005;
+    float sc_drmax_extbl = 0.030;
+    float sc_dzmax_extbl = 0.030;
+    float sc_drmax_fbl = 0.030;
+    float sc_dzmax_fbl = 0.030;
+    float sc_drmax_el  = 0.030;
+    float sc_dzmax_el  = 0.030;
+    float sc_drmax_extfl  = 0.030;
+    float sc_dzmax_extfl  = 0.030;
+
 
     // duplicate cleaning params with good defaults (all configurable)
-    float dc_fracSharedHits = 0.19;
+    float dc_fracSharedHits_central = 0.19;
+    float dc_fracSharedHits_obarrel = 0.19;
+    float dc_fracSharedHits_forwbarrel = 0.19;
+    float dc_fracSharedHits_forward = 0.19;
+    float dc_fracSharedHits_extforward = 0.19;
     float dc_drth_central = 0.001;
     float dc_drth_obarrel = 0.001;
+    float dc_drth_forwbarrel = 0.001;
     float dc_drth_forward = 0.001;
+    float dc_drth_extforward = 0.001;
+    float dc_fracSharedHits_hcentral = 0.19;
+    float dc_fracSharedHits_hobarrel = 0.19;
+    float dc_fracSharedHits_hforwbarrel = 0.19;
+    float dc_fracSharedHits_hforward = 0.19;
+    float dc_fracSharedHits_hextforward = 0.19;
+    float dc_drth_hcentral = 0.001;
+    float dc_drth_hobarrel = 0.001;
+    float dc_drth_hforwbarrel = 0.001;
+    float dc_drth_hforward = 0.001;
+    float dc_drth_hextforward = 0.001;
 
     // Iteration parameters (could be a ptr)
     IterationParams m_params;
@@ -218,8 +247,10 @@ namespace mkfit {
       m_track_algorithm = trk_alg;
     }
 
-    void set_dupl_params(float sharedFrac, float drthCentral, float drthObarrel, float drthForward) {
-      dc_fracSharedHits = sharedFrac;
+    void set_dupl_params(float sharedFrac_central, float sharedFrac_obarrel, float sharedFrac_forward,float drthCentral, float drthObarrel, float drthForward) {
+      dc_fracSharedHits_central = sharedFrac_central;
+      dc_fracSharedHits_obarrel = sharedFrac_obarrel;
+      dc_fracSharedHits_forward = sharedFrac_forward;
       dc_drth_central = drthCentral;
       dc_drth_obarrel = drthObarrel;
       dc_drth_forward = drthForward;
