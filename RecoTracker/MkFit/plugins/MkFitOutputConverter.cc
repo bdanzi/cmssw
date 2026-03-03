@@ -302,6 +302,7 @@ TrackCandidateCollection MkFitOutputConverter::convertCandidates(const MkFitOutp
   states.reserve(candidates.size());
 
   int candIndex = -1;
+  const auto isPhase1 = mkFitGeom.isPhase1();
   for (const auto& cand : candidates) {
     ++candIndex;
     LogTrace("MkFitOutputConverter") << "Candidate " << candIndex << " pT " << cand.pT() << " eta " << cand.momEta()
@@ -317,9 +318,15 @@ TrackCandidateCollection MkFitOutputConverter::convertCandidates(const MkFitOutp
           << "Candidate " << candIndex << " failed state quality checks" << cand.state().parameters;
       continue;
     }
+    auto minPtCut = algoCandMinPtCut_;
+    
+    if (!isPhase1 && std::abs(cand.momEta()) > 1.4) {
+      minPtCut = 0.8;
+    }
 
-    if (algoCandCutSelection_ && (cand.pT() < algoCandMinPtCut_ || cand.nTotalHits() < algoCandMinNHitsCut_))
+    if (algoCandCutSelection_ && (cand.pT() < minPtCut || cand.nTotalHits() < algoCandMinNHitsCut_))
       continue;
+
 
     auto state = cand.state();  // copy because have to modify
     state.convertFromCCSToGlbCurvilinear();
@@ -369,7 +376,6 @@ TrackCandidateCollection MkFitOutputConverter::convertCandidates(const MkFitOutp
     const int nhits = cand.nTotalHits();
     //std::cout << candIndex << ": " << nhits << " " << cand.nFoundHits() << std::endl;
     bool lastHitInvalid = false;
-    const auto isPhase1 = mkFitGeom.isPhase1();
     for (int i = 0; i < nhits; ++i) {
       const auto& hitOnTrack = cand.getHitOnTrack(i);
       LogTrace("MkFitOutputConverter") << " hit on layer " << hitOnTrack.layer << " index " << hitOnTrack.index;
