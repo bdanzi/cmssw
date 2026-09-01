@@ -466,7 +466,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     if ((zOut < zLo) || (zOut > zHi))
       return false;
 
-    const float sdPVoff = 0.1f / rtOut;
+    const float sdPVoff = 1.0f / rtOut;
     const float sdMulsAndPVoff = alpaka::math::sqrt(acc, innerMod.sdMuls * innerMod.sdMuls + sdPVoff * sdPVoff);
     const float sdCut = sdSlope + sdMulsAndPVoff;
 
@@ -871,7 +871,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       const float yIn = mds.anchorY()[innerMD];
       const float xOut = mds.anchorX()[outerMD];
       const float yOut = mds.anchorY()[outerMD];
-      const float sdPVoff = 0.1f / rtOut;
+      const float sdPVoff = 1.0f / rtOut;
       const float sdMulsAndPVoff = alpaka::math::sqrt(acc, innerMod.sdMuls * innerMod.sdMuls + sdPVoff * sdPVoff);
       float dPhi, dPhiChange;  // unused with LooseOnly=true
       return passDeltaPhiCutsBarrel<true>(acc,

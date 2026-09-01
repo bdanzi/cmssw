@@ -690,7 +690,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     // Pre-compute dPhiThreshold module-constant parts
     float rLayNominal = (mod.subdet == Barrel) ? kMiniRminMeanBarrel[mod.iL] : kMiniRminMeanEndcap[mod.iL];
-    mod.miniPVoff = 0.1f / rLayNominal;
+    mod.miniPVoff = 1.0f / rLayNominal;
     mod.miniMuls = (mod.subdet == Barrel) ? kMiniMulsPtScaleBarrel[mod.iL] * 3.f / ptCut
                                           : kMiniMulsPtScaleEndcap[mod.iL] * 3.f / ptCut;
     mod.miniMulsAndPVoff = mod.miniMuls * mod.miniMuls + mod.miniPVoff * mod.miniPVoff;
