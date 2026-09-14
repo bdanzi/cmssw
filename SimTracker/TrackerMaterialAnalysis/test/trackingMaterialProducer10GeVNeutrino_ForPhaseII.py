@@ -14,8 +14,9 @@ _PH2_GLOBAL_TAG, _PH2_ERA = _settings.get_era_and_conditions(_settings.DEFAULT_V
 process = cms.Process("Geometry",_PH2_ERA)
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.files.debugTrackingMaterialProducer = dict()
+process.MessageLogger.files.debugTrackingMaterialProducer = dict(threshold = cms.untracked.string('WARNING'))
 process.MessageLogger.TrackingMaterialProducer=dict()
+process.MessageLogger.cerr.threshold = 'WARNING'
 
 process.load('Configuration.EventContent.EventContent_cff')
 
