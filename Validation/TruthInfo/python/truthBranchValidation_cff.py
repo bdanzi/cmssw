@@ -194,6 +194,13 @@ _domains = [
         dirName="TruthInfo/Offline/Tracking/",
         recoVariables=["pt", "eta", "phi", "nhits", "vertpos", "zpos", "dxy", "dz"],
         thresholds=_trackThresholds,
+        # A classic TrackingParticle cannot exist without >=1 tracker hit; the graph-level
+        # target lists from truthBranchTargets carry no such requirement, which otherwise
+        # makes the truth-graph efficiency read well below classic MultiTrackValidator's
+        # even in matched kinematic acceptance. On by default so this folder is directly
+        # comparable to Tracking/TrackAllTPEffic; pass boolOptions={} to a .clone() to turn
+        # it back off and reproduce the pre-existing (uncomparable) denominator.
+        boolOptions=dict(requireHitForTruthDenominator=True),
     ),
     dict(
         name="vertices",
@@ -454,6 +461,7 @@ for _d in _domains:
         # only those: the calorimetric criteria are three cuts on two different axes,
         # the shared-component ones two cuts on one.
         **{_k: cms.double(_v) for _k, _v in _d["thresholds"].items()},
+        **{_k: cms.bool(_v) for _k, _v in _d.get("boolOptions", {}).items()},
         histoProducerAlgoBlock=_algoBlock(_d["recoVariables"], _d.get("truthVariables"),
                                           _d.get("sharedRange"), _d.get("axisOverrides"),
                                           _d.get("recoAxisOverrides"), _d.get("etaRegions")),

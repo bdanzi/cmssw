@@ -265,6 +265,14 @@ private:
   // The fake criterion: a reco object is NOT a fake when one branch of the dominance
   // antichain owns at least this share of the shared quantity all of them contribute.
   const double minLeadingTruthShare_;
+  // Hit-based, non-vertex domains only (tracks): also require the truth-driven
+  // denominator's target to have deposited >=1 hit in the domain's own detector channel.
+  // A classic TrackingParticle cannot exist without one, so its MTV-style efficiency
+  // denominator excludes particles that never had a chance to be reconstructed (decayed
+  // before the detector, curled away, absorbed); the graph-level target lists from
+  // truthBranchTargets carry no such requirement on their own. Off by default so existing
+  // harvested plots do not change unless asked; turn on to compare against classic MTV.
+  const bool requireHitForTruthDenominator_;
   std::vector<WpEntry> wpEntries_;
   // Working points per collection; wpEntries_ is collection-major with this stride.
   std::size_t nWorkingPoints_ = 1;
@@ -292,6 +300,10 @@ TruthBranchRecoValidator<RECO>::TruthBranchRecoValidator(edm::ParameterSet const
       maxRecoToSimScore_(Traits::calorimetric ? cfg.getParameter<double>("maxRecoToSimScore") : 0.),
       minCollectiveCoverage_(cfg.getParameter<double>("minCollectiveCoverage")),
       minLeadingTruthShare_(Traits::truthIsVertex ? 0. : cfg.getParameter<double>("minLeadingTruthShare")),
+      requireHitForTruthDenominator_(
+          (Traits::truthIsVertex || Traits::calorimetric)
+              ? false
+              : cfg.getParameter<bool>("requireHitForTruthDenominator")),
       algo_(cfg.getParameter<edm::ParameterSet>("histoProducerAlgoBlock")) {
   const auto associator = cfg.getParameter<std::string>("associator");
   const auto targetsProducer = cfg.getParameter<std::string>("targetsProducer");
@@ -764,6 +776,16 @@ void TruthBranchRecoValidator<RECO>::dqmAnalyze(edm::Event const& event,
 
     for (std::size_t t = 0; t < targetsHandle->size(); ++t) {
       const unsigned int b = (*targetsHandle)[t];
+      // Tracks only (compiles away for every other domain): a target with no hit in the
+      // domain's own channel could never have been a TrackingParticle, so it does not
+      // belong in an MTV-comparable denominator either. Excludes it from num_simul AND
+      // every numerator on every axis, the same as it never being a candidate at all.
+      if constexpr (!Traits::truthIsVertex) {
+        if (requireHitForTruthDenominator_ && b < graph.nParticles() &&
+            hitIndex.directHits(Traits::hitChannel, b).empty()) {
+          continue;
+        }
+      }
       // Which plotted-axis cut this target fails. 0 means it passes them all and enters
       // every axis, which is every target when no eligibility product is present.
       const unsigned int failedCuts = haveEligibility ? (*eligibilityHandle)[t] : 0u;
@@ -974,6 +996,16 @@ void TruthBranchRecoValidator<RECO>::fillDescriptions(edm::ConfigurationDescript
             "validation's thresholds");
     desc.add<double>("minRecoPurityLoose", 0.25)
         ->setComment("Loose cut in the other direction: that object must not be mostly something else");
+    if constexpr (!Traits::truthIsVertex) {
+      desc.add<bool>("requireHitForTruthDenominator", false)
+          ->setComment(
+              "Tracks only. Also require the truth-driven denominator's target to have deposited >=1 hit in "
+              "Traits::hitChannel before it enters num_simul (and therefore the efficiency, duplicate and split "
+              "rates). A classic TrackingParticle cannot exist without one; the graph-level target lists from "
+              "truthBranchTargets carry no such requirement on their own, which is why the truth-graph efficiency "
+              "otherwise reads well below classic MultiTrackValidator's even in matched kinematic acceptance. Off "
+              "by default so existing harvested plots do not change unless asked");
+    }
   }
   desc.add<double>("minCollectiveCoverage", 0.5)
       ->setComment("Several objects together must cover at least this much of the truth object to count as split");
