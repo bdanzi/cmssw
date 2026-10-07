@@ -294,6 +294,21 @@ _InitialStepPreSplittingTask_trackingMkFit = InitialStepPreSplittingTask.copy()
 _InitialStepPreSplittingTask_trackingMkFit.add(mkFitSiPixelHitsPreSplitting, mkFitEventOfHitsPreSplitting, initialStepTrackCandidatesMkFitSeedsPreSplitting, initialStepTrackCandidatesMkFitPreSplitting, initialStepTrackCandidatesMkFitConfigPreSplitting)
 trackingMkFitInitialStepPreSplitting.toReplaceWith(InitialStepPreSplittingTask, _InitialStepPreSplittingTask_trackingMkFit)
 
+from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
+# Phase-2: mkFit pre-splitting initialStep uses the Phase-2 OT hits (no SiStrip) and the Phase-2 iteration config
+from RecoTracker.IterativeTracking.InitialStep_cff import mkFitSiPhase2Hits
+from RecoLocalTracker.Phase2TrackerRecHits.Phase2TrackerRecHits_cfi import siPhase2RecHits
+_trackingMkFitInitialStepPreSplitting_Phase2 = trackingMkFitInitialStepPreSplitting & trackingPhase2PU140
+_trackingMkFitInitialStepPreSplitting_Phase2.toModify(initialStepTrackCandidatesMkFitConfigPreSplitting,
+    config = "RecoTracker/MkFit/data/mkfit-phase2-initialStep.json")
+_trackingMkFitInitialStepPreSplitting_Phase2.toModify(mkFitEventOfHitsPreSplitting,
+    stripHits = "mkFitSiPhase2Hits", useStripStripQualityDB = False)
+_trackingMkFitInitialStepPreSplitting_Phase2.toModify(initialStepTrackCandidatesMkFitPreSplitting, stripHits = "mkFitSiPhase2Hits")
+_trackingMkFitInitialStepPreSplitting_Phase2.toModify(initialStepTrackCandidatesPreSplitting, mkFitStripHits = "mkFitSiPhase2Hits")
+_InitialStepPreSplittingTask_trackingMkFit_Phase2 = InitialStepPreSplittingTask.copyAndExclude([mkFitSiStripHits])
+_InitialStepPreSplittingTask_trackingMkFit_Phase2.add(siPhase2RecHits, mkFitSiPhase2Hits)
+_trackingMkFitInitialStepPreSplitting_Phase2.toReplaceWith(InitialStepPreSplittingTask, _InitialStepPreSplittingTask_trackingMkFit_Phase2)
+
 
 # Although InitialStepPreSplitting is not really part of LowPU/Run1/Phase2PU140
 # tracking, we use it to get siPixelClusters and siPixelRecHits
