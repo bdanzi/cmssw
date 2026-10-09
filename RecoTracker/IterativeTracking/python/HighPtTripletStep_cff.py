@@ -272,6 +272,12 @@ _phase2LSTmkFit.toModify(highPtTripletStepTrackCandidatesMkFitConfig,
     config = cms.FileInPath('RecoTracker/MkFit/data/mkfit-phase2-lstStep-offline.json'),
     minPt = cms.double(0)                                                    
 )
+# Offline port of cms-sw/cmssw PR 52015 (HLT LST step): keep a backward-search extension only if its
+# new hits reach 2 pixel layers (1 layer for prompt candidates with |d0| < 2 cm)
+_phase2LSTmkFit.toModify(highPtTripletStepTrackCandidatesMkFitConfig,
+    backwardSearchMinPixelLayers = 2,
+    backwardSearchPromptMaxD0 = 2.0
+)
 
 # For Phase2PU140
 from TrackingTools.TrajectoryCleaning.TrajectoryCleanerBySharedHits_cfi import trajectoryCleanerBySharedHits as _trajectoryCleanerBySharedHits
@@ -318,6 +324,21 @@ highPtTripletStepTracks = RecoTracker.TrackProducer.TrackProducerIterativeDefaul
     Fitter        = 'FlexibleKFFittingSmoother',
 )
 fastSim.toModify(highPtTripletStepTracks,TTRHBuilder = 'WithoutRefit')
+
+# Offline port of cms-sw/cmssw PR 52015 (HLT LST step): outlier-tolerant final fit for the LST + mkFit step
+import TrackingTools.TrackFitters.RungeKuttaFitters_cff as _RungeKuttaFitters_cff
+import TrackingTools.TrackFitters.FlexibleKFFittingSmoother_cfi as _FlexibleKFFittingSmoother_cfi
+highPtTripletStepKFFittingSmootherForLSTStep = _RungeKuttaFitters_cff.KFFittingSmootherWithOutliersRejectionAndRK.clone(
+    ComponentName = 'KFFittingSmootherForLSTStep',
+    MaxNumberOfOutliers = 6,
+    MaxFractionOutliers = 0.5,
+    BreakTrajWith2ConsecutiveMissing = False
+)
+highPtTripletStepFlexibleKFFittingSmootherForLSTStep = _FlexibleKFFittingSmoother_cfi.FlexibleKFFittingSmoother.clone(
+    ComponentName = 'FlexibleKFFittingSmootherForLSTStep',
+    standardFitter = 'KFFittingSmootherForLSTStep'
+)
+_phase2LSTmkFit.toModify(highPtTripletStepTracks, Fitter = 'FlexibleKFFittingSmootherForLSTStep')
 
 from Configuration.Eras.Modifier_phase2_timing_layer_cff import phase2_timing_layer
 phase2_timing_layer.toModify(highPtTripletStepTracks, TrajectoryInEvent = True)
@@ -447,6 +468,7 @@ highPtTripletStepSeedsPixelsOnly = RecoTracker.TkSeedGenerator.GlobalCombinedSee
 )
 
 _HighPtTripletStepTask_LST_mkFit.add(highPtTripletStepSeedsPixelsWithLST,highPtTripletStepTrackCandidatesMkFitSeeds, highPtTripletStepTrackCandidatesMkFit, highPtTripletStepTrackCandidatesMkFitConfig,highPtTripletStepSeedsPixelsOnly)
+_HighPtTripletStepTask_LST_mkFit.add(highPtTripletStepKFFittingSmootherForLSTStep, highPtTripletStepFlexibleKFFittingSmootherForLSTStep)
 _phase2LSTmkFit.toReplaceWith(HighPtTripletStepTask,_HighPtTripletStepTask_LST_mkFit)
 
 from Configuration.ProcessModifiers.alpakaValidationLST_cff import alpakaValidationLST
@@ -489,7 +511,7 @@ highPtTripletStepTrackCandidatesMkFitSeedsSerialSync = highPtTripletStepTrackCan
 _phase2LSTmkFitValidation.toModify(highPtTripletStepTrackCandidatesMkFitSeedsSerialSync, seeds = 'highPtTripletStepSeedsPixelsWithLSTSerialSync')
 highPtTripletStepTrackCandidatesMkFitSerialSync = highPtTripletStepTrackCandidatesMkFit.clone()
 _phase2LSTmkFitValidation.toModify(highPtTripletStepTrackCandidatesMkFitSerialSync, seeds = 'highPtTripletStepTrackCandidatesMkFitSeedsSerialSync')
-_HighPtTripletStepTask_LST_mkFitSerialSync.add(highPtTripletStepSeedsPixelsWithLSTSerialSync,highPtTripletStepTrackCandidatesMkFitSeedsSerialSync, highPtTripletStepTrackCandidatesMkFitSerialSync, highPtTripletStepTrackCandidatesMkFitConfig)
+_HighPtTripletStepTask_LST_mkFitSerialSync.add(highPtTripletStepSeedsPixelsWithLSTSerialSync,highPtTripletStepTrackCandidatesMkFitSeedsSerialSync, highPtTripletStepTrackCandidatesMkFitSerialSync, highPtTripletStepTrackCandidatesMkFitConfig, highPtTripletStepKFFittingSmootherForLSTStep, highPtTripletStepFlexibleKFFittingSmootherForLSTStep)
 HighPtTripletStepTaskSerialSync = cms.Task()
 (trackingPhase2PU140 & alpakaValidationLST & trackingLST).toReplaceWith(HighPtTripletStepTaskSerialSync, _HighPtTripletStepTask_LSTSerialSync)
 _phase2LSTmkFitValidation.toReplaceWith(HighPtTripletStepTaskSerialSync,_HighPtTripletStepTask_LST_mkFitSerialSync)
