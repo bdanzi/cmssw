@@ -154,6 +154,10 @@ Phase2TrackerDigitizerAlgorithm::Phase2TrackerDigitizerAlgorithm(const edm::Para
       theSiPixelGainCalibrationService_(
           use_ineff_from_db_ ? std::make_unique<SiPixelGainCalibrationOfflineSimService>(conf_specific, iC) : nullptr),
       subdetEfficiencies_(conf_specific) {
+  hitLossProbability_ = conf_specific.getUntrackedParameter<double>("HitLossProbability", 0.);
+  hitLossBPIX1Factor_ = conf_specific.getUntrackedParameter<double>("HitLossBPIX1Factor", 1.);
+  hitLossSeed_ = conf_specific.getUntrackedParameter<unsigned int>("HitLossSeed", 1);
+
   LogDebug("Phase2TrackerDigitizerAlgorithm")
       << "Phase2TrackerDigitizerAlgorithm constructed\n"
       << "Configuration parameters:\n"
@@ -182,6 +186,9 @@ void Phase2TrackerDigitizerAlgorithm::accumulateSimHits(const PSimHit& hit,
       << hit.particleType() << " " << hit.pabs() << " " << hit.energyLoss() << " " << hit.tof() << " " << hit.trackId()
       << " " << hit.processType() << " " << hit.detUnitId() << hit.entryPoint() << " " << hit.exitPoint();
   double signalScale = 1.0;
+  // random hit loss (failure-scenario studies), off by default
+  if (hitLossProbability_ > 0. && dropHitForInefficiency(hit, ph2det))
+    return;
   // fill collection_points for this SimHit, indpendent of topology
   if (select_hit(hit, (ph2det->surface().toGlobal(hit.localPosition()).mag() * c_inv) + cosmicShift_, signalScale)) {
     const auto& ionization_points = primary_ionization(hit);  // fills ionization_points
@@ -995,4 +1002,33 @@ float Phase2TrackerDigitizerAlgorithm::calcQ(float x) {
 
   auto xx = std::min(0.5f * x * x, p1);
   return 0.5f * (1.f - std::copysign(std::sqrt(1.f - unsafe_expf<4>(-xx * (1.f + p2 / (1.f + p3 * xx)))), x));
+}
+
+// =================================================================
+// Random hit loss for failure-scenario studies: deterministic per SimHit (no random engine).
+bool Phase2TrackerDigitizerAlgorithm::dropHitForInefficiency(const PSimHit& hit,
+                                                             const Phase2TrackerGeomDetUnit* ph2det) const {
+  double p = hitLossProbability_;
+  // innermost pixel barrel layer (D121: r ~ 3 cm, next layer at r ~ 6 cm)
+  if (DetId(hit.detUnitId()).subdetId() == PixelSubdetector::PixelBarrel && ph2det->surface().position().perp() < 4.5)
+    p *= hitLossBPIX1Factor_;
+  if (p <= 0.)
+    return false;
+  if (p >= 1.)
+    return true;
+  auto mix = [](uint64_t x) {  // splitmix64
+    x += 0x9e3779b97f4a7c15ULL;
+    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+    return x ^ (x >> 31);
+  };
+  uint64_t h = mix(hitLossSeed_);
+  h = mix(h ^ hit.detUnitId());
+  h = mix(h ^ static_cast<uint64_t>(hit.trackId()));
+  h = mix(h ^ hit.eventId().rawId());
+  h = mix(h ^ static_cast<uint64_t>(static_cast<int64_t>(hit.tof() * 1000.f)));
+  h = mix(h ^ static_cast<uint64_t>(static_cast<int64_t>(hit.entryPoint().x() * 1.e4f)));
+  h = mix(h ^ static_cast<uint64_t>(static_cast<int64_t>(hit.entryPoint().y() * 1.e4f)));
+  const double u = (h >> 11) * (1.0 / 9007199254740992.0);  // [0,1)
+  return u < p;
 }

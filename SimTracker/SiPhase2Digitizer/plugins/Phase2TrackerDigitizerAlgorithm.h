@@ -115,6 +115,16 @@ protected:
 
   const Parameters deadModules_;
 
+  // Random hit loss (sensor inefficiency per particle crossing), for failure-scenario studies.
+  // Each SimHit is dropped before digitization with probability hitLossProbability_
+  // (x hitLossBPIX1Factor_ in the innermost pixel barrel layer). The decision is a deterministic
+  // hash of the SimHit (detUnitId, trackId, eventId, tof, entry point) and hitLossSeed_, so it does
+  // not use the random engine and is identical in every job/rerun. Default 0 = no hit loss.
+  double hitLossProbability_ = 0.;
+  double hitLossBPIX1Factor_ = 1.;
+  unsigned int hitLossSeed_ = 1;
+  bool dropHitForInefficiency(const PSimHit& hit, const Phase2TrackerGeomDetUnit* ph2det) const;
+
   // Variables
   // external parameters
   // go from Geant energy GeV to number of electrons
