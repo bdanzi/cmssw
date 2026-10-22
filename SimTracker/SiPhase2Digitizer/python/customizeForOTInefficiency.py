@@ -9,13 +9,11 @@ def _commonCustomizeForInefficiency(process):
 
         if hasattr(process.mix.digitizers.pixel,'PSSDigitizerAlgorithm'):
             print("# Activating bad strip simulation for s-sensors in PS modules from DB")
-            process.mix.digitizers.pixel.PSSDigitizerAlgorithm.KillModules = cms.bool(True)
-            process.mix.digitizers.pixel.PSSDigitizerAlgorithm.DeadModules_DB = cms.bool(True)
+            process.mix.digitizers.pixel.PSSDigitizerAlgorithm.KillChannels_DB = cms.untracked.bool(True)
 
         if hasattr(process.mix.digitizers.pixel,'SSDigitizerAlgorithm'):
             print("# Activating bad strip simulation for SS modules from DB")
-            process.mix.digitizers.pixel.SSDigitizerAlgorithm.KillModules = cms.bool(True)
-            process.mix.digitizers.pixel.SSDigitizerAlgorithm.DeadModules_DB = cms.bool(True)
+            process.mix.digitizers.pixel.SSDigitizerAlgorithm.KillChannels_DB = cms.untracked.bool(True)
 
     ## for pre-mixing
     if hasattr(process, "mixData") and hasattr(process.mixData, "workers") and hasattr(process.mixData.workers, "pixel"):
@@ -25,13 +23,11 @@ def _commonCustomizeForInefficiency(process):
 
         if hasattr(process.mixData.workers.pixel,'PSSDigitizerAlgorithm'):
             print("# Activating bad strip simulation for s-sensors in PS modules from DB")
-            process.mixData.workers.pixel.PSSDigitizerAlgorithm.KillModules = cms.bool(True)
-            process.mixData.workers.pixel.PSSDigitizerAlgorithm.DeadModules_DB = cms.bool(True)
+            process.mixData.workers.pixel.PSSDigitizerAlgorithm.KillChannels_DB = cms.untracked.bool(True)
 
         if hasattr(process.mixData.workers.pixel,'SSDigitizerAlgorithm'):
             print("# Activating bad strip simulation for SS modules from DB")
-            process.mixData.workers.pixel.SSDigitizerAlgorithm.KillModules = cms.bool(True)
-            process.mixData.workers.pixel.SSDigitizerAlgorithm.DeadModules_DB = cms.bool(True)
+            process.mixData.workers.pixel.SSDigitizerAlgorithm.KillChannels_DB = cms.untracked.bool(True)
 
     return process
 

@@ -31,7 +31,10 @@ void SSDigitizerAlgorithm::init(const edm::EventSetup& es) {
   if (use_LorentzAngle_DB_)  // Get Lorentz angle from DB record
     siPhase2OTLorentzAngle_ = &es.getData(siPhase2OTLorentzAngleToken_);
 
-  if (use_deadmodule_DB_)  // Get Bad Channel (SiStripBadStrip) from DB
+  if (use_deadmodule_DB_)  // Get module status from DB
+    badModulePayload_ = &es.getData(badModuleToken_);
+
+  if (use_killchannel_DB_)  // Get Bad Channel (SiStripBadStrip) from DB
     badChannelPayload_ = &es.getData(badChannelToken_);
 
   geom_ = &es.getData(geomToken_);
@@ -50,6 +53,12 @@ SSDigitizerAlgorithm::SSDigitizerAlgorithm(const edm::ParameterSet& conf, edm::C
     siPhase2OTLorentzAngleToken_ = iC.esConsumes();
 
   if (use_deadmodule_DB_) {
+    std::string badModuleLabel_ =
+        conf.getParameter<ParameterSet>("SSDigitizerAlgorithm").getUntrackedParameter<std::string>("BadModuleLabel", "");
+    badModuleToken_ = iC.esConsumes(edm::ESInputTag{"", badModuleLabel_});
+  }
+
+  if (use_killchannel_DB_) {
     std::string badChannelLabel_ = conf.getParameter<ParameterSet>("SSDigitizerAlgorithm")
                                        .getUntrackedParameter<std::string>("BadChannelLabel", "");
     badChannelToken_ = iC.esConsumes(edm::ESInputTag{"", badChannelLabel_});
@@ -195,6 +204,17 @@ bool SSDigitizerAlgorithm::isAboveThreshold(const digitizerUtility::SimHitInfo* 
 // -- Read Bad Channels from the Condidion DB and kill channels/module accordingly
 //
 void SSDigitizerAlgorithm::module_killing_DB(const Phase2TrackerGeomDetUnit* ph2det) {
+  uint32_t detId = ph2det->geographicalId().rawId();
+
+  if (!badModulePayload_->IsModuleUsable(detId)) {
+    signal_map_type& theSignal = _signal[detId];
+    for (auto& s : theSignal) {
+      s.second.set(0.);
+    }
+  }
+}
+
+void SSDigitizerAlgorithm::channel_killing_DB(const Phase2TrackerGeomDetUnit* ph2det) {
   auto detId = ph2det->geographicalId().rawId();
   auto& theSignal = _signal[detId];  // Caller ensures detId exists
 
