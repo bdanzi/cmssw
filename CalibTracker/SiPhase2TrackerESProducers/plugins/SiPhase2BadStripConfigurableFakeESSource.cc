@@ -13,6 +13,8 @@
 
 // system include files
 #include <memory>
+#include <set>
+#include <iterator>
 
 // user include files
 #include "CondFormats/DataRecord/interface/SiPhase2OuterTrackerCondDataRecords.h"
@@ -58,6 +60,8 @@ private:
   // configurables
   bool printDebug_;
   float badComponentsFraction_;
+  float badComponentsFractionPSP_;  // fraction of dead macro-pixels in PS-p sensors
+  std::set<uint32_t> deadDetIds_;   // sensors (DetUnits) with all channels dead
 
   // random engine
   std::unique_ptr<CLHEP::HepRandomEngine> engine_;
@@ -75,8 +79,12 @@ SiPhase2BadStripConfigurableFakeESSource::SiPhase2BadStripConfigurableFakeESSour
 
   printDebug_ = iConfig.getUntrackedParameter<bool>("printDebug", false);
   badComponentsFraction_ = iConfig.getParameter<double>("badComponentsFraction");
+  badComponentsFractionPSP_ = iConfig.getParameter<double>("badComponentsFractionPSP");
+  for (auto id : iConfig.getParameter<std::vector<unsigned int>>("deadDetIds"))
+    deadDetIds_.insert(id);
 
-  if (badComponentsFraction_ > 1. || badComponentsFraction_ < 0.) {
+  if (badComponentsFraction_ > 1. || badComponentsFraction_ < 0. || badComponentsFractionPSP_ > 1. ||
+      badComponentsFractionPSP_ < 0.) {
     throw cms::Exception("Inconsistent configuration")
         << "[SiPhase2BadStripChannelBuilder::c'tor] the requested fraction of bad components is unphysical. \n";
   }
@@ -96,7 +104,7 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
   auto badStrips = std::make_unique<SiStripBadStrip>();
 
   // early return with nullptr if fraction is == 0.f
-  if (badComponentsFraction_ == 0.f) {
+  if (badComponentsFraction_ == 0.f && badComponentsFractionPSP_ == 0.f && deadDetIds_.empty()) {
     return badStrips;
   }
 
@@ -112,8 +120,65 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
       const Phase2TrackerGeomDetUnit* pixdet = dynamic_cast<const Phase2TrackerGeomDetUnit*>(det_u);
       assert(pixdet);
       if (subid == StripSubdetector::TOB || subid == StripSubdetector::TID) {
-        if (tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2PSS ||
-            tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2SS) {
+        if (deadDetIds_.count(rawId)) {
+          // whole sensor dead: one entry per column covering all rows (no random numbers drawn)
+          const PixelTopology& topol(pixdet->specificTopology());
+          const int nrows = topol.nrows();
+          const int ncols = topol.ncolumns();
+          const bool isPSP = tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2PSP;
+          std::vector<unsigned int> theVector;
+          for (int col = 0; col < ncols; ++col) {
+            if (isPSP)  // row/range/flag=column encoding (see below)
+              theVector.push_back(badStrips->encodePhase2(0, nrows, col));
+            else  // strips: channel = row | col << 10, consecutive in row
+              theVector.push_back(badStrips->encodePhase2(Phase2TrackerDigi::pixelToChannel(0, col), nrows));
+          }
+          SiStripBadStrip::Range range(theVector.begin(), theVector.end());
+          if (!badStrips->put(rawId, range))
+            edm::LogError("SiPhase2BadStripConfigurableFakeESSource") << "detid already exists " << rawId;
+          continue;
+        }
+        if (badComponentsFractionPSP_ > 0.f && tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2PSP) {
+          // P-side (macro-pixels): the 11-bit firstStrip field cannot hold row|col<<10, so the payload is
+          // encoded as firstStrip = first bad row, range = consecutive bad rows, flag = column
+          const PixelTopology& topol(pixdet->specificTopology());
+          const int nrows = topol.nrows();
+          const int ncols = topol.ncolumns();
+          static bool printedTopo = false;
+          if (!printedTopo) {
+            edm::LogPrint("SiPhase2BadStripConfigurableFakeESSource")
+                << "PSP topology: nrows=" << nrows << " ncols=" << ncols << " (detid " << rawId << ")";
+            printedTopo = true;
+          }
+          size_t nmaxBad = std::floor(nrows * ncols * badComponentsFractionPSP_);
+          std::set<std::pair<unsigned short, unsigned short>> used;  // (col, row)
+          while (used.size() < nmaxBad) {
+            unsigned short row = std::floor(CLHEP::RandFlat::shoot(engine_.get(), 0, nrows));
+            unsigned short col = std::floor(CLHEP::RandFlat::shoot(engine_.get(), 0, ncols));
+            used.insert({col, row});
+          }
+          std::vector<unsigned int> theVector;
+          for (auto it = used.begin(); it != used.end();) {
+            const unsigned short col = it->first, first = it->second;
+            unsigned short n = 1;
+            auto next = std::next(it);
+            while (next != used.end() && next->first == col && next->second == first + n) {
+              ++n;
+              ++next;
+            }
+            theVector.push_back(badStrips->encodePhase2(first, n, col));
+            it = next;
+          }
+          SiStripBadStrip::Range range(theVector.begin(), theVector.end());
+          if (!badStrips->put(rawId, range))
+            edm::LogError("SiPhase2BadStripConfigurableFakeESSource") << "detid already exists " << rawId;
+          if (printDebug_)
+            edm::LogInfo("SiPhase2BadStripConfigurableFakeESSource")
+                << "PSP detid " << rawId << " masking " << nmaxBad << " macro-pixels in " << theVector.size()
+                << " groups";
+        }
+        if (badComponentsFraction_ > 0.f && (tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2PSS ||
+                                             tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2SS)) {
           const PixelTopology& topol(pixdet->specificTopology());
 
           const int nrows = topol.nrows();
@@ -236,6 +301,9 @@ void SiPhase2BadStripConfigurableFakeESSource::fillDescriptions(edm::Configurati
   desc.add<unsigned int>("seed", 1)->setComment("random seed");
   desc.addUntracked<bool>("printDebug", false)->setComment("maximum amount of print-outs");
   desc.add<double>("badComponentsFraction", 0.01)->setComment("fraction of bad components to populate the ES");
+  desc.add<double>("badComponentsFractionPSP", 0.)
+      ->setComment("fraction of bad macro-pixels in PS-p sensors (row/range/flag=column encoding)");
+  desc.add<std::vector<unsigned int>>("deadDetIds", {})->setComment("DetUnit rawIds with all channels dead");
   descriptions.addWithDefaultLabel(desc);
 }
 
