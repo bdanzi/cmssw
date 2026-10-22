@@ -6,6 +6,7 @@
 #include "FWCore/Utilities/interface/ESGetToken.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "SimTracker/SiPhase2Digitizer/plugins/Phase2TrackerDigitizerAlgorithm.h"
+#include "CondFormats/SiStripObjects/interface/SiStripBadStrip.h"
 
 class PSPDigitizerAlgorithm : public Phase2TrackerDigitizerAlgorithm {
 public:
@@ -27,5 +28,8 @@ private:
   edm::ESGetToken<SiPixelQuality, SiPhase2OuterTrackerBadModuleRcd> badModuleToken_;
   const SiPixelQuality* badModulePayload_ = nullptr;
   const int biasRailInefficiencyFlag_{0};
+  // dead macro-pixels from SiPhase2OuterTrackerBadStripRcd (row/range/flag=column encoding)
+  edm::ESGetToken<SiStripBadStrip, SiPhase2OuterTrackerBadStripRcd> badChannelToken_;
+  const SiStripBadStrip* badChannelPayload_{nullptr};
 };
 #endif
