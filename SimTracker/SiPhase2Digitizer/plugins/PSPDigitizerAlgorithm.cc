@@ -17,6 +17,9 @@ void PSPDigitizerAlgorithm::init(const edm::EventSetup& es) {
     siPhase2OTLorentzAngle_ = &es.getData(siPhase2OTLorentzAngleToken_);
   }
 
+  if (use_deadmodule_DB_)  // Get module status from DB
+    badModulePayload_ = &es.getData(badModuleToken_);
+
   geom_ = &es.getData(geomToken_);
 }
 
@@ -29,6 +32,13 @@ PSPDigitizerAlgorithm::PSPDigitizerAlgorithm(const edm::ParameterSet& conf, edm:
           conf.getParameter<ParameterSet>("PSPDigitizerAlgorithm").getParameter<int>("BiasRailInefficiencyFlag")) {
   if (use_LorentzAngle_DB_)
     siPhase2OTLorentzAngleToken_ = iC.esConsumes();
+
+  if (use_deadmodule_DB_) {
+    std::string badModuleLabel_ = conf.getParameter<ParameterSet>("PSPDigitizerAlgorithm")
+                                      .getUntrackedParameter<std::string>("BadModuleLabel", "");
+    badModuleToken_ = iC.esConsumes(edm::ESInputTag{"", badModuleLabel_});
+  }
+
   pixelFlag_ = false;
   LogDebug("PSPDigitizerAlgorithm") << "Algorithm constructed "
                                     << "Configuration parameters:"
@@ -83,5 +93,17 @@ bool PSPDigitizerAlgorithm::isInBiasRailRegion(const PSimHit& hit) const {
 // -- Read Bad Channels from the Condidion DB and kill channels/module accordingly
 //
 void PSPDigitizerAlgorithm::module_killing_DB(const Phase2TrackerGeomDetUnit* ph2det) {
-  // this method is dummy at the moment. Will be implemented once we have the corresponding object condition DB
+  uint32_t detId = ph2det->geographicalId().rawId();
+
+  if (!badModulePayload_->IsModuleUsable(detId)) {
+    signal_map_type& theSignal = _signal[detId];
+    for (auto& s : theSignal) {
+      s.second.set(0.);
+    }
+  }
+}
+
+void PSPDigitizerAlgorithm::channel_killing_DB(const Phase2TrackerGeomDetUnit* pixdet) {
+  throw cms::Exception("PSPDigitizerAlgorithm") << "Trying to kill channels from the PSP digitizer."
+                                                << " This method is not yet implemented!";
 }

@@ -26,7 +26,7 @@ void PixelDigitizerAlgorithm::init(const edm::EventSetup& es) {
     theSiPixelGainCalibrationService_->setESObjects(es);
 
   if (use_deadmodule_DB_)
-    siPixelBadModule_ = &es.getData(siPixelBadModuleToken_);
+    badModulePayload_ = &es.getData(badModuleToken_);
 
   if (use_LorentzAngle_DB_)  // Get Lorentz angle from DB record
     siPixelLorentzAngle_ = &es.getData(siPixelLorentzAngleToken_);
@@ -55,8 +55,11 @@ PixelDigitizerAlgorithm::PixelDigitizerAlgorithm(const edm::ParameterSet& conf, 
       timewalk_model_(
           conf.getParameter<ParameterSet>("PixelDigitizerAlgorithm").getParameter<edm::ParameterSet>("TimewalkModel")),
       geomToken_(iC.esConsumes()) {
-  if (use_deadmodule_DB_)
-    siPixelBadModuleToken_ = iC.esConsumes();
+  if (use_deadmodule_DB_) {
+    std::string badModuleLabel_ = conf.getParameter<ParameterSet>("PixelDigitizerAlgorithm")
+                                      .getUntrackedParameter<std::string>("BadModuleLabel", "");
+    badModuleToken_ = iC.esConsumes(edm::ESInputTag{"", badModuleLabel_});
+  }
   if (use_LorentzAngle_DB_)
     siPixelLorentzAngleToken_ = iC.esConsumes();
   pixelFlag_ = true;
@@ -235,6 +238,16 @@ bool PixelDigitizerAlgorithm::isAboveThreshold(const digitizerUtility::SimHitInf
 // -- Read Bad Channels from the Condidion DB and kill channels/module accordingly
 //
 void PixelDigitizerAlgorithm::module_killing_DB(const Phase2TrackerGeomDetUnit* pixdet) {
-  throw cms::Exception("PixelDigitizerAlgorithm") << "Trying to kill modules from the pixel digitizer."
+  uint32_t detId = pixdet->geographicalId().rawId();
+  if (!badModulePayload_->IsModuleUsable(detId)) {
+    signal_map_type& theSignal = _signal[detId];
+    for (auto& s : theSignal) {
+      s.second.set(0.);
+    }
+  }
+}
+
+void PixelDigitizerAlgorithm::channel_killing_DB(const Phase2TrackerGeomDetUnit* pixdet) {
+  throw cms::Exception("PixelDigitizerAlgorithm") << "Trying to kill channels from the pixel digitizer."
                                                   << " This method is not yet implemented!";
 }
