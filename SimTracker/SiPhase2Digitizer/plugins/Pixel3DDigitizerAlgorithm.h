@@ -12,7 +12,6 @@
 //          Clara Lasaosa Garcia (IFCA)
 //--------------------------------------------------------------
 
-#include "CondFormats/DataRecord/interface/SiPixelQualityRcd.h"
 #include "CondFormats/DataRecord/interface/SiPixelFedCablingMapRcd.h"
 #include "CondFormats/DataRecord/interface/SiPixelLorentzAngleSimRcd.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
@@ -30,6 +29,7 @@ class Pixel3DDigitizerAlgorithm : public PixelDigitizerAlgorithm {
 public:
   Pixel3DDigitizerAlgorithm(const edm::ParameterSet& conf, edm::ConsumesCollector iC);
   ~Pixel3DDigitizerAlgorithm() override;
+  void channel_killing_DB(const Phase2TrackerGeomDetUnit* pixdet) override;
 
   std::vector<digitizerUtility::SignalPoint> drift(
       const PSimHit& hit,
@@ -64,7 +64,6 @@ private:
   // Gap of np column
   const float np_column_gap_;
 
-  edm::ESGetToken<SiPixelQuality, SiPixelQualityRcd> siPixelBadModuleToken_;
   edm::ESGetToken<SiPixelLorentzAngle, SiPixelLorentzAngleSimRcd> siPixelLorentzAngleToken_;
   const edm::ESGetToken<SiPixelFedCablingMap, SiPixelFedCablingMapRcd> fedCablingMapToken_;
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomToken_;

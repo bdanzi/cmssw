@@ -44,6 +44,11 @@ Pixel3DDigitizerAlgorithm::Pixel3DDigitizerAlgorithm(const edm::ParameterSet& co
 
 Pixel3DDigitizerAlgorithm::~Pixel3DDigitizerAlgorithm() {}
 
+void Pixel3DDigitizerAlgorithm::channel_killing_DB(const Phase2TrackerGeomDetUnit* pixdet) {
+  throw cms::Exception("Pixel3DDigitizerAlgorithm") << "Trying to kill channels from the 3D pixel digitizer."
+                                                    << " This method is not yet implemented!";
+}
+
 const bool Pixel3DDigitizerAlgorithm::is_inside_n_column_(const LocalPoint& p, const float& sensor_thickness) const {
   // The insensitive volume of the column: sensor thickness - column gap distance
   return (p.perp() <= np_column_radius_ && p.z() <= (sensor_thickness - np_column_gap_));
