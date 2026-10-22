@@ -1545,6 +1545,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                               outerRadius,
                                               bridgeRadius,
                                               dnnScore);
+    // Layer skipping: a barrel T5 with a gap (dead layer) is outside the DNN training and has no r-z region; accept it
+    const short l1 = modules.lstLayers()[lowerModuleIndex1], l2 = modules.lstLayers()[lowerModuleIndex2],
+                l3 = modules.lstLayers()[lowerModuleIndex3], l4 = modules.lstLayers()[lowerModuleIndex4],
+                l5 = modules.lstLayers()[lowerModuleIndex5];
+    const bool gapT5 = (l5 <= 6) && (l2 > l1 + 1 || l3 > l2 + 1 || l4 > l3 + 1 || l5 > l4 + 1);
+    if (gapT5)
+      inference = true;
     tightCutFlag = tightCutFlag and inference;  // T5-in-TC cut
     if (!inference)                             // T5-building cut
       return false;
@@ -1610,6 +1617,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                f,
                                tightCutFlag))
       return false;
+    if (gapT5)
+      tightCutFlag = true;  // no tight r-z region exists for gap combinations
 
     lst::t5embdnn::runEmbed(acc,
                             mds,

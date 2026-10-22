@@ -516,7 +516,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     bool inference =
         lst::t3dnn::runInference(acc, mds, firstMDIndex, secondMDIndex, thirdMDIndex, circleRadius, betaIn, t3Scores);
-    if (!inference)  // T3-building cut
+    // Layer skipping: a barrel triplet with a gap (dead layer) is outside the DNN training; do not apply the DNN cut to it
+    const short l1 = modules.lstLayers()[innerInnerLowerModuleIndex];
+    const short l2 = modules.lstLayers()[middleLowerModuleIndex];
+    const short l3 = modules.lstLayers()[outerOuterLowerModuleIndex];
+    const bool gapT3 = (l3 <= 6) && (l2 > l1 + 1 || l3 > l2 + 1);
+    if (!inference && !gapT3)  // T3-building cut
       return false;
 
     return true;
