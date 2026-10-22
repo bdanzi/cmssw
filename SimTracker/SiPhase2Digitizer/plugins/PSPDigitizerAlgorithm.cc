@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "SimTracker/SiPhase2Digitizer/plugins/PSPDigitizerAlgorithm.h"
+#include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerDigi.h"
 
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -20,6 +21,9 @@ void PSPDigitizerAlgorithm::init(const edm::EventSetup& es) {
   if (use_deadmodule_DB_)  // Get module status from DB
     badModulePayload_ = &es.getData(badModuleToken_);
 
+  if (use_killchannel_DB_)  // Get Bad Channel (SiStripBadStrip) from DB
+    badChannelPayload_ = &es.getData(badChannelToken_);
+
   geom_ = &es.getData(geomToken_);
 }
 
@@ -37,6 +41,12 @@ PSPDigitizerAlgorithm::PSPDigitizerAlgorithm(const edm::ParameterSet& conf, edm:
     std::string badModuleLabel_ = conf.getParameter<ParameterSet>("PSPDigitizerAlgorithm")
                                       .getUntrackedParameter<std::string>("BadModuleLabel", "");
     badModuleToken_ = iC.esConsumes(edm::ESInputTag{"", badModuleLabel_});
+  }
+
+  if (use_killchannel_DB_) {
+    std::string badChannelLabel_ = conf.getParameter<ParameterSet>("PSPDigitizerAlgorithm")
+                                       .getUntrackedParameter<std::string>("BadChannelLabel", "");
+    badChannelToken_ = iC.esConsumes(edm::ESInputTag{"", badChannelLabel_});
   }
 
   pixelFlag_ = false;
@@ -103,7 +113,22 @@ void PSPDigitizerAlgorithm::module_killing_DB(const Phase2TrackerGeomDetUnit* ph
   }
 }
 
-void PSPDigitizerAlgorithm::channel_killing_DB(const Phase2TrackerGeomDetUnit* pixdet) {
-  throw cms::Exception("PSPDigitizerAlgorithm") << "Trying to kill channels from the PSP digitizer."
-                                                << " This method is not yet implemented!";
+void PSPDigitizerAlgorithm::channel_killing_DB(const Phase2TrackerGeomDetUnit* ph2det) {
+  // Kill dead macro-pixels. For PS-p the payload is encoded as
+  // firstStrip = first bad row, range = number of consecutive bad rows, flag = column
+  auto detId = ph2det->geographicalId().rawId();
+  auto& theSignal = _signal[detId];  // Caller ensures detId exists
+
+  SiStripBadStrip::Range range = badChannelPayload_->getRange(detId);
+  for (auto badChannel = range.first; badChannel != range.second; ++badChannel) {
+    const auto decoded = badChannelPayload_->decodePhase2(*badChannel);
+    // siPhase2strip::FlagBadStripMask_ (12 bits at shift 0) overlaps the range field (shift 10):
+    // keep only the low 10 bits of the flag, which hold the column (< 32)
+    const unsigned int column = decoded.flag & 0x3FF;
+    for (int index = 0; index < decoded.range; index++) {
+      auto it = theSignal.find(Phase2TrackerDigi::pixelToChannel(decoded.firstStrip + index, column));
+      if (it != theSignal.end())
+        it->second.set(0.);
+    }
+  }
 }
