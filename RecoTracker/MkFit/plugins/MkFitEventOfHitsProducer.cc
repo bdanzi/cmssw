@@ -6,6 +6,7 @@
 
 #include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
 #include "CondFormats/DataRecord/interface/SiPixelQualityRcd.h"
+#include "CondFormats/DataRecord/interface/SiPhase2OuterTrackerCondDataRecords.h"
 
 #include "CalibFormats/SiStripObjects/interface/SiStripQuality.h"
 #include "CalibTracker/Records/interface/SiStripQualityRcd.h"
@@ -48,10 +49,12 @@ private:
   const edm::ESGetToken<MkFitGeometry, TrackerRecoGeometryRecord> mkFitGeomToken_;
   edm::ESGetToken<SiPixelQuality, SiPixelQualityRcd> pixelQualityToken_;
   edm::ESGetToken<SiStripQuality, SiStripQualityRcd> stripQualityToken_;
+  edm::ESGetToken<SiPixelQuality, SiPhase2OuterTrackerBadModuleRcd> phase2OTBadModuleToken_;
   edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomToken_;
   const edm::EDPutTokenT<MkFitEventOfHits> putToken_;
   const bool usePixelQualityDB_;
   const bool useStripStripQualityDB_;
+  const bool usePhase2OTBadModuleDB_;
 };
 
 MkFitEventOfHitsProducer::MkFitEventOfHitsProducer(edm::ParameterSet const& iConfig)
@@ -63,8 +66,11 @@ MkFitEventOfHitsProducer::MkFitEventOfHitsProducer(edm::ParameterSet const& iCon
       mkFitGeomToken_{esConsumes()},
       putToken_{produces<MkFitEventOfHits>()},
       usePixelQualityDB_{iConfig.getParameter<bool>("usePixelQualityDB")},
-      useStripStripQualityDB_{iConfig.getParameter<bool>("useStripStripQualityDB")} {
-  if (useStripStripQualityDB_ || usePixelQualityDB_)
+      useStripStripQualityDB_{iConfig.getParameter<bool>("useStripStripQualityDB")},
+      usePhase2OTBadModuleDB_{iConfig.getParameter<bool>("usePhase2OTBadModuleDB")} {
+  if (usePhase2OTBadModuleDB_)
+    phase2OTBadModuleToken_ = esConsumes();
+  if (useStripStripQualityDB_ || usePixelQualityDB_ || usePhase2OTBadModuleDB_)
     geomToken_ = esConsumes();
   if (usePixelQualityDB_) {
     pixelQualityToken_ = esConsumes();
@@ -82,6 +88,8 @@ void MkFitEventOfHitsProducer::fillDescriptions(edm::ConfigurationDescriptions& 
   desc.add("stripHits", edm::InputTag{"mkFitSiStripHits"});
   desc.add("usePixelQualityDB", true)->setComment("Use SiPixelQuality DB information");
   desc.add("useStripStripQualityDB", true)->setComment("Use SiStrip quality DB information");
+  desc.add("usePhase2OTBadModuleDB", false)
+      ->setComment("Use the Phase-2 OT bad modules of SiPhase2OuterTrackerBadModuleRcd as dead regions");
 
   descriptions.addWithDefaultLabel(desc);
 }
@@ -94,7 +102,7 @@ void MkFitEventOfHitsProducer::produce(edm::StreamID iID, edm::Event& iEvent, co
   auto eventOfHits = std::make_unique<mkfit::EventOfHits>(mkFitGeom.trackerInfo());
   mkfit::StdSeq::cmssw_LoadHits_Begin(*eventOfHits, {&pixelHits.hits(), &stripHits.hits()});
 
-  if (usePixelQualityDB_ || useStripStripQualityDB_) {
+  if (usePixelQualityDB_ || useStripStripQualityDB_ || usePhase2OTBadModuleDB_) {
     std::vector<mkfit::DeadVec> deadvectors(mkFitGeom.layerNumberConverter().nLayers());
     const auto& trackerGeom = iSetup.getData(geomToken_);
 
@@ -163,6 +171,20 @@ void MkFitEventOfHitsProducer::produce(edm::StreamID iID, edm::Event& iEvent, co
             }
           }
         }
+      }
+    }
+    if (usePhase2OTBadModuleDB_) {
+      const auto& badModules = iSetup.getData(phase2OTBadModuleToken_);
+      for (const auto& bm : badModules.getBadComponentList()) {
+        if (bm.errorType != 0)
+          continue;
+        const DetId detid(bm.DetID);
+        const auto& surf = trackerGeom.idToDet(detid)->surface();
+        bool isBarrel = (mkFitGeom.topology()->side(detid) == static_cast<unsigned>(TrackerDetSide::Barrel));
+        const auto ilay = mkFitGeom.mkFitLayerNumber(detid);
+        const auto q1 = isBarrel ? surf.zSpan().first : surf.rSpan().first;
+        const auto q2 = isBarrel ? surf.zSpan().second : surf.rSpan().second;
+        deadvectors[ilay].push_back({surf.phiSpan().first, surf.phiSpan().second, q1, q2});
       }
     }
     mkfit::StdSeq::loadDeads(*eventOfHits, deadvectors);

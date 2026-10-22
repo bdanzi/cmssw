@@ -16,6 +16,8 @@
 #include "DataFormats/TrackerRecHit2D/interface/VectorHit.h"
 #include "RecoTracker/MeasurementDet/interface/MeasurementTracker.h"
 #include "RecoTracker/Record/interface/CkfComponentsRecord.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
+#include "CondFormats/DataRecord/interface/SiPhase2OuterTrackerCondDataRecords.h"
 
 class dso_hidden MeasurementTrackerEventProducer final : public edm::stream::EDProducer<> {
 public:
@@ -41,6 +43,9 @@ protected:
   void getInactiveStrips(const edm::Event& event, std::vector<uint32_t>& rawInactiveDetIds) const;
 
   edm::ESGetToken<MeasurementTracker, CkfComponentsRecord> measurementTrackerToken_;
+  // dead Phase-2 OT modules from SiPhase2OuterTrackerBadModuleRcd -> inactive in reconstruction
+  bool phase2OTBadModulesFromDB_ = false;
+  edm::ESGetToken<SiPixelQuality, SiPhase2OuterTrackerBadModuleRcd> phase2OTBadModuleToken_;
   edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> thePixelClusterLabel;
   edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster>> theStripClusterLabel;
   edm::EDGetTokenT<edmNew::DetSetVector<Phase2TrackerCluster1D>> thePh2OTClusterLabel;

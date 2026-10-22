@@ -15,6 +15,10 @@ MeasurementTrackerEventProducer::MeasurementTrackerEventProducer(const edm::Para
     : measurementTrackerToken_(
           esConsumes(edm::ESInputTag("", iConfig.getParameter<std::string>("measurementTracker")))),
       switchOffPixelsIfEmpty_(iConfig.getParameter<bool>("switchOffPixelsIfEmpty")) {
+  phase2OTBadModulesFromDB_ = iConfig.getParameter<bool>("phase2OTBadModulesFromDB");
+  if (phase2OTBadModulesFromDB_)
+    phase2OTBadModuleToken_ = esConsumes();
+
   std::vector<edm::InputTag> inactivePixelDetectorTags(
       iConfig.getParameter<std::vector<edm::InputTag>>("inactivePixelDetectorLabels"));
   for (auto& t : inactivePixelDetectorTags)
@@ -78,6 +82,8 @@ void MeasurementTrackerEventProducer::fillDescriptions(edm::ConfigurationDescrip
   desc.add<std::string>("pixelClusterProducer", "siPixelClusters");
   desc.add<std::string>("stripClusterProducer", "siStripClusters");
   desc.add<std::string>("Phase2TrackerCluster1DProducer", "");
+  desc.add<bool>("phase2OTBadModulesFromDB", false)
+      ->setComment("set the Phase-2 OT modules listed in SiPhase2OuterTrackerBadModuleRcd inactive");
   desc.add<edm::InputTag>("vectorHits", edm::InputTag(""));
   desc.add<edm::InputTag>("vectorHitsRej", edm::InputTag(""));
 
@@ -116,6 +122,13 @@ void MeasurementTrackerEventProducer::produce(edm::Event& iEvent, const edm::Eve
                dynamic_cast<const TrackerGeometry&>(*(measurementTracker.geomTracker())),
                iSetup);
   updatePhase2OT(iEvent, *phase2OTData);
+  if (phase2OTBadModulesFromDB_) {
+    const auto& badModules = iSetup.getData(phase2OTBadModuleToken_);
+    for (int i = 0; i < phase2OTData->nDet(); ++i) {
+      if (!badModules.IsModuleUsable(phase2OTData->id(i)))
+        phase2OTData->setActiveThisEvent(i, false);
+    }
+  }
   updateStacks(iEvent, *phase2OTData);
 
   // put into MTE
