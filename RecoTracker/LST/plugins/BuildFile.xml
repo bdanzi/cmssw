@@ -25,6 +25,7 @@
 
 <!-- alpaka-based portable plugins -->
 <library file="alpaka/*.cc" name="RecoTrackerLSTPluginsPortable">
+  <use name="FWCore/MessageLogger"/>
   <use name="alpaka"/>
   <use name="DataFormats/TrajectorySeed"/>
   <use name="DataFormats/TrackReco"/>

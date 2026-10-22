@@ -30,7 +30,7 @@ namespace lst {
   constexpr unsigned int kMaxPLSHitBitsInHitsSoA = 8;
 
   constexpr unsigned int max_blocks = 80;
-  constexpr unsigned int max_connected_modules = 40;
+  constexpr unsigned int max_connected_modules = 200;  // was 40: room for dead-module skip connections
 
   constexpr unsigned int n_max_pixel_segments_per_module = 500000;
 

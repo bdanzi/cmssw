@@ -120,7 +120,8 @@ std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::loadAndFillESDataHo
                                                              pixelMappingPtr);
 }
 
-std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::fillESDataHost(lstgeometry::Geometry const& lstg) {
+std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::fillESDataHost(
+    lstgeometry::Geometry const& lstg, lstgeometry::ModuleMap const* moduleMapOverride) {
   uint16_t nModules;
   uint16_t nLowerModules;
   unsigned int nPixels;
@@ -143,7 +144,7 @@ std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::fillESDataHost(lstg
   tiltedGeometry.load(lstg.barrel_slopes);
 
   std::map<unsigned int, std::vector<unsigned int>> final_modulemap;
-  for (auto const& [detId, connections] : lstg.module_map) {
+  for (auto const& [detId, connections] : (moduleMapOverride ? *moduleMapOverride : lstg.module_map)) {
     if (connections.empty())
       continue;
     final_modulemap[detId] = connections;
