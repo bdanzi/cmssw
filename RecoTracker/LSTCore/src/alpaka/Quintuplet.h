@@ -1549,7 +1549,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const short l1 = modules.lstLayers()[lowerModuleIndex1], l2 = modules.lstLayers()[lowerModuleIndex2],
                 l3 = modules.lstLayers()[lowerModuleIndex3], l4 = modules.lstLayers()[lowerModuleIndex4],
                 l5 = modules.lstLayers()[lowerModuleIndex5];
-    const bool gapT5 = (l5 <= 6) && (l2 > l1 + 1 || l3 > l2 + 1 || l4 > l3 + 1 || l5 > l4 + 1);
+    const bool gapT5 = (modules.gapFlags() & ::lst::kGapDNNBypass) && (l5 <= 6) &&
+                       (l2 > l1 + 1 || l3 > l2 + 1 || l4 > l3 + 1 || l5 > l4 + 1);
     if (gapT5)
       inference = true;
     tightCutFlag = tightCutFlag and inference;  // T5-in-TC cut

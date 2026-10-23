@@ -44,7 +44,8 @@ namespace lst {
                       SOA_COLUMN(ModuleLayerType, moduleLayerType),
                       SOA_COLUMN(int, lstLayers),
                       SOA_SCALAR(uint16_t, nModules),
-                      SOA_SCALAR(uint16_t, nLowerModules))
+                      SOA_SCALAR(uint16_t, nLowerModules),
+                      SOA_SCALAR(uint8_t, gapFlags))
 
   GENERATE_SOA_LAYOUT(ModulesPixelSoALayout, SOA_COLUMN(unsigned int, connectedPixels))
 

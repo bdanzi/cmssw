@@ -23,6 +23,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // (layer skipping across up to maxDeadSkips_ consecutive dead modules). Empty = nominal map.
     std::vector<unsigned int> deadModules_;
     unsigned int maxDeadSkips_;
+    uint8_t gapFlags_;
     edm::ESGetToken<lstgeometry::Geometry, TrackerRecoGeometryRecord> lstGeoToken_;
 
   public:
@@ -30,7 +31,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         : ESProducer(iConfig),
           ptCut_(iConfig.getParameter<double>("ptCut")),
           deadModules_(iConfig.getParameter<std::vector<unsigned int>>("deadModules")),
-          maxDeadSkips_(iConfig.getParameter<unsigned int>("maxDeadSkips")) {
+          maxDeadSkips_(iConfig.getParameter<unsigned int>("maxDeadSkips")),
+          gapFlags_((iConfig.getParameter<bool>("gapT3RZ") ? lst::kGapT3RZ : 0) |
+                    (iConfig.getParameter<bool>("gapDNNBypass") ? lst::kGapDNNBypass : 0)) {
       std::string ptCutStr = lst::floatToStr(ptCut_, 1);
 
       auto cc = setWhatProduced(this, ptCutStr);
@@ -43,13 +46,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       desc.add<std::vector<unsigned int>>("deadModules", {})
           ->setComment("dead OT sensor detIds: add skip connections across them");
       desc.add<unsigned int>("maxDeadSkips", 2)->setComment("max number of consecutive dead modules to skip");
+      desc.add<bool>("gapT3RZ", true)->setComment("barrel triplets with a layer gap use the consecutive r-z cuts");
+      desc.add<bool>("gapDNNBypass", true)->setComment("T3/T5 with a layer gap are not rejected by the DNN");
       descriptions.addWithDefaultLabel(desc);
     }
 
     std::unique_ptr<lst::LSTESData<DevHost>> produce(TrackerRecoGeometryRecord const& iRecord) {
       const auto& lstg = iRecord.get(lstGeoToken_);
       if (deadModules_.empty())
-        return lst::fillESDataHost(lstg);
+        return lst::fillESDataHost(lstg, nullptr, gapFlags_);
       // dead-aware module map: keep the nominal connections first, then append skip connections
       lstgeometry::ModuleMap moduleMap = lstg.module_map;
       const std::unordered_set<unsigned int> dead(deadModules_.begin(), deadModules_.end());
@@ -86,7 +91,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       }
       edm::LogPrint("LSTModulesDevESProducer") << "dead-aware LST module map: " << dead.size() << " dead sensors, "
                                                << nAdded << " skip connections added to " << nModules << " modules";
-      return lst::fillESDataHost(lstg, &moduleMap);
+      return lst::fillESDataHost(lstg, &moduleMap, gapFlags_);
     }
   };
 

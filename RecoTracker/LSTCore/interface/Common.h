@@ -31,6 +31,10 @@ namespace lst {
 
   constexpr unsigned int max_blocks = 80;
   constexpr unsigned int max_connected_modules = 200;  // was 40: room for dead-module skip connections
+  // layer-gap handling with a dead-aware module map (ModulesSoA gapFlags, set by LSTModulesDevESProducer)
+  constexpr uint8_t kGapT3RZ = 1;       // barrel T3 with a gap: r-z cuts of the consecutive triplet
+  constexpr uint8_t kGapDNNBypass = 2;  // T3/T5 with a gap: no DNN rejection
+  constexpr uint8_t kGapDefaultFlags = kGapT3RZ | kGapDNNBypass;
 
   constexpr unsigned int n_max_pixel_segments_per_module = 500000;
 

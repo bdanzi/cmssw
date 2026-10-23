@@ -149,7 +149,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // Layer skipping (dead OT layers/modules): a barrel-only triplet with a gap, e.g. (1,3,4) or (2,4,5), has no entry in
     // the region tables below and would be rejected. Treat it as the consecutive triplet starting at the same layer,
     // i.e. use the cut of the nearest region. Only reachable when the module map contains skip connections.
-    if (layer3 <= 6 && (layer2 > layer1 + 1 || layer3 > layer2 + 1)) {
+    if ((modules.gapFlags() & ::lst::kGapT3RZ) && layer3 <= 6 && (layer2 > layer1 + 1 || layer3 > layer2 + 1)) {
       layer2 = layer1 + 1;
       layer3 = layer1 + 2;
     }
@@ -520,7 +520,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const short l1 = modules.lstLayers()[innerInnerLowerModuleIndex];
     const short l2 = modules.lstLayers()[middleLowerModuleIndex];
     const short l3 = modules.lstLayers()[outerOuterLowerModuleIndex];
-    const bool gapT3 = (l3 <= 6) && (l2 > l1 + 1 || l3 > l2 + 1);
+    const bool gapT3 = (modules.gapFlags() & ::lst::kGapDNNBypass) && (l3 <= 6) && (l2 > l1 + 1 || l3 > l2 + 1);
     if (!inference && !gapT3)  // T3-building cut
       return false;
 

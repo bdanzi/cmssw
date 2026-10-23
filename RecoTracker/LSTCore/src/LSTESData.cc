@@ -121,7 +121,7 @@ std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::loadAndFillESDataHo
 }
 
 std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::fillESDataHost(
-    lstgeometry::Geometry const& lstg, lstgeometry::ModuleMap const* moduleMapOverride) {
+    lstgeometry::Geometry const& lstg, lstgeometry::ModuleMap const* moduleMapOverride, uint8_t gapFlags) {
   uint16_t nModules;
   uint16_t nLowerModules;
   unsigned int nPixels;
@@ -190,6 +190,7 @@ std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::fillESDataHost(
                                                   endcapGeometry,
                                                   tiltedGeometry,
                                                   moduleConnectionMap);
+  modulesBuffers->view().modules().gapFlags() = gapFlags;
 
   auto pixelMappingPtr = std::make_shared<PixelMap>(std::move(pixelMapping));
   return std::make_unique<LSTESData<alpaka_common::DevHost>>(nModules,

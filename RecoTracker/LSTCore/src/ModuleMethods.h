@@ -253,6 +253,7 @@ namespace lst {
     auto modulesHC = std::make_shared<ModulesHostCollection>(cms::alpakatools::host(), nModules, nPixels);
 
     auto modules_view = modulesHC->view().modules();
+    modules_view.gapFlags() = kGapDefaultFlags;
 
     // Getting the underlying data pointers
     std::span<unsigned int> host_detIds = modules_view.detIds();

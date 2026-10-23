@@ -44,7 +44,9 @@ namespace lst {
   std::unique_ptr<LSTESData<alpaka_common::DevHost>> loadAndFillESDataHost(std::string& ptCutLabel);
   // moduleMapOverride: if not null, used instead of lstg.module_map (e.g. dead-aware map with layer skipping)
   std::unique_ptr<LSTESData<alpaka_common::DevHost>> fillESDataHost(
-      lstgeometry::Geometry const& lstg, lstgeometry::ModuleMap const* moduleMapOverride = nullptr);
+      lstgeometry::Geometry const& lstg,
+      lstgeometry::ModuleMap const* moduleMapOverride = nullptr,
+      uint8_t gapFlags = kGapDefaultFlags);
 
 }  // namespace lst
 
