@@ -104,6 +104,39 @@ def customiseDeadLayerTBPS1(process):
     return _dead(process, [m["rawId"] for m in mods if m["subdet"] == "TOB" and m["layer"] == 1], "dead TBPS layer 1")
 
 # ---------------------------------------------------------------------------------------------
+# Single dead sensors: one sensor of the stack is dead, its partner is alive (test case of the LST dead-hit option).
+# P = PS macro-pixel sensor (PSP), S = PS strip sensor (PSS).
+SINGLE_SENSOR_SCENARIOS = {
+    "DeadPSensorsTBPS2": "TBPS layer 2, PS macro-pixel sensors dead",
+    "DeadSSensorsTBPS2": "TBPS layer 2, PS strip sensors dead",
+    "DeadSensors10Pct": "10% random OT modules with one random sensor dead",
+}
+
+def deadSensors(scenario):
+    """detIds of the dead sensors of a single-sensor scenario."""
+    mods = _otModules()
+    if scenario == "DeadPSensorsTBPS2":
+        return [m["rawId"] for m in mods if m["subdet"] == "TOB" and m["layer"] == 2 and m["type"] == "PSP"]
+    if scenario == "DeadSSensorsTBPS2":
+        return [m["rawId"] for m in mods if m["subdet"] == "TOB" and m["layer"] == 2 and m["type"] == "PSS"]
+    if scenario == "DeadSensors10Pct":
+        rng = random.Random(HOLE_SEED)
+        stacks = sorted(set(m["stack"] for m in mods))
+        dead_stacks = rng.sample(stacks, int(round(0.10 * len(stacks))))
+        sensors_of = {}
+        for m in mods:
+            sensors_of.setdefault(m["stack"], []).append(m["rawId"])
+        return [rng.choice(sorted(sensors_of[s])) for s in dead_stacks]
+    raise ValueError("unknown single-sensor scenario %s" % scenario)
+
+def customiseDeadPSensorsTBPS2(process):
+    return _dead(process, deadSensors("DeadPSensorsTBPS2"), SINGLE_SENSOR_SCENARIOS["DeadPSensorsTBPS2"])
+def customiseDeadSSensorsTBPS2(process):
+    return _dead(process, deadSensors("DeadSSensorsTBPS2"), SINGLE_SENSOR_SCENARIOS["DeadSSensorsTBPS2"])
+def customiseDeadSensors10Pct(process):
+    return _dead(process, deadSensors("DeadSensors10Pct"), SINGLE_SENSOR_SCENARIOS["DeadSensors10Pct"])
+
+# ---------------------------------------------------------------------------------------------
 # Batch splitting with reproducible, scenario-independent random seeds.
 # Job <chunk> processes input events [chunk*nev, (chunk+1)*nev). Every engine of the
 # RandomNumberGeneratorService gets seed = f(engine name, chunk) -> identical signal digitization noise
