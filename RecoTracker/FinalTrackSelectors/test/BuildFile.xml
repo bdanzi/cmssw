@@ -1,2 +1,16 @@
 <use name="RecoTracker/FinalTrackSelectors"/>
 <bin file="trackAlgoPriorityOrder_t.cpp"/>
+<library file="HitFeatDumper.cc" name="RecoTrackerFinalTrackSelectorsTestHitFeatDumper">
+  <use name="CommonTools/UtilAlgos"/>
+  <use name="DataFormats/BeamSpot"/>
+  <use name="DataFormats/TrackReco"/>
+  <use name="DataFormats/TrackerRecHit2D"/>
+  <use name="DataFormats/VertexReco"/>
+  <use name="FWCore/Framework"/>
+  <use name="FWCore/ParameterSet"/>
+  <use name="FWCore/ServiceRegistry"/>
+  <use name="SimDataFormats/Associations"/>
+  <use name="SimDataFormats/TrackingAnalysis"/>
+  <use name="root"/>
+  <flags EDM_PLUGIN="1"/>
+</library>
