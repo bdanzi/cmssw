@@ -50,17 +50,18 @@ def AddPFTracks(proc):
                         variables = cms.PSet(P3Vars,
                             dz = Var("dz",float,doc="dz (with sign) wrt first PV, in cm",precision=10),
                             dxy = Var("dxy",float,doc="dxy (with sign) wrt first PV, in cm",precision=10),
+                            ptErr = Var("ptError()", float, doc="pt uncertainty", precision=10),
+                            dxyErr = Var("dxyError()", float, doc="dxy uncertainty, in cm", precision=10),
+                            dzErr = Var("dzError()", float, doc="dz uncertainty, in cm", precision=10),
                             charge = Var("charge", int, doc="electric charge"),
                             normChiSq = Var("normalizedChi2", float, precision=14, doc="Chi^2/ndof"),
                             numberOfValidHits = Var('numberOfValidHits()', 'int', precision=-1, doc='Number of valid hits in track'),
-                            numberOfLostHits = Var('numberOfLostHits()', 'int', precision=-1, doc='Number of lost hits in track'),
                             trackAlgo = Var('algo()', 'int', precision=-1, doc='Track algo enum, check DataFormats/TrackReco/interface/TrackBase.h for details.'),
                             trackOriginalAlgo = Var('originalAlgo()', 'int', precision=-1, doc='Track original algo enum'),
                             qualityMask = Var('qualityMask()', 'int', precision=-1, doc='Quality mask of the track.'),
-                            extraIdx = Var('extra().key()', 'int', precision=-1, doc='Index of the TrackExtra in the original collection'),
-                            vx = Var('vx', 'float', precision=-1, doc='Track X position'),
-                            vy = Var('vy', 'float', precision=-1, doc='Track Y position'),
-                            vz = Var('vz', 'float', precision=-1, doc='Track Z position'),
+                            vx = Var('vx', 'float', precision=10, doc='Track X position'),
+                            vy = Var('vy', 'float', precision=10, doc='Track Y position'),
+                            vz = Var('vz', 'float', precision=10, doc='Track Z position'),
                            ),
                  )
     )
@@ -106,7 +107,10 @@ def AddVariablesForMuon(proc):
     proc.muonTable.variables.standalonePt = Var("? standAloneMuon().isNonnull() ? standAloneMuon().pt() : -1", float, doc = "pt of the standalone muon", precision=14)
     proc.muonTable.variables.standaloneEta = Var("? standAloneMuon().isNonnull() ? standAloneMuon().eta() : -99", float, doc = "eta of the standalone muon", precision=14)
     proc.muonTable.variables.standalonePhi = Var("? standAloneMuon().isNonnull() ? standAloneMuon().phi() : -99", float, doc = "phi of the standalone muon", precision=14)
-    proc.muonTable.variables.standaloneCharge = Var("? standAloneMuon().isNonnull() ? standAloneMuon().charge() : -99", float, doc = "phi of the standalone muon", precision=14)
+    proc.muonTable.variables.standaloneCharge = Var("? standAloneMuon().isNonnull() ? standAloneMuon().charge() : -99", float, doc = "charge of the standalone muon", precision=14)
+    proc.muonTable.variables.standaloneEtaErr = Var("? standAloneMuon().isNonnull() ? standAloneMuon().etaError() : -99", float, doc = "eta uncertainty of the standalone muon", precision=10)
+    proc.muonTable.variables.standalonePhiErr = Var("? standAloneMuon().isNonnull() ? standAloneMuon().phiError() : -99", float, doc = "phi uncertainty of the standalone muon", precision=10)
+    proc.muonTable.variables.standaloneQoverpErr = Var("? standAloneMuon().isNonnull() ? standAloneMuon().qoverpError() : -99", float, doc = "q/p uncertainty of the standalone muon", precision=10)
     
     # Inner Track Algo variables
     proc.muonTable.variables.innerTrackAlgo = Var('? innerTrack().isNonnull() ? innerTrack().algo() : -99', 'int', precision=-1, doc='Track algo enum, check DataFormats/TrackReco/interface/TrackBase.h for details.')
