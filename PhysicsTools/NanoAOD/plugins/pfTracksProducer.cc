@@ -55,7 +55,10 @@ void pfTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
         continue;
       if (HighPurity_ && !trk.trackHighPurity())
         continue;
-      tracks->emplace_back(*trk.bestTrack());
+      reco::Track track(*trk.bestTrack());
+      track.setAlgorithm(static_cast<reco::TrackBase::TrackAlgorithm>(trk.trkAlgo()));
+      track.setOriginalAlgorithm(static_cast<reco::TrackBase::TrackAlgorithm>(trk.trkOriginalAlgo()));
+      tracks->emplace_back(std::move(track));
     }
   }
 
