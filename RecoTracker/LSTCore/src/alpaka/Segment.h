@@ -128,6 +128,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     return mod;
   }
 
+  // Luminous-region term of the dAlpha threshold for an endcap minidoublet. A minidoublet with a dead-hit placeholder
+  // has no measured direction (dz = dphi = 0): no term for it.
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float endcapLumTerm2(MiniDoubletsBuildConst mdsBuild, unsigned int mdIndex) {
+    const float dz = mdsBuild.dzs()[mdIndex];
+    if (dz == 0.f)
+      return 0.f;
+    const float dphi = mdsBuild.dphis()[mdIndex];
+    return (dphi * dphi) * (kDeltaZLum * kDeltaZLum) / (dz * dz);
+  }
+
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void dAlphaThreshold(TAcc const& acc,
                                                       float* dAlphaThresholdValues,
@@ -161,15 +171,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     if (innerMod.subdet == Barrel) {
       sdLumForInnerMini2 = innerMod.segMiniTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
-      sdLumForInnerMini2 = (mdsBuild.dphis()[innerMDIndex] * mdsBuild.dphis()[innerMDIndex]) *
-                           (kDeltaZLum * kDeltaZLum) / (mdsBuild.dzs()[innerMDIndex] * mdsBuild.dzs()[innerMDIndex]);
+      sdLumForInnerMini2 = endcapLumTerm2(mdsBuild, innerMDIndex);
     }
 
     if (outerMod.subdet == Barrel) {
       sdLumForOuterMini2 = outerMod.segMiniTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
-      sdLumForOuterMini2 = (mdsBuild.dphis()[outerMDIndex] * mdsBuild.dphis()[outerMDIndex]) *
-                           (kDeltaZLum * kDeltaZLum) / (mdsBuild.dzs()[outerMDIndex] * mdsBuild.dzs()[outerMDIndex]);
+      sdLumForOuterMini2 = endcapLumTerm2(mdsBuild, outerMDIndex);
     }
 
     // Unique stuff for the segment dudes alone
