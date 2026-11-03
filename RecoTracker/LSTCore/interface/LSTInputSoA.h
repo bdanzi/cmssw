@@ -15,7 +15,19 @@ namespace lst {
                       SOA_COLUMN(float, zs),
                       SOA_COLUMN(unsigned int, detid),
                       SOA_COLUMN(uint16_t, clustsize),
-                      SOA_SCALAR(unsigned int, nHitsOT))
+                      SOA_SCALAR(unsigned int, nHitsOT),
+                      // dead-hit option (placeholder hits, see src/alpaka/DeadHitPlacement.h), set by LSTInputProducer:
+                      // beam spot, option bits (lst::deadhit), half sizes of the dead sensors from the tracker
+                      // geometry (width across the strips, length along them) and the tolerance on placed positions
+                      SOA_SCALAR(float, beamSpotX),
+                      SOA_SCALAR(float, beamSpotY),
+                      SOA_SCALAR(float, beamSpotZ),
+                      SOA_SCALAR(uint32_t, deadHitOptions),
+                      SOA_SCALAR(float, deadSensorHalfWidthPS),
+                      SOA_SCALAR(float, deadSensorHalfLengthPS),
+                      SOA_SCALAR(float, deadSensorHalfWidth2S),
+                      SOA_SCALAR(float, deadSensorHalfLength2S),
+                      SOA_SCALAR(float, deadHitTolerance))
 
   GENERATE_SOA_LAYOUT(PixelSeedsSoALayout,
                       SOA_COLUMN(unsigned int, firstHit),

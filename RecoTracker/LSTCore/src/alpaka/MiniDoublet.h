@@ -38,6 +38,96 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     bool isGloballyInner;
   };
 
+  // Dead-hit option: the point the placeholders are projected from, the beam spot (deadhit::kBeamSpot) or the origin.
+  struct DeadHitBeamPoint {
+    float x, y, z;
+  };
+
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE DeadHitBeamPoint deadHitBeamPoint(HitsBaseConst hitsBase) {
+    if ((hitsBase.deadHitOptions() & deadhit::kBeamSpot) == 0)
+      return {0.f, 0.f, 0.f};
+    return {hitsBase.beamSpotX(), hitsBase.beamSpotY(), hitsBase.beamSpotZ()};
+  }
+
+  // Dead-hit option: scale factor t that moves the live hit p along the line from the beam point b onto the plane of
+  // the dead sensor, whose placeholder hit sits at the sensor centre c: b + t * (p - b). In the frame of the beam
+  // point, endcap: z = zc, flat barrel: r = rc, tilted barrel: r - rc = drdz * (z - zc).
+  template <alpaka::concepts::Acc TAcc>
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float deadHitScale(TAcc const& acc,
+                                                    ModuleMDData const& mod,
+                                                    DeadHitBeamPoint const& beam,
+                                                    float xLive,
+                                                    float yLive,
+                                                    float zLive,
+                                                    float xDead,
+                                                    float yDead,
+                                                    float zDead) {
+    const float zLiveB = zLive - beam.z;
+    const float zDeadB = zDead - beam.z;
+    if (mod.subdet == Endcap)
+      return zDeadB / zLiveB;
+    const float rtLiveB =
+        alpaka::math::sqrt(acc, (xLive - beam.x) * (xLive - beam.x) + (yLive - beam.y) * (yLive - beam.y));
+    const float rtDeadB =
+        alpaka::math::sqrt(acc, (xDead - beam.x) * (xDead - beam.x) + (yDead - beam.y) * (yDead - beam.y));
+    if (not mod.isTilted)
+      return rtDeadB / rtLiveB;
+    return (rtDeadB - mod.drdz * zDeadB) / (rtLiveB - mod.drdz * zLiveB);
+  }
+
+  // Dead-hit option: the placeholder of a half-fake minidoublet takes the position of the live hit, moved along the
+  // line from the beam point onto the dead sensor. This is only the starting position: every object built on the
+  // minidoublet updates it from its own hits (DeadHitPlacement.h). Fully fake minidoublet (two placeholders, dead
+  // module): the anchor stays at the centre of the dead anchor sensor, and the outer hit is put on it.
+  template <alpaka::concepts::Acc TAcc>
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void placeDeadHitOfMD(TAcc const& acc,
+                                                       MiniDoublets mds,
+                                                       HitsBaseConst hitsBase,
+                                                       ModuleMDData const& mod,
+                                                       unsigned int anchorHitIndex,
+                                                       unsigned int outerHitIndex,
+                                                       unsigned int idx) {
+    const bool anchorIsDead = (hitsBase.clustsize()[anchorHitIndex] == kDeadHitClustSize);
+    const bool outerIsDead = (hitsBase.clustsize()[outerHitIndex] == kDeadHitClustSize);
+    if (anchorIsDead and outerIsDead) {
+      mds.outerX()[idx] = mds.anchorX()[idx];
+      mds.outerY()[idx] = mds.anchorY()[idx];
+      mds.outerZ()[idx] = mds.anchorZ()[idx];
+    } else if (anchorIsDead) {
+      const DeadHitBeamPoint beam = deadHitBeamPoint(hitsBase);
+      const float t = deadHitScale(acc,
+                                   mod,
+                                   beam,
+                                   hitsBase.xs()[outerHitIndex],
+                                   hitsBase.ys()[outerHitIndex],
+                                   hitsBase.zs()[outerHitIndex],
+                                   hitsBase.xs()[anchorHitIndex],
+                                   hitsBase.ys()[anchorHitIndex],
+                                   hitsBase.zs()[anchorHitIndex]);
+      mds.anchorX()[idx] = beam.x + t * (hitsBase.xs()[outerHitIndex] - beam.x);
+      mds.anchorY()[idx] = beam.y + t * (hitsBase.ys()[outerHitIndex] - beam.y);
+      mds.anchorZ()[idx] = beam.z + t * (hitsBase.zs()[outerHitIndex] - beam.z);
+      mds.anchorRt()[idx] =
+          alpaka::math::sqrt(acc, mds.anchorX()[idx] * mds.anchorX()[idx] + mds.anchorY()[idx] * mds.anchorY()[idx]);
+      mds.anchorPhi()[idx] = alpaka::math::atan2(acc, mds.anchorY()[idx], mds.anchorX()[idx]);
+      mds.anchorEta()[idx] = alpaka::math::asinh(acc, mds.anchorZ()[idx] / mds.anchorRt()[idx]);
+    } else if (outerIsDead) {
+      const DeadHitBeamPoint beam = deadHitBeamPoint(hitsBase);
+      const float t = deadHitScale(acc,
+                                   mod,
+                                   beam,
+                                   hitsBase.xs()[anchorHitIndex],
+                                   hitsBase.ys()[anchorHitIndex],
+                                   hitsBase.zs()[anchorHitIndex],
+                                   hitsBase.xs()[outerHitIndex],
+                                   hitsBase.ys()[outerHitIndex],
+                                   hitsBase.zs()[outerHitIndex]);
+      mds.outerX()[idx] = beam.x + t * (hitsBase.xs()[anchorHitIndex] - beam.x);
+      mds.outerY()[idx] = beam.y + t * (hitsBase.ys()[anchorHitIndex] - beam.y);
+      mds.outerZ()[idx] = beam.z + t * (hitsBase.zs()[anchorHitIndex] - beam.z);
+    }
+  }
+
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addMDToMemory(TAcc const& acc,
                                                     MiniDoublets mds,
@@ -118,6 +208,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   hitsExtended.rts()[outerHitIndex]);
     }
 #endif
+
+    // Dead-hit option: positions of placeholder hits (only in events with placeholders)
+    if (hitsBase.deadHitOptions() & deadhit::kPlaceholders)
+      placeDeadHitOfMD(acc, mds, hitsBase, mod, anchorHitIndex, outerHitIndex, idx);
   }
 
   // Overload for callers (Segment.h) that still pass ModulesConst + moduleIndex.
@@ -145,6 +239,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     mod.moduleType = modules.moduleType()[lowerModuleIdx];
     mod.moduleLayerType = modules.moduleLayerType()[lowerModuleIdx];
     mod.subdet = modules.subdets()[lowerModuleIdx];
+    mod.side = modules.sides()[lowerModuleIdx];
+    mod.isTilted = (mod.subdet == Barrel && mod.side != Center);
+    mod.drdz = modules.drdzs()[lowerModuleIdx];
     addMDToMemory(acc,
                   mds,
                   mdsBuild,
@@ -627,6 +724,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                 const uint16_t clustSizeCut) {
     if (clustSizeLower > clustSizeCut or clustSizeUpper > clustSizeCut) {
       return false;
+    }
+    // Dead-hit option: a placeholder on a dead sensor makes a minidoublet with every hit of the live partner sensor.
+    // There is nothing to compare, so no cut. Two placeholders (dead stack, both sensors listed as dead) make one fully
+    // fake minidoublet, placed per object downstream (DeadHitPlacement.h).
+    if (clustSizeLower == kDeadHitClustSize or clustSizeUpper == kDeadHitClustSize) {
+      dz = 0.f;
+      dPhi = 0.f;
+      dPhiChange = 0.f;
+      shiftedX = 0.f;
+      shiftedY = 0.f;
+      shiftedZ = 0.f;
+      noShiftedDphi = 0.f;
+      noShiftedDphiChange = 0.f;
+      return true;
     }
     if (mod.subdet == Barrel) {
       return runMiniDoubletDefaultAlgoBarrel(acc,

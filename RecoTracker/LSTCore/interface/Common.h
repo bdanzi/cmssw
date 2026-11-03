@@ -51,6 +51,32 @@ namespace lst {
   constexpr unsigned int kTCEmptyHitIdx = 0xFFFFFFFF;  // Sentinel for empty hit slots
   constexpr unsigned int kInvalidU32Idx = 0xFFFFFFFF;  // Sentinel for invalid uint32 idx
 
+  // Dead-hit option: placeholder hit at the centre of a dead OT sensor (LSTInputProducer deadHitDetIds), flagged by
+  // this cluster size. It pairs with every hit of the live partner sensor into a minidoublet (see MiniDoublet.h).
+  constexpr uint16_t kDeadHitClustSize = 0;
+  // Which hit of a minidoublet is a placeholder (derived from the cluster sizes of its hits, see DeadHitPlacement.h)
+  constexpr uint8_t kDeadHitAnchor = 1;
+  constexpr uint8_t kDeadHitOuter = 2;
+  // Dead stack: both sensors of the module are dead, the minidoublet is made of two placeholders (fully fake)
+  constexpr uint8_t kDeadStack = kDeadHitAnchor | kDeadHitOuter;
+  // Dead-hit options (LSTInputProducer deadHitOptions, bit mask), see src/alpaka/DeadHitPlacement.h. They only act on
+  // placeholder minidoublets, so they change nothing without dead hits.
+  namespace deadhit {
+    constexpr uint32_t kBeamSpot = 1 << 0;                 // project and point from the beam spot, not the origin
+    constexpr uint32_t kSegmentCircle = 1 << 1;            // segments place half-fake minidoublets on a circle
+    constexpr uint32_t kSegmentTwoHalfFake = 1 << 2;       // segments of two half-fake minidoublets
+    constexpr uint32_t kSegmentHalfAndFullyFake = 1 << 3;  // segments of a half-fake and a fully fake minidoublet
+    constexpr uint32_t kT5StripErrors = 1 << 4;            // T5 chi2: strip-size errors for placeholder positions
+    // Unused (no-op): it dropped the T5 tightCutFlag with a placeholder, and the retrained T5 DNN has no such flag.
+    // The bit stays defined so that the option values of the earlier studies keep their meaning.
+    constexpr uint32_t kNoTightFlagWithPlaceholder = 1 << 5;
+    constexpr uint32_t kOnePlaceholderPerT3 = 1 << 6;  // at most one placeholder minidoublet per triplet
+    constexpr uint32_t kAll = (1 << 7) - 1;            // all the options above
+    // Set by LSTInputProducer (not an option) when the event has placeholder hits: without it every dead-hit check
+    // is skipped and LST runs the nominal algorithm.
+    constexpr uint32_t kPlaceholders = 1u << 31;
+  }  // namespace deadhit
+
   constexpr float kB = lstgeometry::kB;
   constexpr float kC = lstgeometry::kC;
 

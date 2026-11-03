@@ -16,6 +16,7 @@
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
 #include "RecoTracker/LSTCore/interface/ObjectRangesSoA.h"
 
+#include "DeadHitPlacement.h"
 #include "NeuralNetwork.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
@@ -324,9 +325,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   }
 
   // When LooseOnly=true, returns after the pre-check (used by counting kernel).
-  template <bool LooseOnly = false, alpaka::concepts::Acc TAcc>
+  template <bool LooseOnly = false, typename TMDs, alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passDeltaPhiCutsBarrel(TAcc const& acc,
-                                                             MiniDoubletsConst mds,
+                                                             TMDs const& mds,
                                                              unsigned int innerMD,
                                                              unsigned int outerMD,
                                                              const float xIn,
@@ -364,9 +365,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   }
 
   // When LooseOnly=true, returns after the pre-check (used by counting kernel).
-  template <bool LooseOnly = false, alpaka::concepts::Acc TAcc>
+  template <bool LooseOnly = false, typename TMDs, alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passDeltaPhiCutsEndcap(TAcc const& acc,
-                                                             MiniDoubletsConst mds,
+                                                             TMDs const& mds,
                                                              unsigned int innerMD,
                                                              unsigned int outerMD,
                                                              const float xIn,
@@ -396,8 +397,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   // Stored payload of a barrel-barrel segment; shared by the algorithm and FillCompactSegments.
   template <alpaka::concepts::Acc TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float segmentDPhiChangeBarrel(
-      TAcc const& acc, MiniDoubletsConst mds, unsigned int innerMDIndex, float xIn, float yIn, float xOut, float yOut) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float segmentDPhiChangeBarrel(TAcc const& acc,
+                                                               PlacedMiniDoublets const& mds,
+                                                               unsigned int innerMDIndex,
+                                                               float xIn,
+                                                               float yIn,
+                                                               float xOut,
+                                                               float yOut) {
     return cms::alpakatools::reducePhiRange(
         acc, cms::alpakatools::phi(acc, xOut - xIn, yOut - yIn) - mds.anchorPhi()[innerMDIndex]);
   }
@@ -406,7 +412,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void segmentDPhiChangesEndcap(TAcc const& acc,
                                                                ModuleSegData const& outerMod,
-                                                               MiniDoubletsConst mds,
+                                                               PlacedMiniDoublets const& mds,
                                                                unsigned int innerMDIndex,
                                                                float xOut,
                                                                float yOut,
@@ -439,11 +445,97 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     dPhiChangeMax = dPhiMax / dzFrac * (1.f + dzFrac);
   }
 
+  // Dead-hit option: a minidoublet with a placeholder hit has no measured direction. Unless the segment placed it on a
+  // circle (deadhit::kSegmentCircle, DeadHitPlacement.h), it takes the direction that makes the chord between the two
+  // minidoublets consistent (zero line residual): alphaIn + alphaOut = alphaSum.
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void deadHitAlphas(PlacedMiniDoublets const& mds,
+                                                    unsigned int innerMDIndex,
+                                                    unsigned int outerMDIndex,
+                                                    float alphaSum,
+                                                    float& innerMDAlpha,
+                                                    float& outerMDAlpha) {
+    if (not mds.hasPlaceholderHits())
+      return;
+    const bool innerHasDeadHit = mds.hasPlaceholder(innerMDIndex) and not mds.hasPlacedAlpha(innerMDIndex);
+    const bool outerHasDeadHit = mds.hasPlaceholder(outerMDIndex) and not mds.hasPlacedAlpha(outerMDIndex);
+    if (innerHasDeadHit and outerHasDeadHit) {
+      innerMDAlpha = 0.5f * alphaSum;
+      outerMDAlpha = 0.5f * alphaSum;
+    } else if (innerHasDeadHit) {
+      innerMDAlpha = alphaSum - outerMDAlpha;
+    } else if (outerHasDeadHit) {
+      outerMDAlpha = alphaSum - innerMDAlpha;
+    }
+  }
+
+  // Dead-hit option: an anchor moved from a PS strip hit knows its z (barrel) or r (endcap) only within the strip
+  // length, so the r-z window is widened by half a strip for each such anchor.
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float deadAnchorTolerance(PlacedMiniDoublets const& mds,
+                                                           unsigned int innerMDIndex,
+                                                           unsigned int outerMDIndex) {
+    float tolerance = 0.f;
+    if (mds.hasDeadAnchor(innerMDIndex))
+      tolerance += 0.5f * kStripPSZpitch;
+    if (mds.hasDeadAnchor(outerMDIndex))
+      tolerance += 0.5f * kStripPSZpitch;
+    return tolerance;
+  }
+
+  // Dead-stack option: a segment with one fully fake minidoublet (never two) is accepted when the line from the beam
+  // point through the other minidoublet crosses the dead module. The other one may be half-fake only with
+  // deadhit::kSegmentHalfAndFullyFake. There are no direction cuts: the fake minidoublet has no direction, and the real
+  // one passed its own minidoublet cuts. The segment is stored as a straight radial track (dPhiChange = 0); downstream
+  // objects place the fake minidoublet along their own track (DeadHitPlacement.h).
+  template <alpaka::concepts::Acc TAcc>
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDeadStackAlgo(TAcc const& acc,
+                                                              ModuleSegData const& innerMod,
+                                                              ModuleSegData const& outerMod,
+                                                              PlacedMiniDoublets const& placedMDs,
+                                                              unsigned int innerMDIndex,
+                                                              unsigned int outerMDIndex,
+                                                              const float ptCut) {
+    const bool innerIsDeadStack = placedMDs.isDeadStack(innerMDIndex);
+    const bool outerIsDeadStack = placedMDs.isDeadStack(outerMDIndex);
+    if (innerIsDeadStack and outerIsDeadStack)
+      return false;
+
+    const unsigned int deadMDIndex = innerIsDeadStack ? innerMDIndex : outerMDIndex;
+    const unsigned int realMDIndex = innerIsDeadStack ? outerMDIndex : innerMDIndex;
+    if (placedMDs.hasPlaceholder(realMDIndex) and not placedMDs.option(deadhit::kSegmentHalfAndFullyFake))
+      return false;
+    MiniDoubletsConst mds = placedMDs.stored();
+    HitsBaseConst hits = placedMDs.hits();
+    ModuleSegData const& deadMod = innerIsDeadStack ? innerMod : outerMod;
+    const DeadModuleGeometry dead =
+        deadModuleGeometry(mds, hits, deadMDIndex, deadMod.subdet, deadMod.side, deadMod.moduleType, deadMod.drdz);
+    const TrackPoint real = anchorPoint(mds, realMDIndex);
+    const TrackPoint beam = beamPoint(hits);
+    if (real.rt <= 0.f or real.z == beam.z)
+      return false;
+
+    // What the line from the beam point ignores, growing with the distance between the real minidoublet and the dead
+    // module: the bending of a track at the pt cut (r-phi), and the luminous region (along the strips).
+    const float tolerance = hits.deadHitTolerance();
+    const float transverseTolerance =
+        tolerance + dead.rc * alpaka::math::abs(acc, dead.rc - real.rt) * k2Rinv1GeVf / ptCut;
+    float longitudinalTolerance;
+    if (dead.subdet == Endcap) {
+      const float realDz = real.z - beam.z;
+      longitudinalTolerance =
+          tolerance + kDeltaZLum * real.rt * alpaka::math::abs(acc, dead.zc - real.z) / (realDz * realDz);
+    } else {
+      longitudinalTolerance = tolerance + kDeltaZLum * alpaka::math::abs(acc, 1.f - dead.rc / real.rt);
+    }
+
+    MDPlacement placed = storedPlacement(mds, deadMDIndex);
+    return placeOnDeadModule(acc, dead, beam, real, true, transverseTolerance, longitudinalTolerance, placed);
+  }
+
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoBarrel(TAcc const& acc,
                                                                   ModuleSegData const& innerMod,
                                                                   ModuleSegData const& outerMod,
-                                                                  MiniDoubletsConst mds,
+                                                                  PlacedMiniDoublets const& mds,
                                                                   MiniDoubletsBuildConst mdsBuild,
                                                                   unsigned int innerMDIndex,
                                                                   unsigned int outerMDIndex,
@@ -482,7 +574,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // Exact: tan(asin(s))/asin(s) = s/(asin(s)*sqrt(1-s^2)), eliminates tan call
     float dzDrtScale = sdSlopeSin / (sdSlope * alpaka::math::sqrt(acc, 1.f - sdSlopeSin * sdSlopeSin));
 
-    const float zGeom = innerMod.layer <= 2 ? 2.f * kPixelPSZpitch : 2.f * kStrip2SZpitch;
+    const float zGeom = (innerMod.layer <= 2 ? 2.f * kPixelPSZpitch : 2.f * kStrip2SZpitch) +
+                        deadAnchorTolerance(mds, innerMDIndex, outerMDIndex);
 
     //slope-correction only on outer end
     zLo = zIn + (zIn - kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) - zGeom;
@@ -535,8 +628,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                     dAlphaBfield,
                     dAlphaResMuls);
 
-    float innerMDAlpha = mdsBuild.dphichanges()[innerMDIndex];
-    float outerMDAlpha = mdsBuild.dphichanges()[outerMDIndex];
+    // Dead-hit option: directions placed by the segment, or chord-consistent ones (deadHitAlphas)
+    float innerMDAlpha = mds.alpha(innerMDIndex, mdsBuild.dphichanges()[innerMDIndex]);
+    float outerMDAlpha = mds.alpha(outerMDIndex, mdsBuild.dphichanges()[outerMDIndex]);
+    deadHitAlphas(mds, innerMDIndex, outerMDIndex, 2.f * dPhiChange - dPhi, innerMDAlpha, outerMDAlpha);
     dAlphaInnerMDSegment = innerMDAlpha - dPhiChange;
     dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
     dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
@@ -563,7 +658,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoEndcap(TAcc const& acc,
                                                                   ModuleSegData const& innerMod,
                                                                   ModuleSegData const& outerMod,
-                                                                  MiniDoubletsConst mds,
+                                                                  PlacedMiniDoublets const& mds,
                                                                   MiniDoubletsBuildConst mdsBuild,
                                                                   unsigned int innerMDIndex,
                                                                   unsigned int outerMDIndex,
@@ -601,7 +696,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float rtGeom = ((rtIn < kDisks2SMinRadius && rtOut < kDisks2SMinRadius)
                         ? (2.f * kPixelPSZpitch)
                         : ((rtIn < kDisks2SMinRadius || rtOut < kDisks2SMinRadius) ? (kPixelPSZpitch + kStrip2SZpitch)
-                                                                                   : (2.f * kStrip2SZpitch)));
+                                                                                   : (2.f * kStrip2SZpitch))) +
+                   deadAnchorTolerance(mds, innerMDIndex, outerMDIndex);
 
     //cut 0 - z compatibility
     if (zIn * zOut < 0)
@@ -663,8 +759,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                     dAlphaBfield,
                     dAlphaResMuls);
 
-    float innerMDAlpha = mdsBuild.dphichanges()[innerMDIndex];
-    float outerMDAlpha = mdsBuild.dphichanges()[outerMDIndex];
+    // Endcap dPhiChange is a z-extrapolation, so the chord turn is rebuilt; the resolution is the symmetric one.
+    const float chord =
+        alpaka::math::atan2(acc, rtOut * alpaka::math::sin(acc, dPhi), rtOut * alpaka::math::cos(acc, dPhi) - rtIn);
+
+    // Dead-hit option: directions placed by the segment, or chord-consistent ones (deadHitAlphas)
+    float innerMDAlpha = mds.alpha(innerMDIndex, mdsBuild.dphichanges()[innerMDIndex]);
+    float outerMDAlpha = mds.alpha(outerMDIndex, mdsBuild.dphichanges()[outerMDIndex]);
+    deadHitAlphas(mds, innerMDIndex, outerMDIndex, 2.f * chord - dPhi, innerMDAlpha, outerMDAlpha);
     dAlphaInnerMDSegment = innerMDAlpha - dPhiChange;
     dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
     dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
@@ -673,9 +775,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float dAlphaOuterMDSegmentThreshold = dAlphaThresholdValues[1];
     float dAlphaInnerMDOuterMDThreshold = dAlphaThresholdValues[2];
 
-    // Endcap dPhiChange is a z-extrapolation, so the chord turn is rebuilt; the resolution is the symmetric one.
-    const float chord =
-        alpaka::math::atan2(acc, rtOut * alpaka::math::sin(acc, dPhi), rtOut * alpaka::math::cos(acc, dPhi) - rtIn);
     const float lineResidual = innerMDAlpha + outerMDAlpha + dPhi - 2.f * chord;
     if (alpaka::math::abs(acc, lineResidual) >= kLsLineResidCut * 2.f * dAlphaResMuls)
       return false;
@@ -693,6 +792,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                             ModuleSegData const& outerMod,
                                                             MiniDoubletsConst mds,
                                                             MiniDoubletsBuildConst mdsBuild,
+                                                            HitsBaseConst hitsBase,
                                                             unsigned int innerMDIndex,
                                                             unsigned int outerMDIndex,
                                                             float& dPhi,
@@ -711,6 +811,32 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                             float& rtHi,
 #endif
                                                             const float ptCut) {
+    // Dead-hit option: half-fake minidoublets placed for this segment (nothing placed without placeholders)
+    PlacedMiniDoublets placedMDs(mds, hitsBase);
+
+    // Dead-stack option: a segment with a fully fake minidoublet, stored as a straight radial track.
+    if (segmentHasDeadStackMDs(placedMDs, innerMDIndex, outerMDIndex)) {
+      dPhi = 0.f;
+      dPhiMin = 0.f;
+      dPhiMax = 0.f;
+      dPhiChange = 0.f;
+      dPhiChangeMin = 0.f;
+      dPhiChangeMax = 0.f;
+#ifdef CUT_VALUE_DEBUG
+      dAlphaInnerMDSegment = 0.f;
+      dAlphaOuterMDSegment = 0.f;
+      dAlphaInnerMDOuterMD = 0.f;
+      zLo = -999.f;
+      zHi = -999.f;
+      rtLo = -999.f;
+      rtHi = -999.f;
+#endif
+      return runSegmentDeadStackAlgo(acc, innerMod, outerMod, placedMDs, innerMDIndex, outerMDIndex, ptCut);
+    }
+
+    if (not placeSegmentMDs(acc, innerMDIndex, outerMDIndex, placedMDs))
+      return false;
+
     if (innerMod.subdet == Barrel and outerMod.subdet == Barrel) {
 #ifdef CUT_VALUE_DEBUG
       rtLo = -999.f;
@@ -719,7 +845,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       return runSegmentDefaultAlgoBarrel(acc,
                                          innerMod,
                                          outerMod,
-                                         mds,
+                                         placedMDs,
                                          mdsBuild,
                                          innerMDIndex,
                                          outerMDIndex,
@@ -745,7 +871,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       return runSegmentDefaultAlgoEndcap(acc,
                                          innerMod,
                                          outerMod,
-                                         mds,
+                                         placedMDs,
                                          mdsBuild,
                                          innerMDIndex,
                                          outerMDIndex,
@@ -771,6 +897,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
                                   MiniDoubletsBuildConst mdsBuild,
+                                  HitsBaseConst hitsBase,
                                   MiniDoubletsOccupancyConst mdsOccupancy,
                                   SegmentCandidates candidates,
                                   SegmentsOccupancy segmentsOccupancy,
@@ -823,6 +950,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                               outerMod,
                                               mds,
                                               mdsBuild,
+                                              hitsBase,
                                               innerMDIndex,
                                               outerMDIndex,
                                               dPhi,
@@ -876,9 +1004,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                            ModuleSegData const& innerMod,
                                                            ModuleSegData const& outerMod,
                                                            MiniDoubletsConst mds,
+                                                           HitsBaseConst hitsBase,
                                                            unsigned int innerMD,
                                                            unsigned int outerMD,
                                                            const float ptCut) {
+    if (hasPlaceholderHits(hitsBase)) {
+      PlacedMiniDoublets placedMDs(mds, hitsBase);
+      // Dead-stack option: the segment algorithm for a fully fake minidoublet is already cheap.
+      if (segmentHasDeadStackMDs(placedMDs, innerMD, outerMD))
+        return runSegmentDeadStackAlgo(acc, innerMod, outerMod, placedMDs, innerMD, outerMD, ptCut);
+      // Dead-hit option: segments move placeholder anchors (DeadHitPlacement.h), so the stored ones are not used for
+      // the loose pre-selection: every pair with a half-fake minidoublet is counted.
+      if (placedMDs.hasPlaceholder(innerMD) or placedMDs.hasPlaceholder(outerMD))
+        return true;
+    }
+
     const float rtOut = mds.anchorRt()[outerMD];
     const float sdSlopeSin = alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax);
 
@@ -955,6 +1095,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
                                   MiniDoubletsBuild mdsBuild,
+                                  HitsBaseConst hitsBase,
                                   MiniDoubletsOccupancyConst mdsOccupancy,
                                   ObjectRangesConst ranges,
                                   const float ptCut) const {
@@ -992,7 +1133,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             const unsigned int outerMDIndex = mdRanges[outerLowerModuleIndex][0] + outerMDArrayIdx;
 
             // Increment the connected max if the LS passes the loose delta phi cuts.
-            if (passLooseSegmentCuts(acc, innerMod, outerMod, mds, innerMDIndex, outerMDIndex, ptCut)) {
+            if (passLooseSegmentCuts(acc, innerMod, outerMod, mds, hitsBase, innerMDIndex, outerMDIndex, ptCut)) {
               alpaka::atomicAdd(acc, &mdsBuild.connectedMax()[innerMDIndex], 1u, alpaka::hierarchy::Threads{});
             }
           }
@@ -1117,6 +1258,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
                                   MiniDoubletsBuildConst mdsBuild,
+                                  HitsBaseConst hitsBase,
                                   MiniDoubletsOccupancyConst mdsOccupancy,
                                   ObjectRangesConst ranges,
                                   SegmentCandidatesConst candidates,
@@ -1150,6 +1292,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                 outerMod,
                                 mds,
                                 mdsBuild,
+                                hitsBase,
                                 innerMDIndex,
                                 outerMDIndex,
                                 dPhi,
@@ -1167,28 +1310,40 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                 rtHi,
                                 ptCut);
 #else
-          // Only the stored payload: the selection already passed in CreateSegments.
-          const float xOut = mds.anchorX()[outerMDIndex];
-          const float yOut = mds.anchorY()[outerMDIndex];
-          if (innerMod.subdet == Barrel and outerMod.subdet == Barrel) {
-            dPhiChange = segmentDPhiChangeBarrel(
-                acc, mds, innerMDIndex, mds.anchorX()[innerMDIndex], mds.anchorY()[innerMDIndex], xOut, yOut);
-          } else {
-            dPhi = cms::alpakatools::reducePhiRange(acc, mds.anchorPhi()[outerMDIndex] - mds.anchorPhi()[innerMDIndex]);
-            segmentDPhiChangesEndcap(acc,
-                                     outerMod,
-                                     mds,
-                                     innerMDIndex,
-                                     xOut,
-                                     yOut,
-                                     mds.anchorZ()[innerMDIndex],
-                                     mds.anchorZ()[outerMDIndex],
-                                     dPhi,
-                                     dPhiMin,
-                                     dPhiMax,
-                                     dPhiChange,
-                                     dPhiChangeMin,
-                                     dPhiChangeMax);
+          // Only the stored payload: the selection already passed in CreateSegments. Dead-hit option: a segment with
+          // a fully fake minidoublet is stored as a straight radial track (all zero), one with half-fake minidoublets
+          // from the positions the segment placed (as in runSegmentDefaultAlgo).
+          PlacedMiniDoublets placedMDs(mds, hitsBase);
+          if (not segmentHasDeadStackMDs(placedMDs, innerMDIndex, outerMDIndex)) {
+            placeSegmentMDs(acc, innerMDIndex, outerMDIndex, placedMDs);
+            const float xOut = placedMDs.anchorX()[outerMDIndex];
+            const float yOut = placedMDs.anchorY()[outerMDIndex];
+            if (innerMod.subdet == Barrel and outerMod.subdet == Barrel) {
+              dPhiChange = segmentDPhiChangeBarrel(acc,
+                                                   placedMDs,
+                                                   innerMDIndex,
+                                                   placedMDs.anchorX()[innerMDIndex],
+                                                   placedMDs.anchorY()[innerMDIndex],
+                                                   xOut,
+                                                   yOut);
+            } else {
+              dPhi = cms::alpakatools::reducePhiRange(
+                  acc, placedMDs.anchorPhi()[outerMDIndex] - placedMDs.anchorPhi()[innerMDIndex]);
+              segmentDPhiChangesEndcap(acc,
+                                       outerMod,
+                                       placedMDs,
+                                       innerMDIndex,
+                                       xOut,
+                                       yOut,
+                                       placedMDs.anchorZ()[innerMDIndex],
+                                       placedMDs.anchorZ()[outerMDIndex],
+                                       dPhi,
+                                       dPhiMin,
+                                       dPhiMax,
+                                       dPhiChange,
+                                       dPhiChangeMin,
+                                       dPhiChangeMax);
+            }
           }
 #endif
 

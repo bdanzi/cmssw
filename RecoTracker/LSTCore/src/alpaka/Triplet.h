@@ -12,6 +12,7 @@
 #include "RecoTracker/LSTCore/interface/TripletsSoA.h"
 #include "RecoTracker/LSTCore/interface/Circle.h"
 
+#include "DeadHitPlacement.h"
 #include "NeuralNetwork.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
@@ -432,11 +433,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     return (sinBetaInSq < sinBetaInCutSq * r2) ? 1 : 2;
   }
 
-  // The r-z cut of runTripletConstraintsAndAlgo (loosened by cutScale > 1 for the counting kernel).
+  // The r-z cut of runTripletConstraintsAndAlgo (loosened by cutScale > 1 for the counting kernel). Dead-hit option:
+  // on the minidoublet positions placed for the triplet (DeadHitPlacement.h); false if it cannot be built with its
+  // placeholder minidoublets, so that the counting and the creation kernels keep the same triplets.
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passTripletRZCountCut(TAcc const& acc,
                                                             ModulesConst modules,
-                                                            MiniDoubletsConst mds,
+                                                            MiniDoubletsConst storedMDs,
+                                                            HitsBaseConst hitsBase,
                                                             SegmentsConst segments,
                                                             uint16_t innerInnerLowerModuleIndex,
                                                             uint16_t middleLowerModuleIndex,
@@ -447,6 +451,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const unsigned int firstMDIndex = segments.mdIndices()[innerSegmentIndex][0];
     const unsigned int secondMDIndex = segments.mdIndices()[outerSegmentIndex][0];
     const unsigned int thirdMDIndex = segments.mdIndices()[outerSegmentIndex][1];
+
+    PlacedMiniDoublets mds(storedMDs, hitsBase);
+    if (not placeTripletMDs(acc,
+                            modules,
+                            segments,
+                            innerSegmentIndex,
+                            outerSegmentIndex,
+                            innerInnerLowerModuleIndex,
+                            middleLowerModuleIndex,
+                            outerOuterLowerModuleIndex,
+                            mds))
+      return false;
+
     T3HitCoords hitCoords;
     hitCoords.x1 = mds.anchorX()[firstMDIndex];
     hitCoords.y1 = mds.anchorY()[firstMDIndex];
@@ -478,8 +495,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletConstraintsAndAlgo(TAcc const& acc,
-                                                                   MiniDoubletsConst mds,
+                                                                   ModulesConst modules,
+                                                                   MiniDoubletsConst storedMDs,
+                                                                   HitsBaseConst hitsBase,
                                                                    SegmentsConst segments,
+                                                                   uint16_t innerInnerLowerModuleIndex,
+                                                                   uint16_t middleLowerModuleIndex,
+                                                                   uint16_t outerOuterLowerModuleIndex,
                                                                    unsigned int innerSegmentIndex,
                                                                    unsigned int outerSegmentIndex,
                                                                    float& betaIn,
@@ -493,6 +515,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const unsigned int firstMDIndex = segments.mdIndices()[innerSegmentIndex][0];
     const unsigned int secondMDIndex = segments.mdIndices()[outerSegmentIndex][0];
     const unsigned int thirdMDIndex = segments.mdIndices()[outerSegmentIndex][1];
+
+    // Dead-hit option: positions as placed for this triplet
+    PlacedMiniDoublets mds(storedMDs, hitsBase);
+    if (not placeTripletMDs(acc,
+                            modules,
+                            segments,
+                            innerSegmentIndex,
+                            outerSegmentIndex,
+                            innerInnerLowerModuleIndex,
+                            middleLowerModuleIndex,
+                            outerOuterLowerModuleIndex,
+                            mds))
+      return false;
 
     T3HitCoords hitCoords;
     hitCoords.x1 = mds.anchorX()[firstMDIndex];
@@ -514,7 +549,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // The r-z cut (passRZConstraint) is applied before, in step 1 of CreateTriplets.
     charge = tripletCharge(hitCoords);
 
-    const float sdIn_alpha = __H2F(segments.dPhiChanges()[innerSegmentIndex]);
+    const float sdIn_alpha = segmentAlpha(acc,
+                                          modules,
+                                          mds,
+                                          segments,
+                                          innerSegmentIndex,
+                                          innerInnerLowerModuleIndex,
+                                          middleLowerModuleIndex,
+                                          __H2F(segments.dPhiChanges()[innerSegmentIndex]));
 
     const float drt_InSeg = hitCoords.rt2 - hitCoords.rt1;
     const float drt_tl_axis = alpaka::math::sqrt(acc,
@@ -546,6 +588,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ALPAKA_FN_ACC void operator()(Acc3D const& acc,
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
+                                  HitsBaseConst hitsBase,
                                   SegmentsT3CountsConst segT3Counts,
                                   SegmentsConst segments,
                                   SegmentsOccupancyConst segmentsOccupancy,
@@ -574,6 +617,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       const int flatThreadIdxXY = threadIdY * blockSizeX + threadIdX;
       const int flatThreadExtent = blockSize;  // total threads per block
 
+      // Dead-hit option: placeholder flags of the minidoublets (pointing pre-filter)
+      const PlacedMiniDoublets unplacedMDs(mds, hitsBase);
+
       auto tryAddTriplet = [&](unsigned int innerSegmentIndex,
                                unsigned int outerSegmentIndex,
                                uint16_t innerInnerLowerModuleIndex,
@@ -585,8 +631,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         float t3Scores[dnn::t3dnn::kOutputFeatures] = {0.f};
 
         bool success = runTripletConstraintsAndAlgo(acc,
+                                                    modules,
                                                     mds,
+                                                    hitsBase,
                                                     segments,
+                                                    innerInnerLowerModuleIndex,
+                                                    middleLowerModuleIndex,
+                                                    outerOuterLowerModuleIndex,
                                                     innerSegmentIndex,
                                                     outerSegmentIndex,
                                                     betaIn,
@@ -683,7 +734,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             float y3 = mds.anchorY()[thirdMDIndex];
             short outerSubdet = modules.subdets()[outerOuterLowerModuleIndex];
 
-            const int pointing = passPointingConstraint(acc, innerSegData, x3, y3, outerSubdet, ptCut);
+            // Dead-stack option: the segment directions say nothing with a fully fake minidoublet, so the pointing
+            // pre-filter is skipped; the r-z cut and runTripletConstraintsAndAlgo place it and apply the other cuts.
+            const bool hasDeadStack = segmentHasDeadStack(unplacedMDs, segments, innerSegmentIndex) or
+                                      segmentHasDeadStack(unplacedMDs, segments, outerSegmentIndex);
+            const int pointing =
+                hasDeadStack ? 1 : passPointingConstraint(acc, innerSegData, x3, y3, outerSubdet, ptCut);
             if (not pointing)
               continue;
             const bool loosePointing = (pointing == 2);
@@ -691,6 +747,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             if (!passTripletRZCountCut(acc,
                                        modules,
                                        mds,
+                                       hitsBase,
                                        segments,
                                        innerInnerLowerModuleIndex,
                                        middleLowerModuleIndex,
@@ -761,6 +818,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ALPAKA_FN_ACC void operator()(Acc3D const& acc,
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
+                                  HitsBaseConst hitsBase,
                                   SegmentsT3Counts segT3Counts,
                                   Segments segments,
                                   SegmentsOccupancyConst segOcc,
@@ -772,6 +830,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       const auto& mdIndices = segments.mdIndices();
       const auto& outerLowerModuleIndices = segments.outerLowerModuleIndices();
       const auto& segmentRanges = ranges.segmentRanges();
+      // Dead-hit option: placeholder flags of the minidoublets (pointing pre-filter)
+      const PlacedMiniDoublets unplacedMDs(mds, hitsBase);
 
       for (uint16_t innerLowerModuleArrayIdx : cms::alpakatools::uniform_groups_z(acc, modules.nLowerModules())) {
         const unsigned int nInnerSegments = segOcc.nSegments()[innerLowerModuleArrayIdx];
@@ -802,12 +862,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             float y3 = mds.anchorY()[thirdMDIndex];
             short outerSubdet = modules.subdets()[outerOuterLowerModuleIndex];
 
-            if (not passPointingConstraint(acc, innerSegData, x3, y3, outerSubdet, ptCut))
+            // Dead-stack option: no pointing pre-filter with a fully fake minidoublet (as in CreateTriplets)
+            const bool hasDeadStack = segmentHasDeadStack(unplacedMDs, segments, innerSegmentIndex) or
+                                      segmentHasDeadStack(unplacedMDs, segments, outerSegmentIndex);
+            if (not hasDeadStack and not passPointingConstraint(acc, innerSegData, x3, y3, outerSubdet, ptCut))
               continue;
 
             if (passTripletRZCountCut(acc,
                                       modules,
                                       mds,
+                                      hitsBase,
                                       segments,
                                       innerLowerModuleArrayIdx,
                                       middleLowerModuleIndex,

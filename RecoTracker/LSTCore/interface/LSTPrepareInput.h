@@ -225,6 +225,16 @@ namespace lst {
 
     auto hits = lstInputHC.view().hits();
     hits.nHitsOT() = nHitsOT;
+    // dead-hit option: off unless set by the caller (LSTInputProducer)
+    hits.beamSpotX() = 0.f;
+    hits.beamSpotY() = 0.f;
+    hits.beamSpotZ() = 0.f;
+    hits.deadHitOptions() = 0;
+    hits.deadSensorHalfWidthPS() = 0.f;
+    hits.deadSensorHalfLengthPS() = 0.f;
+    hits.deadSensorHalfWidth2S() = 0.f;
+    hits.deadSensorHalfLength2S() = 0.f;
+    hits.deadHitTolerance() = 0.f;
     std::copy_n(ph2_x.data(), nHitsOT, hits.xs().data());
     std::copy_n(ph2_y.data(), nHitsOT, hits.ys().data());
     std::copy_n(ph2_z.data(), nHitsOT, hits.zs().data());

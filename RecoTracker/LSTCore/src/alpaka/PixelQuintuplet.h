@@ -455,6 +455,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                     ModulesConst modules,
                                                                     ObjectRangesConst ranges,
                                                                     MiniDoubletsConst mds,
+                                                                    HitsBaseConst hitsBase,
                                                                     SegmentsConst segments,
                                                                     PixelSeedsConst pixelSeeds,
                                                                     PixelSegmentsConst pixelSegments,
@@ -483,6 +484,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     if (not runPixelTripletDefaultAlgo<dnn::pt3dnn::pT5WP>(acc,
                                                            modules,
                                                            mds,
+                                                           hitsBase,
                                                            segments,
                                                            pixelData,
                                                            triplets,
@@ -519,20 +521,25 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     uint16_t lowerModuleIndices[Params_T5::kBaseLayers] = {
         lowerModuleIndex1, lowerModuleIndex2, lowerModuleIndex3, lowerModuleIndex4, lowerModuleIndex5};
 
+    // Dead-hit option: positions as placed for the quintuplet
+    PlacedMiniDoublets placedMDs(mds, hitsBase);
+    if (not placeQuintupletMDs(acc, modules, segments, triplets, t5InnerT3Index, t5OuterT3Index, placedMDs))
+      return false;
+
     float rtPix[Params_pLS::kLayers] = {pixelData.rt_InLo, pixelData.rt_InUp};
     float xPix[Params_pLS::kLayers] = {pixelData.x_InLo, pixelData.x_InUp};
     float yPix[Params_pLS::kLayers] = {pixelData.y_InLo, pixelData.y_InUp};
     float zPix[Params_pLS::kLayers] = {pixelData.z_InLo, pixelData.z_InUp};
-    float zs[Params_T5::kBaseLayers] = {mds.anchorZ()[firstMDIndex],
-                                        mds.anchorZ()[secondMDIndex],
-                                        mds.anchorZ()[thirdMDIndex],
-                                        mds.anchorZ()[fourthMDIndex],
-                                        mds.anchorZ()[fifthMDIndex]};
-    float rts[Params_T5::kBaseLayers] = {mds.anchorRt()[firstMDIndex],
-                                         mds.anchorRt()[secondMDIndex],
-                                         mds.anchorRt()[thirdMDIndex],
-                                         mds.anchorRt()[fourthMDIndex],
-                                         mds.anchorRt()[fifthMDIndex]};
+    float zs[Params_T5::kBaseLayers] = {placedMDs.anchorZ()[firstMDIndex],
+                                        placedMDs.anchorZ()[secondMDIndex],
+                                        placedMDs.anchorZ()[thirdMDIndex],
+                                        placedMDs.anchorZ()[fourthMDIndex],
+                                        placedMDs.anchorZ()[fifthMDIndex]};
+    float rts[Params_T5::kBaseLayers] = {placedMDs.anchorRt()[firstMDIndex],
+                                         placedMDs.anchorRt()[secondMDIndex],
+                                         placedMDs.anchorRt()[thirdMDIndex],
+                                         placedMDs.anchorRt()[fourthMDIndex],
+                                         placedMDs.anchorRt()[fifthMDIndex]};
 
     rzChiSquared = 0;
 
@@ -566,16 +573,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
 
     //outer T5
-    float xs[Params_T5::kBaseLayers] = {mds.anchorX()[firstMDIndex],
-                                        mds.anchorX()[secondMDIndex],
-                                        mds.anchorX()[thirdMDIndex],
-                                        mds.anchorX()[fourthMDIndex],
-                                        mds.anchorX()[fifthMDIndex]};
-    float ys[Params_T5::kBaseLayers] = {mds.anchorY()[firstMDIndex],
-                                        mds.anchorY()[secondMDIndex],
-                                        mds.anchorY()[thirdMDIndex],
-                                        mds.anchorY()[fourthMDIndex],
-                                        mds.anchorY()[fifthMDIndex]};
+    float xs[Params_T5::kBaseLayers] = {placedMDs.anchorX()[firstMDIndex],
+                                        placedMDs.anchorX()[secondMDIndex],
+                                        placedMDs.anchorX()[thirdMDIndex],
+                                        placedMDs.anchorX()[fourthMDIndex],
+                                        placedMDs.anchorX()[fifthMDIndex]};
+    float ys[Params_T5::kBaseLayers] = {placedMDs.anchorY()[firstMDIndex],
+                                        placedMDs.anchorY()[secondMDIndex],
+                                        placedMDs.anchorY()[thirdMDIndex],
+                                        placedMDs.anchorY()[fourthMDIndex],
+                                        placedMDs.anchorY()[fifthMDIndex]};
 
     //get the appropriate centers
     centerX = pixelData.circleCenterX;
@@ -622,6 +629,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   ModulesConst modules,
                                   ModulesPixelConst modulesPixel,
                                   MiniDoubletsConst mds,
+                                  HitsBaseConst hitsBase,
                                   SegmentsConst segments,
                                   PixelSeedsConst pixelSeeds,
                                   PixelSegments pixelSegments,
@@ -668,6 +676,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                          modules,
                                                          ranges,
                                                          mds,
+                                                         hitsBase,
                                                          segments,
                                                          pixelSeeds,
                                                          pixelSegments,
