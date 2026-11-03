@@ -1,22 +1,17 @@
-"""Customisations for improved low-pT tracking in Run 3 (2024/2025 conditions).
+"""Improved low-pT and displaced-track reconstruction for Run 3 (2024/2025 conditions).
 
-Every iteration keeps its default algorithm (mkFit or CKF); only the track selection, seeding regions,
-seeding layer sets and one mkFit parameter are changed.
-
-  customiseHitDNNSelection       track-selection DNN with 10 extra hit-level inputs (TrackHitTfClassifier)
-  customiseLowPtSeeding          pixelPair regions open to displaced tracks, lower-pT detached seeding,
-                                 one more hole allowed in pixelLessStep (mkFit)
-  customiseLowPtSeedingExtended  layer-skipping triplets in detachedTripletStep, pixel+TIB1 seeds in
-                                 mixedTripletStep (~2x CPU of the standard reconstruction)
-
-  customiseLowPtTrackingA = customiseHitDNNSelection + customiseLowPtSeeding
-  customiseLowPtTrackingB = customiseLowPtTrackingA + customiseLowPtSeedingExtended
+Every iteration keeps its default algorithm (mkFit or CKF); only the track selection, the seeding regions
+and one mkFit parameter are changed:
+  - track-selection DNN with 10 extra hit-level inputs (TrackHitTfClassifier), working points at the
+    production fake rate
+  - seeding regions open to lower pT (lowPtQuad, lowPtTriplet, pixelPair, detached, pixelLess, tobTec) and
+    to displaced tracks (pixelPair, detached, mixedTriplet, pixelLess)
+  - one more hole allowed per candidate in pixelLessStep (mkFit)
 
 Usage with cmsDriver:
-  --customise RecoTracker/Configuration/customiseLowPtTracking.customiseLowPtTrackingA
+  --customise RecoTracker/Configuration/customiseLowPtTracking.customiseLowPtTracking
 
-The hit-level DNNs were trained on 2024 TTbar PU MC; their working points give the same number of fake
-tracks as the production DNN working points on that sample. Data files come from cms-data
+The hit-level DNNs were trained on 2024 TTbar PU MC; data files come from cms-data
 (RecoTracker-FinalTrackSelectors, RecoTracker-MkFit); the training recipe is in
 RecoTracker/FinalTrackSelectors/test/trackHitDNN/README.md.
 """
@@ -45,18 +40,24 @@ HIT_DNN_CUTS = {
     "pixelLessStep": ("MkFitPixelLessOnly", [-0.9332, -0.8962, -0.7832]),
 }
 
-# seeding regions
-PIXEL_PAIR_ORIGIN_RADIUS = 0.1  # cm, default 0.015: keeps tracks from B/D decays and from inactive pixel areas
-PIXEL_PAIR_INACTIVE_AREA_PT_MIN = 0.4  # GeV, default 0.6
-DETACHED_QUAD_PT_MIN = 0.25  # GeV, default 0.3
-DETACHED_TRIPLET_PT_MIN = 0.2  # GeV, default 0.25
+# seeding region -> {RegionPSet parameter: value}; Run 3 defaults in the comments
+SEEDING_REGIONS = {
+    "lowPtQuadStepTrackingRegions": {"ptMin": 0.1},                              # 0.15
+    "lowPtTripletStepTrackingRegions": {"ptMin": 0.1},                           # 0.2
+    "pixelPairStepTrackingRegions": {"ptMin": 0.4, "originRadius": 0.1},         # 0.6, 0.015
+    "pixelPairStepTrackingRegionsSeedLayersB": {"ptMin": 0.4, "originRadius": 0.1},  # 0.6, 0.015
+    "detachedQuadStepTrackingRegions": {"ptMin": 0.25, "originRadius": 2.5},     # 0.3, 1.5
+    "detachedTripletStepTrackingRegions": {"ptMin": 0.2, "originRadius": 2.5},   # 0.25, 1.5
+    "mixedTripletStepTrackingRegionsA": {"ptMin": 0.3, "originRadius": 2.5},     # 0.4, 1.5
+    "mixedTripletStepTrackingRegionsB": {"ptMin": 0.45, "originRadius": 2.5},    # 0.6, 1.5
+    "pixelLessStepTrackingRegions": {"ptMin": 0.3, "originRadius": 2.0},         # 0.4, 1.0
+    "tobTecStepTrackingRegionsTripl": {"ptMin": 0.45},                           # 0.55
+    "tobTecStepTrackingRegionsPair": {"ptMin": 0.5},                             # 0.6
+}
 DETACHED_TRIPLET_CA_HARD_PT_CUT = 0.0  # GeV, default 0.2
 
 # mkFit pixelLessStep configuration with maxHolesPerCand + 1 (cms-data RecoTracker-MkFit)
 PIXEL_LESS_MKFIT_CONFIG = "RecoTracker/MkFit/data/mkfit-phase1-pixelLessStep-lowPt.json"
-
-# extra pixel + TIB1 seeding layer sets for mixedTripletStep (B), used when the outer pixel layers are missing
-MIXED_TRIPLET_B_LAYERS = ["BPix3+BPix4+TIB1", "BPix2+BPix3+TIB1", "BPix2+BPix4+TIB1", "BPix1+BPix2+TIB1", "BPix1+BPix3+TIB1"]
 
 
 def customiseHitDNNSelection(process):
@@ -80,32 +81,16 @@ def customiseHitDNNSelection(process):
 
 
 def customiseLowPtSeeding(process):
-    """Seeding regions open to displaced and low-pT tracks, one more hole in pixelLessStep."""
-    process.pixelPairStepTrackingRegions.RegionPSet.originRadius = PIXEL_PAIR_ORIGIN_RADIUS
-    inactive_area_regions = process.pixelPairStepTrackingRegionsSeedLayersB.RegionPSet
-    inactive_area_regions.originRadius = PIXEL_PAIR_ORIGIN_RADIUS
-    inactive_area_regions.ptMin = PIXEL_PAIR_INACTIVE_AREA_PT_MIN
-
-    process.detachedQuadStepTrackingRegions.RegionPSet.ptMin = DETACHED_QUAD_PT_MIN
-    process.detachedTripletStepTrackingRegions.RegionPSet.ptMin = DETACHED_TRIPLET_PT_MIN
+    """Seeding regions open to lower-pT and displaced tracks, one more hole in pixelLessStep."""
+    for region, parameters in SEEDING_REGIONS.items():
+        region_pset = getattr(process, region).RegionPSet
+        for name, value in parameters.items():
+            setattr(region_pset, name, value)
     process.detachedTripletStepHitTriplets.CAHardPtCut = DETACHED_TRIPLET_CA_HARD_PT_CUT
-
     process.pixelLessStepTrackCandidatesMkFitConfig.config = cms.FileInPath(PIXEL_LESS_MKFIT_CONFIG)
     return process
 
 
-def customiseLowPtSeedingExtended(process):
-    """Layer-skipping triplets in detachedTripletStep and pixel+TIB1 seeds in mixedTripletStep."""
-    process.detachedTripletStepSeedLayers.layerList = cms.vstring(*process.lowPtTripletStepSeedLayers.layerList)
-    process.mixedTripletStepSeedLayersB.layerList = cms.vstring(*MIXED_TRIPLET_B_LAYERS)
-    return process
-
-
-def customiseLowPtTrackingA(process):
+def customiseLowPtTracking(process):
     process = customiseHitDNNSelection(process)
     return customiseLowPtSeeding(process)
-
-
-def customiseLowPtTrackingB(process):
-    process = customiseLowPtTrackingA(process)
-    return customiseLowPtSeedingExtended(process)
