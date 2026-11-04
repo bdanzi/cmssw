@@ -13,6 +13,11 @@ namespace lst {
 
   enum Side { NegZ = 1, PosZ = 2, Center = 3 };
 
+  // Signed r-z slope of the surface of a tilted barrel module, r - rc = slope * (z - zc). drdzs holds its magnitude
+  // on both sides: the tilted modules face the interaction point, so r decreases with z on the positive-z side
+  // and increases on the negative-z side (as in MiniDoublet.h shiftStripHits).
+  constexpr float tiltedSurfaceDrDz(float drdz, short side) { return (side == PosZ) ? -drdz : drdz; }
+
   enum ModuleType { PS, TwoS, PixelModule };
 
   enum ModuleLayerType { Pixel, Strip, InnerPixelLayer };

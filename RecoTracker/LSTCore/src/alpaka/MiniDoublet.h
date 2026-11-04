@@ -51,7 +51,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   // Dead-hit option: scale factor t that moves the live hit p along the line from the beam point b onto the plane of
   // the dead sensor, whose placeholder hit sits at the sensor centre c: b + t * (p - b). In the frame of the beam
-  // point, endcap: z = zc, flat barrel: r = rc, tilted barrel: r - rc = drdz * (z - zc).
+  // point, endcap: z = zc, flat barrel: r = rc, tilted barrel: r - rc = drdz * (z - zc) (signed, tiltedSurfaceDrDz).
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float deadHitScale(TAcc const& acc,
                                                     ModuleMDData const& mod,
@@ -72,7 +72,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         alpaka::math::sqrt(acc, (xDead - beam.x) * (xDead - beam.x) + (yDead - beam.y) * (yDead - beam.y));
     if (not mod.isTilted)
       return rtDeadB / rtLiveB;
-    return (rtDeadB - mod.drdz * zDeadB) / (rtLiveB - mod.drdz * zLiveB);
+    const float drdz = tiltedSurfaceDrDz(mod.drdz, mod.side);
+    return (rtDeadB - drdz * zDeadB) / (rtLiveB - drdz * zLiveB);
   }
 
   // Dead-hit option: the placeholder of a half-fake minidoublet takes the position of the live hit, moved along the

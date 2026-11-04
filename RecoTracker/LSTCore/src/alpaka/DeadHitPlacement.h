@@ -291,7 +291,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   // Surface and size of the dead module of a fully fake minidoublet.
   struct DeadModuleGeometry {
     float rc, zc, phic;  // centre of the dead anchor sensor
-    float drdz;          // tilted barrel surface: r - rc = drdz * (z - zc)
+    float drdz;          // tilted barrel surface: r - rc = drdz * (z - zc), signed (tiltedSurfaceDrDz)
     float halfWidth;     // across the strips (r-phi)
     float halfLength;    // along the strips: z in the barrel, r in the endcap
     short subdet;
@@ -310,7 +310,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     dead.rc = mds.anchorRt()[mdIndex];
     dead.zc = mds.anchorZ()[mdIndex];
     dead.phic = mds.anchorPhi()[mdIndex];
-    dead.drdz = drdz;
+    dead.drdz = tiltedSurfaceDrDz(drdz, side);
     if (moduleType == PS) {
       dead.halfWidth = hits.deadSensorHalfWidthPS();
       dead.halfLength = hits.deadSensorHalfLengthPS();
@@ -459,7 +459,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       stripR = 1.f;
       stripZ = 0.f;
     } else if (modules.sides()[lowerModuleIndex] != Center) {
-      const float drdz = modules.drdzs()[lowerModuleIndex];
+      const float drdz = tiltedSurfaceDrDz(modules.drdzs()[lowerModuleIndex], modules.sides()[lowerModuleIndex]);
       stripZ = 1.f / alpaka::math::sqrt(acc, 1.f + drdz * drdz);
       stripR = drdz * stripZ;
     }
