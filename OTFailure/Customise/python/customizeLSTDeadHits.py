@@ -72,7 +72,10 @@ def _deadHits(process, scenario, macroPixelSensors=False):
     return setDeadHitOptions(process, DEFAULT_DEAD_HIT_OPTIONS)
 
 # ---- dead stacks: whole dead modules of the payload scenarios
-DEAD_STACK_SCENARIOS = ["DeadLayerTBPS1", "DeadLayerTBPS2", "DeadModules10Pct", "DeadPhiSector"]
+DEAD_STACK_SCENARIOS = ["DeadLayerTBPS1", "DeadLayerTBPS2", "DeadModules1Pct", "DeadModules5Pct", "DeadModules10Pct",
+                        "DeadPhiSector"]
+# Scenarios without dead OT sensors: no placeholder, the dead-hit option must give the nominal result.
+NO_DEAD_OT_SENSOR_SCENARIOS = ["Baseline", "DeadITModules1Pct", "DeadITModules5Pct"]
 
 def deadStackSensors(scenario):
     """detIds of both sensors of every dead OT module (stack detIds in the scenario's bad module list)."""
@@ -91,14 +94,26 @@ def _deadStacks(process, scenario):
           % (len(sensors) // 2, scenario))
     return setDeadHitOptions(process, DEFAULT_DEAD_HIT_OPTIONS)
 
+def _noDeadOTSensors(process, scenario):
+    """Dead-hit option on, but no dead OT sensor: no placeholder hit (consistency check against nominal)."""
+    if not _lstInputProducers(process):
+        raise RuntimeError("customizeLSTDeadHits: no LSTInputProducer in the process")
+    print("# OTFailure: LST dead hits, no dead OT sensor in %s: no placeholder" % scenario)
+    return setDeadHitOptions(process, DEFAULT_DEAD_HIT_OPTIONS)
+
 # ---- scenario entry points (runScenario.sh --lstdeadhits)
 def customiseLSTDeadHitsDeadPSensorsTBPS2(process): return _deadHits(process, "DeadPSensorsTBPS2")
 def customiseLSTDeadHitsDeadSSensorsTBPS2(process): return _deadHits(process, "DeadSSensorsTBPS2")
 def customiseLSTDeadHitsDeadSensors10Pct(process):  return _deadHits(process, "DeadSensors10Pct")
 def customiseLSTDeadHitsDeadLayerTBPS1(process):   return _deadStacks(process, "DeadLayerTBPS1")
 def customiseLSTDeadHitsDeadLayerTBPS2(process):   return _deadStacks(process, "DeadLayerTBPS2")
+def customiseLSTDeadHitsDeadModules1Pct(process):  return _deadStacks(process, "DeadModules1Pct")
+def customiseLSTDeadHitsDeadModules5Pct(process):  return _deadStacks(process, "DeadModules5Pct")
 def customiseLSTDeadHitsDeadModules10Pct(process): return _deadStacks(process, "DeadModules10Pct")
 def customiseLSTDeadHitsDeadPhiSector(process):    return _deadStacks(process, "DeadPhiSector")
+def customiseLSTDeadHitsBaseline(process):          return _noDeadOTSensors(process, "Baseline")
+def customiseLSTDeadHitsDeadITModules1Pct(process): return _noDeadOTSensors(process, "DeadITModules1Pct")
+def customiseLSTDeadHitsDeadITModules5Pct(process): return _noDeadOTSensors(process, "DeadITModules5Pct")
 
 def customiseLSTDeadHitsAllSensorsDeadPSensorsTBPS2(process):
     return _deadHits(process, "DeadPSensorsTBPS2", macroPixelSensors=True)
