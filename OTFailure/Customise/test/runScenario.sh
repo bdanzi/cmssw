@@ -3,7 +3,7 @@
 # Run from an empty directory inside a cmsenv'ed area of this branch.
 #
 #   runScenario.sh --failure <name> [--chain Default|Legacy] [--fixes a,b,...] [--chunk N] [--nev N]
-#                  [--lstdeadhits|--lstdeadhitsall] [--lstdeadopts N]
+#                  [--lstdeadhits|--lstdeadhitsall] [--lstdeadopts N] [--lstseedval]
 #                  [--input file.root] [--pileup-list minbias.txt] [--digi file.root] [--steps digi,hlt,val,harvest]
 #
 #   --failure      see the README: Baseline, SSide<P>Pct, PSide<P>Pct, DeadModules<P>Pct, DeadPhiSector,
@@ -22,6 +22,7 @@
 #   --lstdeadhitsall  as --lstdeadhits, with placeholders on the macro-pixel sensors too
 #   --lstdeadopts  dead-hit option bits (customizeLSTDeadHits.DEAD_HIT_OPTIONS, default DEFAULT_DEAD_HIT_OPTIONS),
 #                  with --lstdeadhits or --lstdeadhitsall
+#   --lstseedval   also validate the LST output before mkFit (customizeLSTSeedValidation: LST seeds as tracks)
 #   --prompt       validate prompt TrackingParticles only (dxy < 0.1 cm) instead of all
 #   --chunk/--nev  events [chunk*nev, (chunk+1)*nev) of the input, with seeds fixed by the chunk (default 0 / 10)
 #   --input        GEN-SIM(-DIGI-RAW) signal file for the DIGI step
@@ -33,7 +34,7 @@
 set -e
 
 FAILURE=""; CHAIN=Default; FIXES=""; CHUNK=0; NEV=10; INPUT=""; PULIST=""; DIGI=""; STEPS=digi,hlt,val,harvest; CHECK=""; BIASRAIL=on; PROMPT=""
-LSTDEADHITS=""; LSTDEADOPTS=""
+LSTDEADHITS=""; LSTDEADOPTS=""; LSTSEEDVAL=""
 while [ $# -gt 0 ]; do
   case $1 in
     --failure)     FAILURE=$2; shift 2 ;;
@@ -51,6 +52,7 @@ while [ $# -gt 0 ]; do
     --lstdeadhits) LSTDEADHITS=strip; shift ;;
     --lstdeadhitsall) LSTDEADHITS=all; shift ;;
     --lstdeadopts) LSTDEADOPTS=$2; shift 2 ;;
+    --lstseedval)  LSTSEEDVAL=1; shift ;;
     *) echo "unknown option $1"; exit 2 ;;
   esac
 done
@@ -103,8 +105,9 @@ for FIX in ${FIXES//,/ }; do
   case $FIX in
     aware)    HLT_CUST="$HLT_CUST,$CU/customizeRecoAware.customiseRecoAware$FAILURE" ;;
     caotskip)
+      # dead P sensors of TBPS2: no macro-pixel hits in TBPS2 for the CA, as with the whole layer dead
       case $FAILURE in
-        DeadLayerTBPS2) HLT_CUST="$HLT_CUST,$CU/customizeCAOTSkip.customise${SKIP}SkipTBPS2" ;;
+        DeadLayerTBPS2|DeadPSensorsTBPS2) HLT_CUST="$HLT_CUST,$CU/customizeCAOTSkip.customise${SKIP}SkipTBPS2" ;;
         *)              HLT_CUST="$HLT_CUST,$CU/customizeCAOTSkip.customise${SKIP}SkipTBPS1" ;;
       esac ;;
     caotskipdisks) HLT_CUST="$HLT_CUST,$CU/customizeCAOTSkip.customiseCAOTSkipTBPS1Disks" ;;
@@ -131,8 +134,16 @@ if [ -n "$LSTDEADOPTS" ]; then
   LST_SUFFIX=${LST_SUFFIX}Opt$LSTDEADOPTS
 fi
 
+# validation customisations, comma separated
+VAL_CUSTS=""
+[ -n "$PROMPT" ] && VAL_CUSTS="$CU/customizeHitLoss.customisePromptValidation"
+# LST output before mkFit (LST seeds as tracks) in its own MTV folder
+if [ -n "$LSTSEEDVAL" ]; then
+  HLT_CUST="$HLT_CUST,$CU/customizeLSTSeedValidation.customiseHLTLSTSeedTracks"
+  VAL_CUSTS="${VAL_CUSTS:+$VAL_CUSTS,}$CU/customizeLSTSeedValidation.customiseValidationLSTSeedTracks"
+fi
 VAL_CUST=""
-[ -n "$PROMPT" ] && VAL_CUST="--customise $CU/customizeHitLoss.customisePromptValidation"
+[ -n "$VAL_CUSTS" ] && VAL_CUST="--customise $VAL_CUSTS"
 BR_SUFFIX=""
 [ $BIASRAIL = off ] && BR_SUFFIX=_BRoff
 PROMPT_SUFFIX=""

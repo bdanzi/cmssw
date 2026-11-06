@@ -109,7 +109,8 @@ def customiseRecoverPixelOnlySeeds(process):
         newQuality = cms.string("confirmed"),
         selectedTrackQuals = cms.VInputTag("hltPhase2PixelTracks", "hltPhase2PixelTracksPixOnly"),
         setsToMerge = cms.VPSet(cms.PSet(pQual = cms.bool(False), tLists = cms.vint32(0, 1))),
-        trackAlgoPriorityOrder = cms.string("trackAlgoPriorityOrder"),
+        # the priority order of the menu (hltGeneralTracks); the offline "trackAlgoPriorityOrder" is not in the menu
+        trackAlgoPriorityOrder = cms.string("hltGeneralTracksTrackAlgoPriorityOrder"),
         writeOnlyTrkQuals = cms.bool(False),
     )
     process.hltInitialStepSeeds.InputCollection = "hltPhase2PixelTracksForLST"
