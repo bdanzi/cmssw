@@ -4,11 +4,11 @@
   <use name="CommonTools/UtilAlgos"/>
   <use name="DataFormats/BeamSpot"/>
   <use name="DataFormats/TrackReco"/>
-  <use name="DataFormats/TrackerRecHit2D"/>
   <use name="DataFormats/VertexReco"/>
   <use name="FWCore/Framework"/>
   <use name="FWCore/ParameterSet"/>
   <use name="FWCore/ServiceRegistry"/>
+  <use name="RecoTracker/FinalTrackSelectors"/>
   <use name="SimDataFormats/Associations"/>
   <use name="SimDataFormats/TrackingAnalysis"/>
   <use name="root"/>

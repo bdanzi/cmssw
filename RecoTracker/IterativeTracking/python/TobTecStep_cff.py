@@ -557,7 +557,7 @@ fastSim.toReplaceWith(TobTecStepTask,
 
 # trackingLowPtRun3: hit-level track-selection DNN, lower-pT / displaced seeding
 from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
-from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
-(trackdnn & trackingLowPtRun3).toReplaceWith(tobTecStep, trackHitTfClassifierFrom(tobTecStep, "tobTecStep"))
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfSettings
+(trackdnn & trackingLowPtRun3).toModify(tobTecStep, **trackHitTfSettings("tobTecStep"))
 trackingLowPtRun3.toModify(tobTecStepTrackingRegionsTripl, RegionPSet = dict(ptMin = 0.45))
 trackingLowPtRun3.toModify(tobTecStepTrackingRegionsPair, RegionPSet = dict(ptMin = 0.5))

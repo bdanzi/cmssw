@@ -5,11 +5,13 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
-#include "RecoTracker/FinalTrackSelectors/interface/getBestVertex.h"
+#include "RecoTracker/FinalTrackSelectors/interface/TrackTfFeatures.h"
 
 #include "PhysicsTools/TensorFlow/interface/TfGraphRecord.h"
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "PhysicsTools/TensorFlow/interface/TfGraphDefWrapper.h"
+
+#include <algorithm>
 
 namespace {
   class TfDnn {
@@ -18,7 +20,8 @@ namespace {
         : tfDnnLabel_(cfg.getParameter<std::string>("tfDnnLabel")),
           tfDnnToken_(iC.esConsumes(edm::ESInputTag("", tfDnnLabel_))),
           session_(nullptr),
-          bsize_(cfg.getParameter<int>("batchSize"))
+          bsize_(cfg.getParameter<int>("batchSize")),
+          useClusterFeatures_(cfg.getParameter<bool>("useClusterFeatures"))
 
     {}
 
@@ -27,6 +30,8 @@ namespace {
     static void fillDescriptions(edm::ParameterSetDescription& desc) {
       desc.add<std::string>("tfDnnLabel", "trackSelectionTf");
       desc.add<int>("batchSize", 16);
+      desc.add<bool>("useClusterFeatures", false)
+          ->setComment("graph with the track inputs followed by the cluster-level inputs of TrackTfFeatures.h");
     }
     void beginStream() {}
 
@@ -45,7 +50,13 @@ namespace {
       std::vector<float> output;
       output.resize(size_in);
 
-      tensorflow::Tensor input1(tensorflow::DT_FLOAT, {bsize_, 29});
+      std::vector<trackTfFeatures::ClusterFeatures> clusterFeatures;
+      if (useClusterFeatures_)
+        clusterFeatures = trackTfFeatures::computeClusterFeatures(tracks);
+      const int nInputs =
+          trackTfFeatures::kTrackFeatures + (useClusterFeatures_ ? trackTfFeatures::kClusterFeatures : 0);
+
+      tensorflow::Tensor input1(tensorflow::DT_FLOAT, {bsize_, nInputs});
       tensorflow::Tensor input2(tensorflow::DT_FLOAT, {bsize_, 1});
 
       for (auto nb = 0; nb < nbatches + 1; nb++) {
@@ -55,42 +66,12 @@ namespace {
             continue;
           const auto& trk = tracks[itrack];
 
-          const auto& bestVertex = getBestVertex(trk, vertices);
-
-          input1.matrix<float>()(nt, 0) = trk.pt();
-          input1.matrix<float>()(nt, 1) = trk.innerMomentum().x();
-          input1.matrix<float>()(nt, 2) = trk.innerMomentum().y();
-          input1.matrix<float>()(nt, 3) = trk.innerMomentum().z();
-          input1.matrix<float>()(nt, 4) = trk.innerMomentum().rho();
-          input1.matrix<float>()(nt, 5) = trk.outerMomentum().x();
-          input1.matrix<float>()(nt, 6) = trk.outerMomentum().y();
-          input1.matrix<float>()(nt, 7) = trk.outerMomentum().z();
-          input1.matrix<float>()(nt, 8) = trk.outerMomentum().rho();
-          input1.matrix<float>()(nt, 9) = trk.ptError();
-          input1.matrix<float>()(nt, 10) = trk.dxy(bestVertex);
-          input1.matrix<float>()(nt, 11) = trk.dz(bestVertex);
-          input1.matrix<float>()(nt, 12) = trk.dxy(beamSpot.position());
-          input1.matrix<float>()(nt, 13) = trk.dz(beamSpot.position());
-          input1.matrix<float>()(nt, 14) = trk.dxyError();
-          input1.matrix<float>()(nt, 15) = trk.dzError();
-          input1.matrix<float>()(nt, 16) = trk.normalizedChi2();
-          input1.matrix<float>()(nt, 17) = trk.eta();
-          input1.matrix<float>()(nt, 18) = trk.phi();
-          input1.matrix<float>()(nt, 19) = trk.etaError();
-          input1.matrix<float>()(nt, 20) = trk.phiError();
-          input1.matrix<float>()(nt, 21) = trk.hitPattern().numberOfValidPixelHits();
-          input1.matrix<float>()(nt, 22) = trk.hitPattern().numberOfValidStripHits();
-          input1.matrix<float>()(nt, 23) = trk.ndof();
-          input1.matrix<float>()(nt, 24) =
-              trk.hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
-          input1.matrix<float>()(nt, 25) =
-              trk.hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-          input1.matrix<float>()(nt, 26) =
-              trk.hitPattern().trackerLayersTotallyOffOrBad(reco::HitPattern::MISSING_INNER_HITS);
-          input1.matrix<float>()(nt, 27) =
-              trk.hitPattern().trackerLayersTotallyOffOrBad(reco::HitPattern::MISSING_OUTER_HITS);
-          input1.matrix<float>()(nt, 28) =
-              trk.hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::TRACK_HITS);
+          float* features = &input1.matrix<float>()(nt, 0);
+          trackTfFeatures::fillTrackFeatures(trk, beamSpot, vertices, features);
+          if (useClusterFeatures_)
+            std::copy(clusterFeatures[itrack].begin(),
+                      clusterFeatures[itrack].end(),
+                      features + trackTfFeatures::kTrackFeatures);
 
           //Original algo as its own input, it will enter the graph so that it gets one-hot encoded, as is the preferred
           //format for categorical inputs, where the labels do not have any metric amongst them
@@ -123,6 +104,7 @@ namespace {
     const edm::ESGetToken<TfGraphDefWrapper, TfGraphRecord> tfDnnToken_;
     const tensorflow::Session* session_;
     const int bsize_;
+    const bool useClusterFeatures_;
   };
 }  // namespace
 

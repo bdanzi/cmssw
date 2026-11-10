@@ -511,7 +511,7 @@ fastSim.toReplaceWith(PixelPairStepTask, _PixelPairStepTask_fastSim)
 
 # trackingLowPtRun3: hit-level track-selection DNN, lower-pT / displaced seeding
 from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
-from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
-(trackdnn & trackingLowPtRun3).toReplaceWith(pixelPairStep, trackHitTfClassifierFrom(pixelPairStep, "pixelPairStep"))
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfSettings
+(trackdnn & trackingLowPtRun3).toModify(pixelPairStep, **trackHitTfSettings("pixelPairStep"))
 trackingLowPtRun3.toModify(pixelPairStepTrackingRegions, RegionPSet = dict(ptMin = 0.4, originRadius = 0.1))
 trackingLowPtRun3.toModify(pixelPairStepTrackingRegionsSeedLayersB, RegionPSet = dict(ptMin = 0.4, originRadius = 0.1))

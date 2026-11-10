@@ -6,7 +6,7 @@ Usage:
 """
 import FWCore.ParameterSet.Config as cms
 
-# the order defines the "iter" index stored in the tree; trainTrackHitDNN.py uses the same list
+# the order defines the "iter" index stored in the tree (trainTrackHitDNN.py imports this list)
 DUMPED_ITERATIONS = ["initialStep", "highPtTripletStep", "lowPtQuadStep", "lowPtTripletStep", "detachedQuadStep",
                      "detachedTripletStep", "pixelPairStep", "mixedTripletStep", "pixelLessStep", "tobTecStep",
                      "jetCoreRegionalStepBarrel", "jetCoreRegionalStepEndcap", "displacedRegionalStep"]

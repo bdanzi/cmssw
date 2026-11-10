@@ -552,8 +552,8 @@ vectorHits.toReplaceWith(PixelLessStep, _PixelLessStep_vectorHits)
 
 # trackingLowPtRun3: hit-level track-selection DNN, lower-pT / displaced seeding
 from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
-from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
-(trackdnn & trackingLowPtRun3).toReplaceWith(pixelLessStep, trackHitTfClassifierFrom(pixelLessStep, "pixelLessStep"))
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfSettings
+(trackdnn & trackingLowPtRun3).toModify(pixelLessStep, **trackHitTfSettings("pixelLessStep"))
 trackingLowPtRun3.toModify(pixelLessStepTrackingRegions, RegionPSet = dict(ptMin = 0.3, originRadius = 2.0))
 # one more hole per candidate (forward and backward search)
 trackingLowPtRun3.toModify(pixelLessStepTrackCandidatesMkFitConfig,

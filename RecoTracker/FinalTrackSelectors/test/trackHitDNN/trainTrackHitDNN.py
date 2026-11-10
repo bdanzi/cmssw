@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Train the hit-level track-selection DNNs used by TrackHitTfClassifier.
+"""Train the cluster-level track-selection DNNs (TrackTfClassifier with useClusterFeatures).
 
 Input: ROOT files written by HitFeatDumper (tree hitFeatDumper/tracks), one directory per sample chunk
 (".../chunk<N>/hit_dump.root"). Chunks are split by number into training and validation sets.
+
+Graph groups, file names and iterations are those of RecoTracker/FinalTrackSelectors/python/trackSelectionTfHit_cff.py,
+the iteration order of the dump that of customiseHitFeatDump.py, and the production working points are read from the
+Run3_2024 configuration: run in a CMSSW environment.
 
 Output, in --outdir:
   <group>Hit_Run3_2024.pb   frozen graphs, inputs x[39] (raw features) and y[1] (originalAlgo), output Identity
   cuts.json                 per-iteration qualityCuts giving the same number of fake tracks as the production
                             working points on the validation chunks
 
-The training is deterministic (fixed seeds, TensorFlow op determinism): the same inputs give the same graphs.
+The training is deterministic (fixed seeds, TensorFlow op determinism): the same inputs give the same graphs
+with the same release and CPU model.
 """
 import argparse
 import glob
@@ -17,35 +22,21 @@ import json
 import os
 import re
 
+import FWCore.ParameterSet.Config as cms
 import numpy as np
 import ROOT
 import tensorflow as tf
+from Configuration.Eras.Era_Run3_2024_cff import Run3_2024
+from RecoTracker.FinalTrackSelectors.customiseHitFeatDump import DUMPED_ITERATIONS
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import HIT_DNN_CUTS, HIT_DNN_GRAPHS
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
-# iteration index used by HitFeatDumper (order of its "tracks" parameter)
-ITERATIONS = ["initialStep", "highPtTripletStep", "lowPtQuadStep", "lowPtTripletStep", "detachedQuadStep",
-              "detachedTripletStep", "pixelPairStep", "mixedTripletStep", "pixelLessStep", "tobTecStep",
-              "jetCoreRegionalStepBarrel", "jetCoreRegionalStepEndcap", "displacedRegionalStep"]
-
 # one model per group, as for the production Run3 models
-GROUPS = {
-    "MkFit": ["initialStep", "highPtTripletStep", "detachedQuadStep", "detachedTripletStep", "pixelPairStep",
-              "mixedTripletStep", "tobTecStep"],
-    "CKF": ["lowPtQuadStep", "lowPtTripletStep"],
-    "MkFitPixelLessOnly": ["pixelLessStep"],
-}
+GROUPS = {group: [iteration for iteration, (g, _) in HIT_DNN_CUTS.items() if g == group] for group in HIT_DNN_GRAPHS}
 
-# production qualityCuts (loose, tight, highPurity) of the Run3 TrackTfClassifier working points
-PRODUCTION_CUTS = {
-    "initialStep": [-0.35, 0.1, 0.28], "highPtTripletStep": [0.47, 0.55, 0.62], "lowPtQuadStep": [-0.33, 0.13, 0.35],
-    "lowPtTripletStep": [-0.23, 0.15, 0.41], "detachedQuadStep": [-0.66, -0.15, 0.46],
-    "detachedTripletStep": [-0.42, 0.16, 0.78], "pixelPairStep": [-0.31, -0.13, 0.13],
-    "mixedTripletStep": [-0.86, -0.68, -0.43], "pixelLessStep": [-0.8, -0.69, -0.4], "tobTecStep": [-0.76, -0.65, -0.55],
-}
-
-N_TRACK_FEATURES = 29  # TrackTfClassifier inputs
-N_HIT_FEATURES = 10    # HitFeatDumper / TrackHitTfClassifier hit-level inputs
-N_FEATURES = N_TRACK_FEATURES + N_HIT_FEATURES
+N_TRACK_FEATURES = 29  # trackTfFeatures::kTrackFeatures (dump branch x)
+N_CLUSTER_FEATURES = 10    # trackTfFeatures::kClusterFeatures (dump branch h)
+N_FEATURES = N_TRACK_FEATURES + N_CLUSTER_FEATURES
 N_ALGOS = 48           # one-hot size for originalAlgo
 LOG_FEATURES = [0, 4, 8, 9, 14, 15, 16, 19, 20]            # pt, inner/outer rho, errors, chi2/ndof
 LOG1P_FEATURES = [N_TRACK_FEATURES + i for i in (3, 4, 8)]  # pixel mean/max charge, strip mean charge
@@ -66,6 +57,13 @@ def parse_args():
     return parser.parse_args()
 
 
+def production_cuts():
+    """qualityCuts (loose, tight, highPurity) of the production TrackTfClassifier of each iteration"""
+    process = cms.Process("CUTS", Run3_2024)
+    process.load("RecoTracker.IterativeTracking.iterativeTk_cff")
+    return {iteration: list(getattr(process, iteration).qualityCuts) for iteration in HIT_DNN_CUTS}
+
+
 def chunk_range(text):
     first, last = (int(x) for x in text.split("-"))
     return set(range(first, last + 1))
@@ -82,9 +80,10 @@ def load(pattern, chunks):
         names.push_back(f)
     columns = ROOT.RDataFrame("hitFeatDumper/tracks", names).AsNumpy(["x", "h", "algo", "mva", "label", "iter"])
     track_features = np.stack([np.asarray(row, dtype=np.float32) for row in columns["x"]])
-    hit_features = np.stack([np.asarray(row, dtype=np.float32) for row in columns["h"]])
+    cluster_features = np.stack([np.asarray(row, dtype=np.float32) for row in columns["h"]])
+    assert track_features.shape[1] == N_TRACK_FEATURES and cluster_features.shape[1] == N_CLUSTER_FEATURES, "dump format"
     return {
-        "features": np.hstack([track_features, hit_features]),
+        "features": np.hstack([track_features, cluster_features]),
         "algo": columns["algo"].astype(np.float32).reshape(-1, 1),
         "production_score": columns["mva"],
         "label": columns["label"].astype(np.float32),
@@ -149,8 +148,8 @@ def matched_cuts(new_score, production_score, label, production_cuts):
     return cuts
 
 
-def train_group(group, train, val, args):
-    indices = [ITERATIONS.index(i) for i in GROUPS[group]]
+def train_group(group, train, val, reference_cuts, args):
+    indices = [DUMPED_ITERATIONS.index(i) for i in GROUPS[group]]
     train = select(train, np.isin(train["iteration"], indices))
     val = select(val, np.isin(val["iteration"], indices))
 
@@ -161,15 +160,15 @@ def train_group(group, train, val, args):
     model.fit([train["features"], train["algo"]], train["label"],
               validation_data=([val["features"], val["algo"]], val["label"]),
               batch_size=BATCH_SIZE, epochs=args.epochs, callbacks=callbacks, verbose=2)
-    export_graph(model, os.path.join(args.outdir, f"{group}Hit_Run3_2024.pb"))
+    export_graph(model, os.path.join(args.outdir, os.path.basename(HIT_DNN_GRAPHS[group][1])))
 
     score = 2 * model.predict([val["features"], val["algo"]], batch_size=16384, verbose=0)[:, 0] - 1
     cuts = {}
     for iteration in GROUPS[group]:
-        in_iteration = val["iteration"] == ITERATIONS.index(iteration)
-        cuts[iteration] = {"model": group, "production": PRODUCTION_CUTS[iteration],
+        in_iteration = val["iteration"] == DUMPED_ITERATIONS.index(iteration)
+        cuts[iteration] = {"model": group, "production": reference_cuts[iteration],
                            "new": matched_cuts(score[in_iteration], val["production_score"][in_iteration],
-                                               val["label"][in_iteration], PRODUCTION_CUTS[iteration])}
+                                               val["label"][in_iteration], reference_cuts[iteration])}
     return cuts
 
 
@@ -183,9 +182,10 @@ def main():
     val = load(args.inputs, chunk_range(args.val_chunks))
     print(f"training rows {len(train['label'])}, validation rows {len(val['label'])}", flush=True)
 
+    reference_cuts = production_cuts()
     cuts = {}
     for group in GROUPS:
-        cuts.update(train_group(group, train, val, args))
+        cuts.update(train_group(group, train, val, reference_cuts, args))
     with open(os.path.join(args.outdir, "cuts.json"), "w") as f:
         json.dump(cuts, f, indent=1)
     for iteration, entry in cuts.items():

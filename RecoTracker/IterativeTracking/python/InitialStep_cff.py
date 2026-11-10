@@ -510,5 +510,5 @@ tau_embedding_sim.toReplaceWith(firstStepPrimaryVerticesUnsorted, tau_embedding_
 
 # trackingLowPtRun3: hit-level track-selection DNN
 from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
-from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
-(trackdnn & trackingLowPtRun3).toReplaceWith(initialStep, trackHitTfClassifierFrom(initialStep, "initialStep"))
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfSettings
+(trackdnn & trackingLowPtRun3).toModify(initialStep, **trackHitTfSettings("initialStep"))

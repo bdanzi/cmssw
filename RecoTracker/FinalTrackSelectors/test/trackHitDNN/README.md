@@ -1,9 +1,11 @@
-# Hit-level track-selection DNNs (TrackHitTfClassifier)
+# Cluster-level track-selection DNNs (TrackTfClassifier with `useClusterFeatures`)
 
-Track-selection DNNs with the 29 `TrackTfClassifier` inputs plus 10 hit-level inputs, computed on the
-track collection of each iteration:
+Track-selection DNNs with the 29 `TrackTfClassifier` inputs plus 10 cluster-level inputs, computed on the
+track collection of each iteration (`interface/TrackTfFeatures.h`, used by both `TrackTfClassifier` and
+the training dumper `HitFeatDumper`). They are computed from the clusters of the valid hits of the track
+(mono and stereo clusters for a matched strip hit):
 
-| index | hit-level feature |
+| index | cluster-level feature |
 |---|---|
 | 0, 1 | pixel / strip clusters shared with another track of the same iteration |
 | 2 | maximum number of clusters shared with a single other track |
@@ -13,12 +15,12 @@ track collection of each iteration:
 
 The graphs (`MkFitHit_Run3_2024.pb`, `CKFHit_Run3_2024.pb`, `MkFitPixelLessOnlyHit_Run3_2024.pb`) are in
 cms-data `RecoTracker-FinalTrackSelectors/TrackTfClassifier`; the working points are in
-`RecoTracker/FinalTrackSelectors/python/trackSelectionTfHit_cff.py` (`_HIT_DNN_CUTS`). They are used with the
+`RecoTracker/FinalTrackSelectors/python/trackSelectionTfHit_cff.py` (`HIT_DNN_CUTS`). They are used with the
 `trackingLowPtRun3` procModifier (`cmsDriver.py ... --procModifiers trackingLowPtRun3`).
 
 ## Reproducing the training
 
-The graphs in cms-data were produced with CMSSW_15_0_18 (`el8_amd64_gcc12`); the recipe below is unchanged in later releases.
+The graphs in cms-data were produced with CMSSW_15_0_18 (`el8_amd64_gcc12`, TensorFlow 2.12); the recipe below is unchanged in later releases.
 
 ### 1. Training sample: 2024 TTbar with pile-up, 48 chunks of 50 events
 
@@ -55,12 +57,18 @@ The same `minbias.txt` must be used in step2 and step3 (classic mixing playback)
 
 ### 3. Train
 
+In a CMSSW environment (`cmsenv`): the script takes the graph groups, the file names and the iterations from
+`trackSelectionTfHit_cff.py` and `customiseHitFeatDump.py`, and the production working points from the
+`Run3_2024` configuration.
+
 ```bash
 python3 RecoTracker/FinalTrackSelectors/test/trackHitDNN/trainTrackHitDNN.py \
   --inputs '/path/to/chunk*/hit_dump.root' --train-chunks 0-39 --val-chunks 40-47 --outdir trained
 ```
 
 The training is deterministic (fixed seed, TensorFlow op determinism): the same dump files give identical
-graphs and working points. The script prints the `_HIT_DNN_CUTS` entries to copy into
+graphs and working points with the same release and the same CPU model. Another CPU model (different
+vectorised kernels) or another TensorFlow version (e.g. 2.17 in CMSSW_17_1_X) gives slightly different
+weights, with working points differing by up to about 0.02. The script prints the `HIT_DNN_CUTS` entries to copy into
 `trackSelectionTfHit_cff.py`; the working points pass the same number of fake tracks as the production
 `TrackTfClassifier` working points on the validation chunks.

@@ -1,5 +1,9 @@
 <use name="ofast-flag"/>
+<use name="DataFormats/BeamSpot"/>
+<use name="DataFormats/SiPixelCluster"/>
+<use name="DataFormats/SiStripCluster"/>
 <use name="DataFormats/TrackReco"/>
+<use name="DataFormats/TrackerRecHit2D"/>
 <use name="DataFormats/VertexReco"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/MessageLogger"/>
