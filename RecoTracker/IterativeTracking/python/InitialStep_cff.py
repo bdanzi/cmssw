@@ -507,3 +507,8 @@ fastSim.toReplaceWith(InitialStepTask, _InitialStepTask_fastSim)
 from Configuration.ProcessModifiers.tau_embedding_sim_cff import tau_embedding_sim
 from TauAnalysis.MCEmbeddingTools.Simulation_RECO_cff import tau_embedding_correct_hlt_vertices
 tau_embedding_sim.toReplaceWith(firstStepPrimaryVerticesUnsorted, tau_embedding_correct_hlt_vertices)
+
+# trackingLowPtRun3: hit-level track-selection DNN
+from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
+(trackdnn & trackingLowPtRun3).toReplaceWith(initialStep, trackHitTfClassifierFrom(initialStep, "initialStep"))

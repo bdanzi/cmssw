@@ -440,3 +440,8 @@ _HighPtTripletStepTask_fastSim_phase2 = _HighPtTripletStepTask_fastSim.copy()
 _HighPtTripletStepTask_fastSim_phase2.replace(highPtTripletStep, highPtTripletStepSelector)
 fastSim.toReplaceWith(HighPtTripletStepTask, _HighPtTripletStepTask_fastSim)
 (fastSim & trackingPhase2PU140).toReplaceWith(HighPtTripletStepTask, _HighPtTripletStepTask_fastSim_phase2)
+
+# trackingLowPtRun3: hit-level track-selection DNN
+from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
+(trackdnn & trackingLowPtRun3).toReplaceWith(highPtTripletStep, trackHitTfClassifierFrom(highPtTripletStep, "highPtTripletStep"))

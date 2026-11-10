@@ -461,3 +461,9 @@ _LowPtTripletStepTask_fastSim_phase2 = _LowPtTripletStepTask_fastSim.copy()
 _LowPtTripletStepTask_fastSim_phase2.replace(lowPtTripletStep, lowPtTripletStepSelector)
 fastSim.toReplaceWith(LowPtTripletStepTask, _LowPtTripletStepTask_fastSim)
 (fastSim & trackingPhase2PU140).toReplaceWith(LowPtTripletStepTask, _LowPtTripletStepTask_fastSim_phase2)
+
+# trackingLowPtRun3: hit-level track-selection DNN, lower-pT / displaced seeding
+from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
+from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfClassifierFrom
+(trackdnn & trackingLowPtRun3).toReplaceWith(lowPtTripletStep, trackHitTfClassifierFrom(lowPtTripletStep, "lowPtTripletStep"))
+trackingLowPtRun3.toModify(lowPtTripletStepTrackingRegions, RegionPSet = dict(ptMin = 0.1))
