@@ -550,7 +550,7 @@ vectorHits.toReplaceWith(pixelLessStepSeeds,pixelLessStepSeeds_vectorHits)
 vectorHits.toReplaceWith(PixelLessStepTask, _PixelLessStepTask_vectorHits)
 vectorHits.toReplaceWith(PixelLessStep, _PixelLessStep_vectorHits)
 
-# trackingLowPtRun3: hit-level track-selection DNN, lower-pT / displaced seeding
+# trackingLowPtRun3: cluster-level track-selection DNN, lower-pT / displaced seeding
 from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
 from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfSettings
 (trackdnn & trackingLowPtRun3).toModify(pixelLessStep, **trackHitTfSettings("pixelLessStep"))

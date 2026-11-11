@@ -34,12 +34,9 @@ from tensorflow.python.framework.convert_to_constants import convert_variables_t
 # one model per group, as for the production Run3 models
 GROUPS = {group: [iteration for iteration, (g, _) in HIT_DNN_CUTS.items() if g == group] for group in HIT_DNN_GRAPHS}
 
-N_TRACK_FEATURES = 29  # trackTfFeatures::kTrackFeatures (dump branch x)
-N_CLUSTER_FEATURES = 10    # trackTfFeatures::kClusterFeatures (dump branch h)
-N_FEATURES = N_TRACK_FEATURES + N_CLUSTER_FEATURES
-N_ALGOS = 48           # one-hot size for originalAlgo
-LOG_FEATURES = [0, 4, 8, 9, 14, 15, 16, 19, 20]            # pt, inner/outer rho, errors, chi2/ndof
-LOG1P_FEATURES = [N_TRACK_FEATURES + i for i in (3, 4, 8)]  # pixel mean/max charge, strip mean charge
+N_ALGOS = 48                                   # one-hot size for originalAlgo
+LOG_TRACK_FEATURES = [0, 4, 8, 9, 14, 15, 16, 19, 20]  # pt, inner/outer rho, errors, chi2/ndof
+LOG1P_CLUSTER_FEATURES = [3, 4, 8]                     # pixel mean/max charge, strip mean charge
 HIDDEN_LAYERS = (256, 256, 128, 64)
 DROPOUT = 0.1
 BATCH_SIZE = 4096
@@ -81,8 +78,7 @@ def load(pattern, chunks):
     columns = ROOT.RDataFrame("hitFeatDumper/tracks", names).AsNumpy(["x", "h", "algo", "mva", "label", "iter"])
     track_features = np.stack([np.asarray(row, dtype=np.float32) for row in columns["x"]])
     cluster_features = np.stack([np.asarray(row, dtype=np.float32) for row in columns["h"]])
-    assert track_features.shape[1] == N_TRACK_FEATURES and cluster_features.shape[1] == N_CLUSTER_FEATURES, "dump format"
-    return {
+    return track_features.shape[1], {
         "features": np.hstack([track_features, cluster_features]),
         "algo": columns["algo"].astype(np.float32).reshape(-1, 1),
         "production_score": columns["mva"],
@@ -95,23 +91,24 @@ def select(sample, mask):
     return {key: value[mask] for key, value in sample.items()}
 
 
-def transform(x):
-    """feature transformation done inside the graph, so that CMSSW feeds raw values"""
+def transform(x, n_track_features):
+    """feature transformation done inside the graph, so that CMSSW feeds raw values; x = track then cluster features"""
+    log1p_features = [n_track_features + i for i in LOG1P_CLUSTER_FEATURES]
     columns = []
-    for i in range(N_FEATURES):
+    for i in range(x.shape[1]):
         column = x[:, i:i + 1]
-        if i in LOG_FEATURES:
+        if i in LOG_TRACK_FEATURES:
             column = tf.math.log(tf.maximum(column, 1e-6))
-        elif i in LOG1P_FEATURES:
+        elif i in log1p_features:
             column = tf.math.log1p(tf.maximum(column, 0.))
         columns.append(column)
     return tf.concat(columns, axis=1)
 
 
-def build_model(mean, std):
-    x = tf.keras.Input(shape=(N_FEATURES,), name="x")
+def build_model(mean, std, n_track_features):
+    x = tf.keras.Input(shape=(mean.shape[0],), name="x")
     y = tf.keras.Input(shape=(1,), name="y")
-    features = tf.keras.layers.Lambda(transform)(x)
+    features = tf.keras.layers.Lambda(lambda a: transform(a, n_track_features))(x)
     features = tf.keras.layers.Lambda(lambda a: tf.clip_by_value((a - mean) / std, -10., 10.))(features)
     algo = tf.keras.layers.Lambda(lambda a: tf.one_hot(tf.cast(a[:, 0], tf.int32), N_ALGOS))(y)
     hidden = tf.keras.layers.Concatenate()([features, algo])
@@ -126,7 +123,8 @@ def build_model(mean, std):
 
 
 def export_graph(model, path):
-    signature = [tf.TensorSpec([None, N_FEATURES], tf.float32, name="x"), tf.TensorSpec([None, 1], tf.float32, name="y")]
+    n_features = model.inputs[0].shape[1]
+    signature = [tf.TensorSpec([None, n_features], tf.float32, name="x"), tf.TensorSpec([None, 1], tf.float32, name="y")]
     function = tf.function(lambda x, y: model([x, y], training=False), input_signature=signature)
     graph = convert_variables_to_constants_v2(function.get_concrete_function()).graph.as_graph_def()
     node_names = {node.name for node in graph.node}
@@ -138,6 +136,8 @@ def export_graph(model, path):
 def matched_cuts(new_score, production_score, label, production_cuts):
     """thresholds on the new score passing the same number of fakes as each production threshold"""
     fake_scores = np.sort(new_score[label == 0])[::-1]
+    if len(fake_scores) == 0:
+        return [1.] * len(production_cuts)  # no fakes in the validation sample: nothing to match
     cuts = []
     for cut in production_cuts:
         n_fakes = int(((production_score > cut) & (label == 0)).sum())
@@ -148,13 +148,13 @@ def matched_cuts(new_score, production_score, label, production_cuts):
     return cuts
 
 
-def train_group(group, train, val, reference_cuts, args):
+def train_group(group, train, val, n_track_features, reference_cuts, args):
     indices = [DUMPED_ITERATIONS.index(i) for i in GROUPS[group]]
     train = select(train, np.isin(train["iteration"], indices))
     val = select(val, np.isin(val["iteration"], indices))
 
-    transformed = transform(tf.constant(train["features"][:MAX_ROWS_FOR_NORMALISATION])).numpy()
-    model = build_model(tf.constant(transformed.mean(0)), tf.constant(transformed.std(0) + 1e-6))
+    transformed = transform(tf.constant(train["features"][:MAX_ROWS_FOR_NORMALISATION]), n_track_features).numpy()
+    model = build_model(tf.constant(transformed.mean(0)), tf.constant(transformed.std(0) + 1e-6), n_track_features)
     callbacks = [tf.keras.callbacks.EarlyStopping(monitor="val_auc", mode="max", patience=3, restore_best_weights=True),
                  tf.keras.callbacks.ReduceLROnPlateau(monitor="val_auc", mode="max", factor=0.3, patience=1)]
     model.fit([train["features"], train["algo"]], train["label"],
@@ -178,14 +178,14 @@ def main():
     tf.keras.utils.set_random_seed(args.seed)
     tf.config.experimental.enable_op_determinism()
 
-    train = load(args.inputs, chunk_range(args.train_chunks))
-    val = load(args.inputs, chunk_range(args.val_chunks))
+    n_track_features, train = load(args.inputs, chunk_range(args.train_chunks))
+    _, val = load(args.inputs, chunk_range(args.val_chunks))
     print(f"training rows {len(train['label'])}, validation rows {len(val['label'])}", flush=True)
 
     reference_cuts = production_cuts()
     cuts = {}
     for group in GROUPS:
-        cuts.update(train_group(group, train, val, reference_cuts, args))
+        cuts.update(train_group(group, train, val, n_track_features, reference_cuts, args))
     with open(os.path.join(args.outdir, "cuts.json"), "w") as f:
         json.dump(cuts, f, indent=1)
     for iteration, entry in cuts.items():

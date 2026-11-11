@@ -340,7 +340,7 @@ _LowPtQuadStepTask_fastSim_phase2.replace(lowPtQuadStep, lowPtQuadStepSelector)
 fastSim.toReplaceWith(LowPtQuadStepTask, _LowPtQuadStepTask_fastSim)
 (fastSim & trackingPhase2PU140).toReplaceWith(LowPtQuadStepTask, _LowPtQuadStepTask_fastSim_phase2)
 
-# trackingLowPtRun3: hit-level track-selection DNN, lower-pT / displaced seeding
+# trackingLowPtRun3: cluster-level track-selection DNN, lower-pT / displaced seeding
 from Configuration.ProcessModifiers.trackingLowPtRun3_cff import trackingLowPtRun3
 from RecoTracker.FinalTrackSelectors.trackSelectionTfHit_cff import trackingLowPtRun3HitGraphs, trackHitTfSettings
 (trackdnn & trackingLowPtRun3).toModify(lowPtQuadStep, **trackHitTfSettings("lowPtQuadStep"))

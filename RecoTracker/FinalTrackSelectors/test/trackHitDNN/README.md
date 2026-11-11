@@ -25,7 +25,7 @@ The graphs in cms-data were produced with CMSSW_15_0_18 (`el8_amd64_gcc12`, Tens
 ### 1. Training sample: 2024 TTbar with pile-up, 48 chunks of 50 events
 
 Pile-up input: `/RelValMinBias_14TeV/CMSSW_14_1_0_pre7-140X_mcRun3_2024_realistic_v21_STD_RegeneratedGS_2024_noPU-v1/GEN-SIM`
-(file list in `minbias.txt`). Use a different, fixed seed for each chunk (`SEED=<chunk number + 1>`); `resetSeeds`
+(file list in `minbias.txt`, e.g. from `dasgoclient -query "file dataset=<dataset>"`). Use a different, fixed seed for each chunk (`SEED=<chunk number + 1>`); `resetSeeds`
 sets all the engine seeds of the job from it.
 
 ```bash
@@ -48,12 +48,13 @@ cmsDriver.py step2 -s DIGI:pdigi_valid,L1,DIGI2RAW,HLT:@relval2024 --conditions 
 cmsDriver.py step3 -s RAW2DIGI,RECO:reconstruction_trackingOnly,VALIDATION:@trackingOnlyValidation,DQM:@trackingOnlyDQM \
   --conditions auto:phase1_2024_realistic --geometry DB:Extended --era Run3_2024 --datatier DQMIO -n -1 \
   --eventcontent DQM --pileup Run3_Flat55To75_PoissonOOTPU --pileup_input filelist:minbias.txt --nThreads 4 \
-  --filein file:step2.root --fileout file:step3_inDQM.root \
+  --filein file:step2.root --fileout file:step3_inDQM.root --procModifiers trackingLowPtRun3 \
   --customise RecoTracker/FinalTrackSelectors/customiseHitFeatDump.customiseHitFeatDump
 ```
 
 The same `minbias.txt` must be used in step2 and step3 (classic mixing playback). Each chunk writes
-`chunk<N>/hit_dump.root`.
+`chunk<N>/hit_dump.root`. The dump is run with `trackingLowPtRun3`, so that the DNNs are trained on the tracks
+they select; its `mva` is the score of the production DNN on the same tracks, used for the working points.
 
 ### 3. Train
 

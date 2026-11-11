@@ -8,11 +8,13 @@ from PhysicsTools.TensorFlow.tfGraphDefProducer_cfi import tfGraphDefProducer as
 
 _HIT_DNN_DATA = "RecoTracker/FinalTrackSelectors/data/TrackTfClassifier"
 
-# graph group -> (ES label, frozen graph), one graph per group as for the production Run 3 DNNs
+# graph group -> (ES label, frozen graph, ES label of the production graph of the same iterations),
+# one graph per group as for the production Run 3 DNNs
 HIT_DNN_GRAPHS = {
-    "MkFit": ("trackSelectionTfHit", f"{_HIT_DNN_DATA}/MkFitHit_Run3_2024.pb"),
-    "CKF": ("trackSelectionTfHitCKF", f"{_HIT_DNN_DATA}/CKFHit_Run3_2024.pb"),
-    "MkFitPixelLessOnly": ("trackSelectionTfHitPLess", f"{_HIT_DNN_DATA}/MkFitPixelLessOnlyHit_Run3_2024.pb"),
+    "MkFit": ("trackSelectionTfHit", f"{_HIT_DNN_DATA}/MkFitHit_Run3_2024.pb", "trackSelectionTf"),
+    "CKF": ("trackSelectionTfHitCKF", f"{_HIT_DNN_DATA}/CKFHit_Run3_2024.pb", "trackSelectionTf_CKF"),
+    "MkFitPixelLessOnly": ("trackSelectionTfHitPLess", f"{_HIT_DNN_DATA}/MkFitPixelLessOnlyHit_Run3_2024.pb",
+                           "trackSelectionTfPLess"),
 }
 
 # iteration classifier -> (graph group, qualityCuts [loose, tight, highPurity]); each cut passes the same
@@ -33,7 +35,7 @@ HIT_DNN_CUTS = {
 
 def _addHitGraphs(process):
     """the graphs are added only with trackingLowPtRun3, so that other jobs do not need their files"""
-    for label, graph in HIT_DNN_GRAPHS.values():
+    for label, graph, _ in HIT_DNN_GRAPHS.values():
         setattr(process, label, _tfGraphDefProducer.clone(ComponentName=label, FileName=graph))
 
 

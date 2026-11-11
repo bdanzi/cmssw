@@ -8,7 +8,6 @@
   <use name="FWCore/Framework"/>
   <use name="FWCore/ParameterSet"/>
   <use name="FWCore/ServiceRegistry"/>
-  <use name="RecoTracker/FinalTrackSelectors"/>
   <use name="SimDataFormats/Associations"/>
   <use name="SimDataFormats/TrackingAnalysis"/>
   <use name="root"/>

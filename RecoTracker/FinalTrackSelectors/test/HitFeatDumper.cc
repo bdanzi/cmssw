@@ -10,6 +10,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "RecoTracker/FinalTrackSelectors/interface/TrackTfFeatures.h"
@@ -50,6 +51,8 @@ HitFeatDumper::HitFeatDumper(const edm::ParameterSet& cfg)
   usesResource(TFileService::kSharedResource);
   const auto tracks = cfg.getParameter<std::vector<std::string>>("tracks");
   const auto classifiers = cfg.getParameter<std::vector<std::string>>("classifiers");
+  if (classifiers.size() != tracks.size())
+    throw cms::Exception("Configuration") << "HitFeatDumper: one classifier per track collection is needed";
   for (size_t i = 0; i < tracks.size(); ++i)
     iters_.push_back({int(i),
                       consumes<edm::View<reco::Track>>(edm::InputTag(tracks[i])),
