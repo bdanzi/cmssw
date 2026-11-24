@@ -122,6 +122,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       HOST_DEVICE_CONSTANT float kWp[kPtBins][kEtaBins] = {
           {0.8838f, 0.8933f, 0.9270f, 0.9192f, 0.8223f, 0.8524f, 0.9099f, 0.9383f, 0.9640f, 0.9608f},
           {0.9761f, 0.9744f, 0.9855f, 0.9765f, 0.9327f, 0.8803f, 0.8803f, 0.8978f, 0.9049f, 0.8822f}};
+      // Dead-stack option (DeadHitPlacement.h): a T5 with a fully fake minidoublet must pass this tighter working
+      // point. It keeps 0.9 of fully matched T5s per bin: table "0.9" of the same retraining in
+      // RecoTracker/LSTCore/standalone/analysis/DNN/T5_DNN_WP_tables.md (kWp above is its table "0.95").
+      HOST_DEVICE_CONSTANT float kWpDeadStack[kPtBins][kEtaBins] = {
+          {0.9553f, 0.9620f, 0.9731f, 0.9659f, 0.9017f, 0.9171f, 0.9508f, 0.9668f, 0.9816f, 0.9807f},
+          {0.9917f, 0.9907f, 0.9938f, 0.9898f, 0.9690f, 0.9360f, 0.9463f, 0.9526f, 0.9575f, 0.9453f}};
     }  // namespace t5dnn
 
     namespace pt3dnn {

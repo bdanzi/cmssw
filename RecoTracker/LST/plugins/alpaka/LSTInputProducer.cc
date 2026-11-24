@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/Event.h"
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/EventSetup.h"
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/global/EDProducer.h"
@@ -15,6 +17,10 @@
 #include "FWCore/Utilities/interface/transform.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/Records/interface/TrackerTopologyRcd.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiStripMatchedRecHit2DCollection.h"
 #include "TrackingTools/Records/interface/TransientRecHitRecord.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
@@ -28,6 +34,14 @@
 #include "RecoTracker/LSTCore/interface/LSTPrepareInput.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
+
+  namespace {
+    // dead-hit option: the dead sensors, sorted (deterministic order of the placeholder hits, binary search)
+    std::vector<unsigned int> sortedDetIds(std::vector<unsigned int> detIds) {
+      std::sort(detIds.begin(), detIds.end());
+      return detIds;
+    }
+  }  // namespace
 
   class LSTInputProducer : public global::EDProducer<> {
   public:
@@ -44,6 +58,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const edm::EDGetTokenT<Phase2TrackerRecHit1DCollectionNew> phase2OTRecHitToken_;
 
     const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> mfToken_;
+    const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geometryToken_;
+    const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topologyToken_;
+    // dead-hit option: OT sensors that get a placeholder hit at their centre (empty = off), sorted
+    const std::vector<unsigned int> deadHitDetIds_;
+    // dead-hit option: also a placeholder on a dead macro-pixel sensor whose strip partner is alive
+    const bool deadHitMacroPixelSensors_;
+    // dead-hit option: tolerance on the positions placed on a dead module, beyond its half sizes (cm)
+    const float deadHitTolerance_;
     const edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
     const std::vector<edm::EDGetTokenT<TrajectorySeedCollection>> seedTokens_;
 
@@ -59,6 +81,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         ptCut_(iConfig.getParameter<double>("ptCut")),
         phase2OTRecHitToken_(consumes(iConfig.getParameter<edm::InputTag>("phase2OTRecHits"))),
         mfToken_(esConsumes()),
+        geometryToken_(esConsumes()),
+        topologyToken_(esConsumes()),
+        deadHitDetIds_(sortedDetIds(iConfig.getParameter<std::vector<unsigned int>>("deadHitDetIds"))),
+        deadHitMacroPixelSensors_(iConfig.getParameter<bool>("deadHitMacroPixelSensors")),
+        deadHitTolerance_(iConfig.getParameter<double>("deadHitTolerance")),
         beamSpotToken_(consumes(iConfig.getParameter<edm::InputTag>("beamSpot"))),
         seedTokens_(
             edm::vector_transform(iConfig.getParameter<std::vector<edm::InputTag>>("pixelSeeds"),
@@ -75,6 +102,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     desc.add<edm::InputTag>("phase2OTRecHits", edm::InputTag("siPhase2RecHits"));
 
     desc.add<edm::InputTag>("beamSpot", edm::InputTag("offlineBeamSpot"));
+    desc.add<std::vector<unsigned int>>("deadHitDetIds", {})
+        ->setComment(
+            "dead-hit option (empty = off): detIds of the dead OT sensors, normally the list given to the digitizer. "
+            "A placeholder hit at the centre of each lets LST build minidoublets with the live partner sensor, or a "
+            "fully fake minidoublet when both sensors of a module are listed. Placeholders are never written to the "
+            "output track candidates");
+    desc.add<bool>("deadHitMacroPixelSensors", false)
+        ->setComment(
+            "dead-hit option: also put a placeholder on a dead PS macro-pixel sensor whose strip partner is alive "
+            "(off: such a minidoublet would anchor on a strip hit, known along the strip only to the strip length). "
+            "A dead macro-pixel sensor always gets one when its partner is also listed (dead module)");
+    desc.add<double>("deadHitTolerance", 1.0)
+        ->setComment(
+            "dead-hit option: tolerance (cm) on the positions placed on a dead module, beyond the half sizes of its "
+            "sensors");
     desc.add<std::vector<edm::InputTag>>(
         "pixelSeeds",
         std::vector<edm::InputTag>{edm::InputTag("initialStepSeeds"), edm::InputTag("highPtTripletStepSeeds")});
@@ -108,6 +150,53 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         ph2_y.push_back(hit.globalPosition().y());
         ph2_z.push_back(hit.globalPosition().z());
         ph2_hits.push_back(&hit);
+      }
+    }
+
+    // Dead-hit option: one placeholder hit at the centre of each dead sensor, flagged by its cluster size and without
+    // a TrackingRecHit (LSTOutputConverter skips it). Sensors that do have hits are left alone: a module's hits must
+    // be contiguous in the LST hit arrays. The half sizes of the dead sensors, from the geometry, bound the positions
+    // that LST places on a dead module (DeadHitPlacement.h).
+    unsigned int nPlaceholders = 0;
+    float deadSensorHalfWidthPS = 0.f;
+    float deadSensorHalfLengthPS = 0.f;
+    float deadSensorHalfWidth2S = 0.f;
+    float deadSensorHalfLength2S = 0.f;
+    if (!deadHitDetIds_.empty()) {
+      auto const& geometry = iSetup.getData(geometryToken_);
+      auto const& topology = iSetup.getData(topologyToken_);
+      for (unsigned int detId : deadHitDetIds_) {
+        auto const hitsOnSensor = phase2OTHits.find(detId);
+        if (hitsOnSensor != phase2OTHits.end() && !hitsOnSensor->empty())
+          continue;
+        auto const* det = geometry.idToDet(DetId(detId));
+        if (det == nullptr)
+          continue;
+        if (!deadHitMacroPixelSensors_ &&
+            geometry.getDetectorType(DetId(detId)) == TrackerGeometry::ModuleType::Ph2PSP) {
+          const unsigned int partner = topology.partnerDetId(DetId(detId)).rawId();
+          if (!std::binary_search(deadHitDetIds_.begin(), deadHitDetIds_.end(), partner))
+            continue;
+        }
+        auto const& centre = det->surface().position();
+        ph2_detId.push_back(detId);
+        ph2_clustSize.push_back(lst::kDeadHitClustSize);
+        ph2_x.push_back(centre.x());
+        ph2_y.push_back(centre.y());
+        ph2_z.push_back(centre.z());
+        ph2_hits.push_back(nullptr);
+        ++nPlaceholders;
+
+        // width across the strips (r-phi), length along them (z in the barrel, r in the endcap)
+        const float halfWidth = 0.5f * det->surface().bounds().width();
+        const float halfLength = 0.5f * det->surface().bounds().length();
+        if (geometry.getDetectorType(DetId(detId)) == TrackerGeometry::ModuleType::Ph2SS) {
+          deadSensorHalfWidth2S = std::max(deadSensorHalfWidth2S, halfWidth);
+          deadSensorHalfLength2S = std::max(deadSensorHalfLength2S, halfLength);
+        } else {
+          deadSensorHalfWidthPS = std::max(deadSensorHalfWidthPS, halfWidth);
+          deadSensorHalfLengthPS = std::max(deadSensorHalfLengthPS, halfLength);
+        }
       }
     }
 
@@ -251,6 +340,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                         ph2_z,
                                         ptCut_,
                                         iEvent.queue());
+
+    // dead-hit option: placeholders are projected from the beam spot; the dead-hit code runs in LST only for events
+    // that have placeholder hits
+    auto hits = lstInputHC.view().hits();
+    hits.nPlaceholderHits() = nPlaceholders;
+    hits.beamSpotX() = bs.x0();
+    hits.beamSpotY() = bs.y0();
+    hits.beamSpotZ() = bs.z0();
+    hits.deadSensorHalfWidthPS() = deadSensorHalfWidthPS;
+    hits.deadSensorHalfLengthPS() = deadSensorHalfLengthPS;
+    hits.deadSensorHalfWidth2S() = deadSensorHalfWidth2S;
+    hits.deadSensorHalfLength2S() = deadSensorHalfLength2S;
+    hits.deadHitTolerance() = deadHitTolerance_;
 
     iEvent.emplace(lstInputPutToken_, std::move(lstInputHC));
     iEvent.emplace(lstOTHitsPutToken_, lst::LSTOTHits{std::move(ph2_hits)});

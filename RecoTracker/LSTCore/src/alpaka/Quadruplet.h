@@ -19,6 +19,7 @@
 #include "Quintuplet.h"
 #include "TripletAccessors.h"
 
+#include "DeadHitPlacement.h"
 #include "NeuralNetwork.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
@@ -106,7 +107,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passT4RZConstraint(TAcc const& acc,
                                                          ModulesConst modules,
-                                                         MiniDoubletsConst mds,
+                                                         PlacedMiniDoublets const& mds,
                                                          unsigned int firstMDIndex,
                                                          unsigned int secondMDIndex,
                                                          unsigned int thirdMDIndex,
@@ -310,7 +311,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuadrupletDefaultAlgo(TAcc const& acc,
                                                                ModulesConst modules,
-                                                               MiniDoubletsConst mds,
+                                                               MiniDoubletsConst storedMDs,
+                                                               HitsBaseConst hitsBase,
                                                                SegmentsConst segments,
                                                                TripletsConst triplets,
                                                                MiniDoubletsOccupancyConst mdOccupancy,
@@ -347,6 +349,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     unsigned int secondMDIndex = segments.mdIndices()[secondSegmentIndex][0];
     unsigned int thirdMDIndex = segments.mdIndices()[secondSegmentIndex][1];
     unsigned int fourthMDIndex = segments.mdIndices()[thirdSegmentIndex][1];
+
+    // Dead-hit option: positions as placed for this quadruplet (nothing placed without placeholders)
+    PlacedMiniDoublets mds(storedMDs, hitsBase);
+    const uint16_t t4ModuleIndices[Params_T4::kLayers] = {
+        lowerModuleIndex1, lowerModuleIndex2, lowerModuleIndex3, lowerModuleIndex4};
+    const unsigned int t4MDIndices[Params_T4::kLayers] = {firstMDIndex, secondMDIndex, thirdMDIndex, fourthMDIndex};
+    if (not placeObjectMDs(acc, modules, t4ModuleIndices, t4MDIndices, Params_T4::kLayers, mds))
+      return false;
+    // Dead-stack option: no quadruplet with a fully fake minidoublet, three measured ones are too few to keep the fake
+    // rate down; quintuplets and pixel objects use them.
+    if (mds.nFullyFake() > 0)
+      return false;
 
     float x1 = mds.anchorX()[firstMDIndex];
     float x2 = mds.anchorX()[secondMDIndex];
@@ -526,6 +540,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ALPAKA_FN_ACC void operator()(Acc3D const& acc,
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
+                                  HitsBaseConst hitsBase,
                                   SegmentsConst segments,
                                   TripletsConst triplets,
                                   TripletsOccupancyConst tripletsOccupancy,
@@ -646,6 +661,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
               bool success = runQuadrupletDefaultAlgo(acc,
                                                       modules,
                                                       mds,
+                                                      hitsBase,
                                                       segments,
                                                       triplets,
                                                       mdOccupancy,
@@ -785,6 +801,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
           bool success = runQuadrupletDefaultAlgo(acc,
                                                   modules,
                                                   mds,
+                                                  hitsBase,
                                                   segments,
                                                   triplets,
                                                   mdOccupancy,
@@ -887,6 +904,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ALPAKA_FN_ACC void operator()(Acc3D const& acc,
                                   ModulesConst modules,
                                   MiniDoubletsConst mds,
+                                  HitsBaseConst hitsBase,
                                   SegmentsConst segments,
                                   Triplets triplets,
                                   TripletsOccupancyConst tripletsOcc,
@@ -964,6 +982,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
               const bool ok = runQuadrupletDefaultAlgo(acc,
                                                        modules,
                                                        mds,
+                                                       hitsBase,
                                                        segments,
                                                        triplets,
                                                        mdOccupancy,

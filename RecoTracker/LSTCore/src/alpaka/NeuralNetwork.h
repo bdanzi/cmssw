@@ -7,6 +7,8 @@
 #include "RecoTracker/LSTCore/interface/alpaka/Common.h"
 #include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
 
+#include "DeadHitPlacement.h"
+
 #include "T5NeuralNetworkWeights.h"
 #include "T3NeuralNetworkWeights.h"
 #include "pT3NeuralNetworkWeights.h"
@@ -65,7 +67,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   namespace t3dnn {
     template <alpaka::concepts::Acc TAcc>
     ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runInference(TAcc const& acc,
-                                                     MiniDoubletsConst mds,
+                                                     PlacedMiniDoublets const& mds,
                                                      const unsigned int mdIndex1,
                                                      const unsigned int mdIndex2,
                                                      const unsigned int mdIndex3,
@@ -192,10 +194,24 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   }  // namespace pt3dnn
 
   namespace t5dnn {
+    // A T5 score (1 - P(fake)) above the working point wp, binned in pt (from the inner radius) and in |eta| of the
+    // first anchor: kWp for the creation decision, kWpDeadStack for a T5 with a fully fake minidoublet.
+    template <alpaka::concepts::Acc TAcc>
+    ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passWorkingPoint(TAcc const& acc,
+                                                         const float (&wp)[dnn::kPtBins][dnn::kEtaBins],
+                                                         const float innerRadius,
+                                                         const float absEta1,
+                                                         const float score) {
+      const uint8_t pt_index = (innerRadius * lst::k2Rinv1GeVf * 2 > 5.0f);
+      const uint8_t bin_index =
+          (absEta1 > 2.5f) ? (dnn::kEtaBins - 1) : static_cast<unsigned int>(absEta1 / dnn::kEtaSize);
+      return score > wp[pt_index][bin_index];
+    }
+
     // Fills the softmax outputs (fake, prompt, displaced); returns the creation decision.
     template <alpaka::concepts::Acc TAcc>
     ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runInference(TAcc const& acc,
-                                                     MiniDoubletsConst mds,
+                                                     PlacedMiniDoublets const& mds,
                                                      const unsigned int mdIndex1,
                                                      const unsigned int mdIndex2,
                                                      const unsigned int mdIndex3,
@@ -298,16 +314,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
           x_2, output, dnn::t5dnn::wgtT_output_layer, dnn::t5dnn::bias_output_layer);
       softmax_activation<dnn::t5dnn::kOutputFeatures>(acc, output);
 
-      const uint8_t pt_index = (innerRadius * lst::k2Rinv1GeVf * 2 > 5.0f);
-      const uint8_t bin_index = (eta1 > 2.5f) ? (dnn::kEtaBins - 1) : static_cast<unsigned int>(eta1 / dnn::kEtaSize);
-      return 1.f - output[0] > dnn::t5dnn::kWp[pt_index][bin_index];
+      return passWorkingPoint(acc, dnn::t5dnn::kWp, innerRadius, eta1, 1.f - output[0]);
     }
   }  // namespace t5dnn
 
   namespace t5embdnn {
     template <alpaka::concepts::Acc TAcc>
     ALPAKA_FN_ACC ALPAKA_FN_INLINE void runEmbed(TAcc const& acc,
-                                                 MiniDoubletsConst mds,
+                                                 PlacedMiniDoublets const& mds,
                                                  unsigned int mdIndex1,
                                                  unsigned int mdIndex2,
                                                  unsigned int mdIndex3,
@@ -446,7 +460,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   namespace t4dnn {
     template <alpaka::concepts::Acc TAcc>
     ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runInference(TAcc const& acc,
-                                                     MiniDoubletsConst mds,
+                                                     PlacedMiniDoublets const& mds,
                                                      ModulesConst modules,
                                                      const unsigned int mdIndex1,
                                                      const unsigned int mdIndex2,

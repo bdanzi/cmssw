@@ -51,6 +51,15 @@ namespace lst {
   constexpr unsigned int kTCEmptyHitIdx = 0xFFFFFFFF;  // Sentinel for empty hit slots
   constexpr unsigned int kInvalidU32Idx = 0xFFFFFFFF;  // Sentinel for invalid uint32 idx
 
+  // Dead-hit option: placeholder hit at the centre of a dead OT sensor (LSTInputProducer deadHitDetIds), flagged by
+  // this cluster size. It pairs with every hit of the live partner sensor into a minidoublet (see MiniDoublet.h).
+  constexpr uint16_t kDeadHitClustSize = 0;
+  // Which hit of a minidoublet is a placeholder (derived from the cluster sizes of its hits, see DeadHitPlacement.h)
+  constexpr uint8_t kDeadHitAnchor = 1;
+  constexpr uint8_t kDeadHitOuter = 2;
+  // Dead stack: both sensors of the module are dead, the minidoublet is made of two placeholders (fully fake)
+  constexpr uint8_t kDeadStack = kDeadHitAnchor | kDeadHitOuter;
+
   constexpr float kB = lstgeometry::kB;
   constexpr float kC = lstgeometry::kC;
 

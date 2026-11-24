@@ -207,6 +207,9 @@ void LSTOutputConverter::produce(edm::Event& iEvent, const edm::EventSetup& iSet
           unsigned int hitIdx = lstOutput_view.hitIndices()[i][layerSlot][hitSlot];
           if (hitIdx == lst::kTCEmptyHitIdx)
             continue;
+          // dead-hit option: placeholder hits on dead sensors have no TrackingRecHit
+          if (otHits[hitIdx] == nullptr)
+            continue;
           bool hitOK = true;
           for (auto const& hit : recHits)
             if (hit.sharesInput(otHits[hitIdx], TrackingRecHit::all)) {

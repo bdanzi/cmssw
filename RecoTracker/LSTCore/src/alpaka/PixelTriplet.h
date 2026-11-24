@@ -11,6 +11,7 @@
 #include "RecoTracker/LSTCore/interface/SegmentsSoA.h"
 #include "RecoTracker/LSTCore/interface/TripletsSoA.h"
 
+#include "DeadHitPlacement.h"
 #include "Quintuplet.h"
 #include "TripletAccessors.h"
 
@@ -68,7 +69,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPBB(TAcc const& acc,
                                                                 ModulesConst modules,
-                                                                MiniDoubletsConst mds,
+                                                                PlacedMiniDoublets const& mds,
                                                                 SegmentsConst segments,
                                                                 const PixelSeedData& pixelData,
                                                                 uint16_t segmentInnerModuleIndex,
@@ -80,7 +81,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPEE(TAcc const& acc,
                                                                 ModulesConst modules,
-                                                                MiniDoubletsConst mds,
+                                                                PlacedMiniDoublets const& mds,
                                                                 SegmentsConst segments,
                                                                 const PixelSeedData& pixelData,
                                                                 uint16_t segmentInnerModuleIndex,
@@ -173,7 +174,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runPixelTrackletDefaultAlgopT3(TAcc const& acc,
                                                                      ModulesConst modules,
-                                                                     MiniDoubletsConst mds,
+                                                                     PlacedMiniDoublets const& mds,
                                                                      SegmentsConst segments,
                                                                      const PixelSeedData& pixelData,
                                                                      uint16_t lowerModuleIndex,
@@ -569,7 +570,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <typename WP = dnn::pt3dnn::pT3WP, alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runPixelTripletDefaultAlgo(TAcc const& acc,
                                                                  ModulesConst modules,
-                                                                 MiniDoubletsConst mds,
+                                                                 MiniDoubletsConst storedMDs,
+                                                                 HitsBaseConst hitsBase,
                                                                  SegmentsConst segments,
                                                                  const PixelSeedData& pixelData,
                                                                  TripletsConst triplets,
@@ -588,6 +590,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     uint16_t lowerModuleIndex = triplets.lowerModuleIndices()[tripletIndex][0];
     uint16_t middleModuleIndex = triplets.lowerModuleIndices()[tripletIndex][1];
     uint16_t upperModuleIndex = triplets.lowerModuleIndices()[tripletIndex][2];
+
+    // Dead-hit option: positions as placed for the triplet
+    PlacedMiniDoublets mds(storedMDs, hitsBase);
+    if (not placeTripletMDs(acc, modules, segments, triplets, tripletIndex, mds))
+      return false;
 
     // Cheap radius check first, before expensive tracklet compatibility checks.
     pixelRadius = pixelData.ptIn * kR1GeVf;
@@ -713,6 +720,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   ModulesPixelConst modulesPixel,
                                   ObjectRangesConst ranges,
                                   MiniDoubletsConst mds,
+                                  HitsBaseConst hitsBase,
                                   SegmentsConst segments,
                                   PixelSeedsConst pixelSeeds,
                                   PixelSegmentsConst pixelSegments,
@@ -789,6 +797,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             bool success = runPixelTripletDefaultAlgo(acc,
                                                       modules,
                                                       mds,
+                                                      hitsBase,
                                                       segments,
                                                       pixelData,
                                                       triplets,
@@ -804,12 +813,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                       ptCut);
 
             if (success) {
-              float phi =
-                  mds.anchorPhi()[segments
-                                      .mdIndices()[triplets.segmentIndices()[outerTripletIndex][0]][layer2_adjustment]];
-              float eta =
-                  mds.anchorEta()[segments
-                                      .mdIndices()[triplets.segmentIndices()[outerTripletIndex][0]][layer2_adjustment]];
+              // Dead-hit option: a placeholder minidoublet has the phi and eta placed for the triplet
+              PlacedMiniDoublets placedMDs(mds, hitsBase);
+              placeTripletMDs(acc, modules, segments, triplets, outerTripletIndex, placedMDs);
+              const unsigned int layer2MDIndex =
+                  segments.mdIndices()[triplets.segmentIndices()[outerTripletIndex][0]][layer2_adjustment];
+              float phi = placedMDs.anchorPhi()[layer2MDIndex];
+              float eta = placedMDs.anchorEta()[layer2MDIndex];
               float score = rPhiChiSquared + rPhiChiSquaredInwards;
               unsigned int totOccupancyPixelTriplets =
                   alpaka::atomicAdd(acc, &pixelTriplets.totOccupancyPixelTriplets(), 1u, alpaka::hierarchy::Blocks{});
@@ -854,7 +864,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPBB(TAcc const& acc,
                                                                 ModulesConst modules,
-                                                                MiniDoubletsConst mds,
+                                                                PlacedMiniDoublets const& mds,
                                                                 SegmentsConst segments,
                                                                 const PixelSeedData& pixelData,
                                                                 uint16_t segmentInnerModuleIndex,
@@ -971,7 +981,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     //lots of array accesses below this...
 
     float alpha_InLo = pixelData.alpha_InLo;
-    float alpha_OutLo = __H2F(segments.dPhiChanges()[segmentIndex]);
+    float alpha_OutLo = segmentAlpha(acc,
+                                     modules,
+                                     mds,
+                                     segments,
+                                     segmentIndex,
+                                     segmentInnerModuleIndex,
+                                     segmentOuterModuleIndex,
+                                     __H2F(segments.dPhiChanges()[segmentIndex]));
 
     bool isEC_lastLayer =
         modules.subdets()[segmentOuterModuleIndex] == Endcap and modules.moduleType()[segmentOuterModuleIndex] == TwoS;
@@ -1104,7 +1121,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   template <alpaka::concepts::Acc TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPEE(TAcc const& acc,
                                                                 ModulesConst modules,
-                                                                MiniDoubletsConst mds,
+                                                                PlacedMiniDoublets const& mds,
                                                                 SegmentsConst segments,
                                                                 const PixelSeedData& pixelData,
                                                                 uint16_t segmentInnerModuleIndex,
@@ -1218,7 +1235,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       return false;
 
     float alpha_InLo = pixelData.alpha_InLo;
-    float alpha_OutLo = __H2F(segments.dPhiChanges()[segmentIndex]);
+    float alpha_OutLo = segmentAlpha(acc,
+                                     modules,
+                                     mds,
+                                     segments,
+                                     segmentIndex,
+                                     segmentInnerModuleIndex,
+                                     segmentOuterModuleIndex,
+                                     __H2F(segments.dPhiChanges()[segmentIndex]));
 
     bool isEC_lastLayer =
         modules.subdets()[segmentOuterModuleIndex] == Endcap and modules.moduleType()[segmentOuterModuleIndex] == TwoS;
