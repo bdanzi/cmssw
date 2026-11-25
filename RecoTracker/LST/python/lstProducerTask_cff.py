@@ -8,9 +8,9 @@ from RecoTracker.LST.lstInputProducer_cfi import lstInputProducer
 
 from RecoTracker.LSTGeometry.lstGeometryESProducer_cfi import lstGeometryESProducer
 
-from Configuration.ProcessModifiers.seedingLST_cff import seedingLST
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
-from Configuration.ProcessModifiers.trackingMkFitHighPtTripletStep_cff import trackingMkFitHighPtTripletStep
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import seedingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingMkFitHighPtTripletStep
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
 
 (trackingPhase2PU140 & trackingMkFitHighPtTripletStep & seedingLST & trackingLST).toModify(lstProducer,

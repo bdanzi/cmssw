@@ -23,7 +23,7 @@ from Configuration.Eras.Modifier_trackingPhase1_cff import trackingPhase1
 trackingPhase1.toModify(initialStepSeedLayersPreSplitting,
     layerList = RecoTracker.TkSeedingLayers.PixelLayerQuadruplets_cfi.PixelLayerQuadruplets.layerList.value()
 )
-from Configuration.ProcessModifiers.splitClustersInPhase2Pixel_cff import splitClustersInPhase2Pixel
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import splitClustersInPhase2Pixel
 splitClustersInPhase2Pixel.toModify(initialStepSeedLayersPreSplitting,
     layerList = ['BPix1+BPix2+BPix3+BPix4',
                  'BPix1+BPix2+BPix3+FPix1_pos','BPix1+BPix2+BPix3+FPix1_neg',
@@ -149,7 +149,7 @@ initialStepTrackCandidatesPreSplitting = RecoTracker.CkfPattern.CkfTrackCandidat
     MeasurementTrackerEvent = 'MeasurementTrackerEventPreSplitting',
 )
 
-from Configuration.ProcessModifiers.trackingMkFitInitialStepPreSplitting_cff import trackingMkFitInitialStepPreSplitting
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingMkFitInitialStepPreSplitting
 from RecoTracker.MkFit.mkFitGeometryESProducer_cfi import mkFitGeometryESProducer
 import RecoTracker.MkFit.mkFitSiPixelHitConverter_cfi as _mkFitSiPixelHitConverter_cfi
 import RecoTracker.MkFit.mkFitSiStripHitConverter_cfi as _mkFitSiStripHitConverter_cfi

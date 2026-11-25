@@ -71,7 +71,7 @@ _layerListForPhase1 = [
         'BPix4+TIB1','BPix4+TIB2'
     ]
 trackingPhase1.toModify(jetCoreRegionalStepSeedLayers, layerList = _layerListForPhase1)
-from Configuration.ProcessModifiers.jetCoreInPhase2_cff import jetCoreInPhase2
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import jetCoreInPhase2
 _layerListForPhase2 = [
         'BPix1+BPix2', 'BPix1+BPix3', 'BPix1+BPix4',
         'BPix2+BPix3', 'BPix2+BPix4',

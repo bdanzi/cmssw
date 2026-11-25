@@ -25,8 +25,8 @@ from RecoLocalTracker.SubCollectionProducers.seedClusterRemoverPhase2_cfi import
 _highPtTripletStepClustersFromSeed = _seedClusterRemoverPhase2.clone()
 
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
-from Configuration.ProcessModifiers.seedingLST_cff import seedingLST
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import seedingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 (trackingPhase2PU140 & (seedingLST | trackingLST)).toReplaceWith(highPtTripletStepClusters, _highPtTripletStepClustersFromSeed)
 
 # SEEDING LAYERS
@@ -230,7 +230,7 @@ highPtTripletStepTrackCandidates = _CkfTrackCandidates_cfi.ckfTrackCandidatesIte
     useHitsSplitting = True,
 )
 
-from Configuration.ProcessModifiers.trackingMkFitHighPtTripletStep_cff import trackingMkFitHighPtTripletStep
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingMkFitHighPtTripletStep
 import RecoTracker.MkFit.mkFitSeedConverter_cfi as mkFitSeedConverter_cfi
 import RecoTracker.MkFit.mkFitIterationConfigESProducer_cfi as mkFitIterationConfigESProducer_cfi
 import RecoTracker.MkFit.mkFitProducer_cfi as mkFitProducer_cfi

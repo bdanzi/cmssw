@@ -114,7 +114,7 @@ trackingPhase2PU140.toReplaceWith(earlyGeneralTracks, _trackListMerger.clone(
     )
 )
 
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 def _remove_initial(x):
      _idx = x.TrackProducers.index('initialStepTracks')
      del x.TrackProducers[_idx]
@@ -145,7 +145,7 @@ def _remove_initial(x):
                                                                setsToMerge = {0: dict(tLists = [0])}
 )
 
-from Configuration.ProcessModifiers.jetCoreInPhase2_cff import jetCoreInPhase2
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import jetCoreInPhase2
 def _extend_jetCore(x):
      _length = len(x.TrackProducers)
      x.TrackProducers += ['jetCoreRegionalStepTracks']

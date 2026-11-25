@@ -14,7 +14,7 @@ lowPtQuadStepClusters = _cfg.clusterRemoverForIter('LowPtQuadStep')
 for _eraName, _postfix, _era in _cfg.nonDefaultEras():
     _era.toReplaceWith(lowPtQuadStepClusters, _cfg.clusterRemoverForIter('LowPtQuadStep', _eraName, _postfix))
 
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 # with LST, this is the first iteration with proper cluster masking
 # with LST, also mask the LST-track hits with a large chi2 increment, which otherwise let lowPtQuadStep re-find the LST tracks
 trackingLST.toModify(lowPtQuadStepClusters, oldClusterRemovalInfo = "", maxChi2 = 1e3)

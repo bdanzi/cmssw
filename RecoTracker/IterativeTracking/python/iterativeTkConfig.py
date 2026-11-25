@@ -74,7 +74,7 @@ trackingIters01.toModify(_iterations_trackingPhase2PU140_VS, names = ["InitialSt
 # apply all procModifiers before this
 _iterations_trackingPhase2PU140 = _iterations_trackingPhase2PU140_VS.names.value()
 
-from Configuration.ProcessModifiers.jetCoreInPhase2_cff import jetCoreInPhase2
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import jetCoreInPhase2
 jetCoreInPhase2.toModify(_iterations_trackingPhase2PU140, func=lambda x: x.append('JetCoreRegionalStep'))
 
 _iterations_muonSeeded = [
@@ -111,9 +111,9 @@ seedingDeepCore.toModify(_multipleSeedProducers_trackingPhase1, func=lambda x: x
 
 _multipleSeedProducers_trackingPhase2PU140 = {}
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
-from Configuration.ProcessModifiers.seedingLST_cff import seedingLST
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
-from Configuration.ProcessModifiers.trackingMkFitHighPtTripletStep_cff import trackingMkFitHighPtTripletStep
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import seedingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingMkFitHighPtTripletStep
 (trackingPhase2PU140 & seedingLST & trackingLST & trackingMkFitHighPtTripletStep).toModify(_multipleSeedProducers_trackingPhase2PU140, func=lambda x: x.update({"highPtTripletStep": ["PixelsOnly", "PixelsWithLST"]}))
 
 _oldStyleHasSelector = set([

@@ -23,8 +23,8 @@ from Configuration.Eras.Modifier_fastSim_cff import fastSim
 from Configuration.ProcessModifiers.hltClusterSplitting_cff import hltClusterSplitting
 ####Importing phase2 modifier
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
-from Configuration.ProcessModifiers.seedingLST_cff import seedingLST
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import seedingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 ### First define the stuff for the standard validation sequence
 ## Track selectors
 for _eraName, _postfix, _era in _cfg.allEras():

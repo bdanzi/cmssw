@@ -42,7 +42,7 @@ trackingNtuple.includeSeeds = _includeSeeds
 trackingNtuple.includeMVA = _includeMVA
 trackingNtuple.includeTrackingParticles = _includeTrackingParticles
 
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 trackingLST.toModify(trackingNtuple, seedUniqueCheck = False)
 
 def _filterForNtuple(lst):

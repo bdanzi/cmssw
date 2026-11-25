@@ -47,7 +47,7 @@ from Configuration.ProcessModifiers.trackingIters01_cff import trackingIters01
                                                  overrideTrkQuals      = "highPtTripletStepSelector:highPtTripletStep"
                                                  )
 
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 (trackingIters01 & trackingPhase2PU140 & trackingLST).toModify(convClusters,
                                                                overrideTrkQuals      = ""
                                                                )

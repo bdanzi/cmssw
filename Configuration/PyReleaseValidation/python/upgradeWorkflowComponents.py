@@ -667,6 +667,14 @@ upgradeWFs['lstmkFitOnGPUAllItersJetCore'].step3 = {
     '--procModifiers': 'trackingLST,seedingLST,trackingMkFitHighPtTripletStep,jetCoreInPhase2,splitClustersInPhase2Pixel,trackingMkFitInitialStepPreSplitting'
 }
 
+# Previous Phase-2 offline tracking baseline (legacy CA seeding, CKF building, no LST, no JetCore), full reco
+upgradeWFs['trackingPhase2Legacy'] = deepcopy(upgradeWFs['lstmkFitOnCPUAllIters'])
+upgradeWFs['trackingPhase2Legacy'].suffix = '_trackingPhase2Legacy'
+upgradeWFs['trackingPhase2Legacy'].offset = 0.718
+upgradeWFs['trackingPhase2Legacy'].step3 = {
+    '--procModifiers': 'trackingPhase2Legacy'
+}
+
 #DeepCore seeding for JetCore iteration workflow
 class UpgradeWorkflow_seedingDeepCore(UpgradeWorkflow):
     def setup_(self, step, stepName, stepDict, k, properties):

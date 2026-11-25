@@ -395,8 +395,8 @@ _seedingDeepCore_TrackSeedMonSequence += (locals()["TrackSeedMonjetCoreRegionalS
 from Configuration.ProcessModifiers.seedingDeepCore_cff import seedingDeepCore
 seedingDeepCore.toReplaceWith(TrackSeedMonSequence,_seedingDeepCore_TrackSeedMonSequence)
 
-from Configuration.ProcessModifiers.seedingLST_cff import seedingLST
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import seedingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 # the LST track candidates have one seed stop info per LST input seed of both steps, so the monitor reads them merged
 import RecoTracker.TkSeedGenerator.GlobalCombinedSeeds_cfi as _GlobalCombinedSeeds_cfi
 lstInputSeedsForSeedMon = _GlobalCombinedSeeds_cfi.globalCombinedSeeds.clone(

@@ -473,8 +473,8 @@ _InitialStepTask_trackingPhase2.replace(initialStep, initialStepSelector)
 trackingPhase2PU140.toReplaceWith(InitialStepTask, _InitialStepTask_trackingPhase2)
 
 
-from Configuration.ProcessModifiers.seedingLST_cff import seedingLST
-from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import seedingLST
+from Configuration.ProcessModifiers.trackingPhase2OfflineBaseline_cff import trackingLST
 (trackingPhase2PU140 & (seedingLST | trackingLST)).toModify(firstStepPrimaryVerticesUnsorted, TrackLabel = 'highPtTripletStepTracks')
 (trackingPhase2PU140 & (seedingLST | trackingLST)).toModify(initialStepTrackRefsForJets, src = 'highPtTripletStepTracks')
 
